@@ -1,6 +1,7 @@
 package net.lukemcomber.dev.ai.genetics.world.terrain.impl;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
+import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
@@ -19,85 +20,51 @@ public class FlatWorld implements Terrain {
     private int worldWidth;
     private boolean isInitialized = false;
 
-    /**
-     * @param
-     * @param y
-     * @param z
-     * @param terrainProperty
-     */
-    public void setTerrainProperty(int x, int y, int z, TerrainProperty terrainProperty) {
+    public void setTerrainProperty(final Coordinates coordinates, final  TerrainProperty terrainProperty) {
         checkInitialized();
 
-        if( 0 == z ) {
+        if( 0 == coordinates.zAxis ) {
             //we are flat, ignore anything above the z axis
-            checkCoordinates(x, y);
+            checkCoordinates(coordinates.xAxis, coordinates.yAxis);
 
             if( true ) {
-                System.out.println(String.format("(%d,%d,%d) - Set %s to %d", x, y, z, terrainProperty.getId(),
+                System.out.println(String.format("(%d,%d,%d) - Set %s to %d", coordinates.zAxis,
+                        coordinates.yAxis, coordinates.zAxis, terrainProperty.getId(),
                         terrainProperty.getValue()));
             }
 
             //on conflict overwrites
-            environmentMap[x][y].put(terrainProperty.getId(), terrainProperty);
+            environmentMap[coordinates.xAxis][coordinates.yAxis].put(terrainProperty.getId(), terrainProperty);
         }
 
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @return the TerrainProperty or null if it doesn't exist
-     */
-    public TerrainProperty getTerrainProperty(int x, int y, int z, final String id) {
+    public TerrainProperty getTerrainProperty(final Coordinates coordinates, final String id) {
         checkInitialized();
-        checkCoordinates(x, y);
-        return environmentMap[x][y].get(id);
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        return environmentMap[coordinates.xAxis][coordinates.yAxis].get(id);
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @param id
-     */
     @Override
-    public void deleteTerrainProperty(int x, int y, int z, String id) {
+    public void deleteTerrainProperty(final Coordinates coordinates,final String id) {
         checkInitialized();
-        checkCoordinates(x, y);
-        environmentMap[x][y].remove(id);
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        environmentMap[coordinates.xAxis][coordinates.yAxis].remove(id);
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @param propertyList
-     */
-    public void setTerrain(int x, int y, int z, List<TerrainProperty> propertyList) {
+    public void setTerrain(final Coordinates coordinates,final List<TerrainProperty> propertyList) {
         checkInitialized();
-        checkCoordinates(x, y);
-        environmentMap[x][y] = propertyList.stream().collect(
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        environmentMap[coordinates.xAxis][coordinates.yAxis] = propertyList.stream().collect(
                 Collectors.toMap(TerrainProperty::getId, Function.identity()));
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @return
-     */
-    public List<TerrainProperty> getTerrain(int x, int y, int z) {
+    public List<TerrainProperty> getTerrain(final Coordinates coordinates) {
         checkInitialized();
-        checkCoordinates(x, y);
-        return new ArrayList<>(environmentMap[x][y].values());
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        return new ArrayList<>(environmentMap[coordinates.xAxis][coordinates.yAxis].values());
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     */
     @Override
     public void initialize(int x, int y, int z) {
         worldHeight = y;
@@ -118,54 +85,35 @@ public class FlatWorld implements Terrain {
     /**
      * @return
      */
-    public boolean hasCell(final int x, final int y, final int z) {
+    public boolean hasCell(final Coordinates coordinates) {
         checkInitialized();
-        return null != organismMap[x][y];
+        return null != organismMap[coordinates.xAxis][coordinates.yAxis];
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @param cell
-     * @return true if the cell was placed, false if the coordicates are already occupied
-     */
-    public boolean setCell(int x, int y, int z, Cell cell) {
+    public boolean setCell(final Cell cell) {
         checkInitialized();
-        checkCoordinates(x, y);
-        final Cell currentCell = organismMap[x][y];
+        checkCoordinates(cell.getCoordinates().xAxis, cell.getCoordinates().yAxis);
+        final Cell currentCell = organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis];
         if (null == currentCell) {
-            organismMap[x][y] = cell;
+            organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis] = cell;
         }
         return null == currentCell;
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @return true if cell deleted, false if there is no cell and no action taken
-     */
-    public boolean deleteCell(int x, int y, int z) {
+    public boolean deleteCell(final Coordinates coordinates) {
         checkInitialized();
-        checkCoordinates(x, y);
-        final Cell currentCell = organismMap[x][y];
-        organismMap[x][y] = null;
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        final Cell currentCell = organismMap[coordinates.xAxis][coordinates.yAxis];
+        organismMap[coordinates.xAxis][coordinates.yAxis] = null;
 
         return null != currentCell;
     }
 
-    /**
-     * @param x
-     * @param y
-     * @param z
-     * @return the cell at the coordinates or null
-     */
     @Override
-    public Cell getCell(int x, int y, int z) {
+    public Cell getCell(final Coordinates coordinates) {
         checkInitialized();
-        checkCoordinates(x, y);
-        return organismMap[x][y];
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        return organismMap[coordinates.xAxis][coordinates.yAxis];
     }
 
     /**

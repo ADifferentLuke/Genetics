@@ -1,5 +1,6 @@
 package net.lukemcomber.dev.ai.genetics.service;
 
+import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainPropertyFactory;
@@ -104,7 +105,8 @@ public class TerrainStreamReader extends LGPStreamReader<Terrain, TerrainStreamR
                             (x, y, z, v) -> {
                                 final TerrainProperty tp = data.property.clone();
                                 tp.setValue(v);
-                                data.terrain.setTerrainProperty(x, y, z, tp);
+                                final Coordinates coordinates = new Coordinates(x,y,z);
+                                data.terrain.setTerrainProperty(coordinates, tp);
                                 return true;
                             });
                 }

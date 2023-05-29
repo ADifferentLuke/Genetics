@@ -1,5 +1,6 @@
 package net.lukemcomber.dev.ai.genetics;
 
+import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.service.GenomeStreamReader;
 import net.lukemcomber.dev.ai.genetics.service.TerrainStreamReader;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
@@ -24,9 +25,9 @@ public class Genetics {
         final GenomeStreamReader genomeStreamReader = new GenomeStreamReader(terrain.getSizeOfXAxis(),
                 terrain.getSizeOfYAxis(), terrain.getSizeOfZAxis());
         if(StringUtils.isNotEmpty(zooFile)) {
-            final List<GenomeStreamReader.OrganismLocation> organisms = genomeStreamReader.parse(Files.newInputStream(Paths.get(zooFile)));
-            for( int i = 0; organisms.size() > i; ++i ){
-                //terrain.setCell( )
+            final List<Cell> cells = genomeStreamReader.parse(Files.newInputStream(Paths.get(zooFile)));
+            for( int i = 0; cells.size() > i; ++i ){
+                terrain.setCell( cells.get(i));
             }
         }
     }

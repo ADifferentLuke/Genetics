@@ -1,5 +1,6 @@
 package net.lukemcomber.dev.ai.genetics.service;
 
+import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import org.apache.commons.codec.DecoderException;
 import org.testng.annotations.Test;
@@ -27,7 +28,7 @@ public class GenomeStreamReaderTest {
     public void testReader() throws IOException {
         final URL url = Thread.currentThread().getContextClassLoader().getResource(testInitFile);
         final GenomeStreamReader reader = new GenomeStreamReader( 90,90,90 );
-        final List<GenomeStreamReader.OrganismLocation> organisms = reader.parse( Files.newInputStream(Paths.get(url.getPath())));
+        final List<Cell> organisms = reader.parse( Files.newInputStream(Paths.get(url.getPath())));
 
     }
 }

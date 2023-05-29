@@ -2,20 +2,16 @@ package net.lukemcomber.dev.ai.genetics.biology.plant;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
+import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 
 public class SeedCell implements Cell {
 
-    private final int xCoord;
-    private final int yCoord;
-    private final int zCoord;
-
+    private final Coordinates coordinates;
     private final Organism organism;
 
-    public SeedCell( final Organism organism, final int xPos, final int yPos, final int zPos ){
+    public SeedCell(final Organism organism, final Coordinates coordinates ){
         this.organism = organism;
-        xCoord = xPos;
-        yCoord = yPos;
-        zCoord = zPos;
+        this.coordinates = coordinates;
     }
     /**
      * @return
@@ -23,5 +19,9 @@ public class SeedCell implements Cell {
     @Override
     public Organism getOrganism() {
         return organism;
+    }
+
+    public Coordinates getCoordinates(){
+        return coordinates;
     }
 }

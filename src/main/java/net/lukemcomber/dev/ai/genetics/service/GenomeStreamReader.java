@@ -1,14 +1,16 @@
 package net.lukemcomber.dev.ai.genetics.service;
 
+import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
+import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class GenomeStreamReader extends LGPStreamReader<List<GenomeStreamReader.OrganismLocation>, GenomeStreamReader.ContextData> {
+public class GenomeStreamReader extends LGPStreamReader<List<Cell>, GenomeStreamReader.ContextData> {
 
     private enum Context {
         DECLARATION,
@@ -16,18 +18,10 @@ public class GenomeStreamReader extends LGPStreamReader<List<GenomeStreamReader.
     }
 
     class ContextData {
-        List<OrganismLocation> organisms;
+        List<Cell> cells;
         String currentOrganismType;
         Context context = Context.DECLARATION;
         RangeValueItem item = null;
-    }
-
-    public class OrganismLocation {
-        int x = 0;
-        int y = 0;
-        int z = 0;
-
-        Organism organism = null;
     }
 
     public static final String ORGANISM = "ORGANISM ";
@@ -51,7 +45,7 @@ public class GenomeStreamReader extends LGPStreamReader<List<GenomeStreamReader.
     @Override
     ContextData initPayload() {
         ContextData contextData = new ContextData();
-        contextData.organisms = new LinkedList<>();
+        contextData.cells = new LinkedList<>();
         return contextData;
     }
 
@@ -60,8 +54,8 @@ public class GenomeStreamReader extends LGPStreamReader<List<GenomeStreamReader.
      * @return
      */
     @Override
-    List<OrganismLocation> getResult(final ContextData contextData) {
-        return contextData.organisms;
+    List<Cell> getResult(final ContextData contextData) {
+        return contextData.cells;
     }
 
     /**
@@ -89,16 +83,11 @@ public class GenomeStreamReader extends LGPStreamReader<List<GenomeStreamReader.
                     contextData.item = parseItem(line, sizeOfXAxis, sizeOfYAxis, sizeOfZAxis);
                     iterateRangeValue(contextData.item, sizeOfXAxis, sizeOfYAxis, sizeOfZAxis,
                             (x, y, z, v) -> {
-                                //create genome from factory?
+                                //only support 1 organism per pixel. In the future, ranges should support large organisms?
                                 try {
+                                    final Coordinates coordinates = new Coordinates(x,y,z);
                                     final Organism organism = OrganismFactory.create(contextData.currentOrganismType,
-                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value));
-                                    final OrganismLocation location = new OrganismLocation();
-                                    location.x = x;
-                                    location.y = y;
-                                    location.z = z;
-                                    location.organism = organism;
-                                    contextData.organisms.add(location);
+                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates);
                                 } catch (DecoderException e) {
                                     throw new RuntimeException(e);
                                 }

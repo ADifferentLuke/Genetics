@@ -6,6 +6,8 @@ public interface Organism {
 
     String getOrganismType();
 
+    void addCell( Cell cell );
+
     //needs a genome
     //needs cells
     //needs age

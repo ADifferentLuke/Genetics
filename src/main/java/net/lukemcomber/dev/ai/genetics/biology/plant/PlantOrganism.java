@@ -40,4 +40,12 @@ public class PlantOrganism implements Organism {
     public void addCell(Cell cell) {
         cells.add(cell);
     }
+
+    /**
+     * @return
+     */
+    @Override
+    public List<Cell> getCells() {
+        return cells;
+    }
 }

@@ -1,5 +1,7 @@
 package net.lukemcomber.dev.ai.genetics.biology;
 
+import java.util.List;
+
 public interface Organism {
 
     Genome getGenome();
@@ -7,6 +9,9 @@ public interface Organism {
     String getOrganismType();
 
     void addCell( Cell cell );
+
+    List<Cell> getCells();
+
 
     //needs a genome
     //needs cells

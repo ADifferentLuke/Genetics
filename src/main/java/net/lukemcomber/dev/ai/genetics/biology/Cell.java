@@ -3,6 +3,8 @@ package net.lukemcomber.dev.ai.genetics.biology;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 
+import java.util.List;
+
 /**
  * Interface for representing cells and providing a uniform interface for manipulating them
  */
@@ -15,4 +17,5 @@ public interface Cell {
     Organism getOrganism();
 
     Coordinates getCoordinates();
+
 }

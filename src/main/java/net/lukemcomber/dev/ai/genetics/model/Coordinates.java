@@ -11,4 +11,8 @@ public class Coordinates {
         this.yAxis = yAxis;
         this.zAxis = zAxis;
     }
+
+    public String toString(){
+        return String.format("(%d,%d,%d)", xAxis, yAxis, zAxis );
+    }
 }

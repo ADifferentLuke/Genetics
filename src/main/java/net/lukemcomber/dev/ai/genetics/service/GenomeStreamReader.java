@@ -10,7 +10,7 @@ import org.apache.commons.codec.DecoderException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GenomeStreamReader extends LGPStreamReader<List<Cell>, GenomeStreamReader.ContextData> {
+public class GenomeStreamReader extends LGPStreamReader<List<Organism>, GenomeStreamReader.ContextData> {
 
     private enum Context {
         DECLARATION,
@@ -18,7 +18,7 @@ public class GenomeStreamReader extends LGPStreamReader<List<Cell>, GenomeStream
     }
 
     class ContextData {
-        List<Cell> cells;
+        List<Organism> organisms;
         String currentOrganismType;
         Context context = Context.DECLARATION;
         RangeValueItem item = null;
@@ -45,7 +45,7 @@ public class GenomeStreamReader extends LGPStreamReader<List<Cell>, GenomeStream
     @Override
     ContextData initPayload() {
         ContextData contextData = new ContextData();
-        contextData.cells = new LinkedList<>();
+        contextData.organisms = new LinkedList<>();
         return contextData;
     }
 
@@ -54,8 +54,8 @@ public class GenomeStreamReader extends LGPStreamReader<List<Cell>, GenomeStream
      * @return
      */
     @Override
-    List<Cell> getResult(final ContextData contextData) {
-        return contextData.cells;
+    List<Organism> getResult(final ContextData contextData) {
+        return contextData.organisms;
     }
 
     /**
@@ -88,6 +88,7 @@ public class GenomeStreamReader extends LGPStreamReader<List<Cell>, GenomeStream
                                     final Coordinates coordinates = new Coordinates(x,y,z);
                                     final Organism organism = OrganismFactory.create(contextData.currentOrganismType,
                                             GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates);
+                                    contextData.organisms.add(organism);
                                 } catch (DecoderException e) {
                                     throw new RuntimeException(e);
                                 }

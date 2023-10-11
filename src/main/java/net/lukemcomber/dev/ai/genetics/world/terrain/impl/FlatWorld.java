@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 public class FlatWorld implements Terrain {
 
+    private final static boolean debug = false;
+
     public static final String ID = "FLAT_WORLD";
 
     private Cell[][] organismMap;
@@ -27,7 +29,7 @@ public class FlatWorld implements Terrain {
             //we are flat, ignore anything above the z axis
             checkCoordinates(coordinates.xAxis, coordinates.yAxis);
 
-            if( true ) {
+            if( debug ) {
                 System.out.println(String.format("(%d,%d,%d) - Set %s to %d", coordinates.zAxis,
                         coordinates.yAxis, coordinates.zAxis, terrainProperty.getId(),
                         terrainProperty.getValue()));

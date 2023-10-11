@@ -12,7 +12,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.*;
 
 
-public class TerrainStreamReader extends LGPStreamReader<Terrain, TerrainStreamReader.ContextData> {
+public class TerrainStreamReader extends LGPStreamReader<TerrainStreamReader.ContextData,Terrain> {
+
+    final static boolean debug = false;
 
     private enum Context {
         TYPE,
@@ -92,7 +94,9 @@ public class TerrainStreamReader extends LGPStreamReader<Terrain, TerrainStreamR
 
                     data.property = TerrainPropertyFactory.createTerrainProperty(newLine);
                     data.context = Context.PROPERTY;
-                    System.out.println("Setting " + data.property.getId());
+                    if( debug ) {
+                        System.out.println("Setting " + data.property.getId());
+                    }
                 }
                 break;
             }

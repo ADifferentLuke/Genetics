@@ -22,29 +22,49 @@ import static java.util.stream.Collectors.*;
 
 public class Genetics {
 
+    private final static int CLOCK_DELAY_MS = 1000;
+
     public void run(final String configFile) throws IOException {
         final AutomatedConfigFileReader reader = new AutomatedConfigFileReader();
         final AutomatedConfig config = reader.parse(Files.newInputStream(Paths.get(configFile)));
 
-        run( config.initialEnvironmentFile, config.initialZooFile );
+        run(config.initialEnvironmentFile, config.initialZooFile);
     }
 
     public void run(final InputStream initEnv, final InputStream zoo) throws IOException {
 
+        //Builds the world
         final Terrain terrain = new TerrainStreamReader().parse(initEnv);
+
+        //reads a genome
         final GenomeStreamReader genomeStreamReader = new GenomeStreamReader(terrain.getSizeOfXAxis(),
                 terrain.getSizeOfYAxis(), terrain.getSizeOfZAxis());
+
         if (null != zoo) {
             final List<Organism> organisms = genomeStreamReader.parse(zoo);
 
             final List<Cell> cells = organisms.stream()
-                    .flatMap(o -> o.getCells().stream())
+                    .map(Organism::getCells)
                     .collect(Collectors.toList());
 
             cells.forEach(c -> {
                 System.out.println("Setting cell on " + c.getCoordinates());
                 terrain.setCell(c);
             });
+
+            //the world is set up and the genome is set up. Begin simulation
+            try {
+                while (true) {
+                    organisms.stream().forEach( o -> {
+                        o.leechResources(terrain);
+                        o.performAction(terrain);
+                        o.prettyPrint(System.out);
+                    });
+                    Thread.sleep(CLOCK_DELAY_MS);
+                }
+            } catch (final InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -53,8 +73,9 @@ public class Genetics {
     }
 
     public static void main(final String[] args) throws IOException {
-        if (1 == args.length) {
-            new Genetics().run(args[0]);
+        //TODO fix me
+        if (2 == args.length) {
+            new Genetics().run(args[0],args[1]);
         } else {
 
             System.err.println("Usage: Genetics <initialization terrain file> [<initialize biology file>]");

@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 //Luke's Genetic Program stream reader ..... yea, I know
-public abstract class LGPStreamReader<T,S> {
+public abstract class LGPStreamReader<S,T> {
 
     class RangeValueItem {
         public Range<Integer> xCoordinates;

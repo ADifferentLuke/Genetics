@@ -10,7 +10,7 @@ import org.apache.commons.codec.DecoderException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GenomeStreamReader extends LGPStreamReader<List<Organism>, GenomeStreamReader.ContextData> {
+public class GenomeStreamReader extends LGPStreamReader<GenomeStreamReader.ContextData,List<Organism>> {
 
     private enum Context {
         DECLARATION,
@@ -86,7 +86,7 @@ public class GenomeStreamReader extends LGPStreamReader<List<Organism>, GenomeSt
                                 //only support 1 organism per pixel. In the future, ranges should support large organisms?
                                 try {
                                     final Coordinates coordinates = new Coordinates(x,y,z);
-                                    final Organism organism = OrganismFactory.create(contextData.currentOrganismType,
+                                    final Organism organism = OrganismFactory.create(
                                             GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates);
                                     contextData.organisms.add(organism);
                                 } catch (DecoderException e) {

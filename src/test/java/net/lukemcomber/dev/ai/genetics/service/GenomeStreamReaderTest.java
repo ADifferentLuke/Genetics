@@ -16,6 +16,23 @@ import java.util.List;
 public class GenomeStreamReaderTest {
     private static final String testInitFile = "TestInitialZoology.txt";
 
+    public void testLogic(){
+        int actions = 100;
+        int bits = actions * 5;
+        int bytes = bits / 8;
+
+        while (bits % 8 != 0 || bytes % 4 != 0) {
+            actions++;
+            bits = actions * 5;
+            bytes = bits / 8;
+        }
+        int bytesDivisibleBy4 = bytes + (4 - (bytes % 4)) % 4;
+        System.out.println("Number of actions: " + actions);
+        System.out.println("Number of bytes: " + bytesDivisibleBy4);
+
+    }
+
+
     public void testGenomeSerDe() throws DecoderException {
         final String genomeString = "78386f1f1d027e2a177d7b3d65543d3a57660773335270726f6b6e58667b5010586557150d2b33741e402e0f26082b740f403515";
         final Genome genome = GenomeSerDe.deserialize("PLANT", genomeString);

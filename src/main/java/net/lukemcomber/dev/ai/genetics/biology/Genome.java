@@ -1,32 +1,81 @@
 package net.lukemcomber.dev.ai.genetics.biology;
 
-import net.lukemcomber.dev.ai.genetics.biology.Gene;
+import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
+import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This is a common interface for genomes interfacing with the world
  */
-public interface Genome {
+public abstract class Genome {
+
+    private final int numOfGenes;
+    private final LinkedList<Gene> genes;
+
+    public Genome(int numOfGenes) {
+        this.numOfGenes = numOfGenes;
+        genes = new LinkedList<>();
+        for (int i = 0; this.numOfGenes > i; ++i) {
+            final Gene gene = new Gene();
+            gene.nucleotideA = 0;
+            gene.nucleotideB = 0;
+            gene.nucleotideC = 0;
+            gene.nucleotideD = 0;
+            genes.add(gene);
+        }
+    }
+
+    public Genome(final List<Gene> genes) {
+        numOfGenes = genes.size();
+        this.genes = new LinkedList<>(genes);
+
+    }
 
     /**
      * Returns the number of genes for this genome.
+     *
      * @return number of genes
      */
-    int getNumberOfGenes();
+    public int getNumberOfGenes() {
+        return numOfGenes;
+    }
 
     /**
      * Given an index within the bounds of the number of genes in the genome, returns a reference to the
      * respective gene
+     *
      * @param i index of the genome to inspect
      * @return
      */
-    Gene getGeneNumber(final int i );
+    public Gene getGeneNumber(final int i) {
+        if (numOfGenes > i) {
+            return genes.get(i);
+        } else {
+            throw new EvolutionException("Attempting to read a gene outside the organisms genome.");
+        }
+    }
 
     /**
      * Sets a gene at the specified index to with a reference to the supplied gene
-     * @param i the index to replace
+     *
+     * @param i    the index to replace
      * @param gene the gene to insert into the genome
      */
-    void setGeneNumber( final int i, final Gene gene );
+    public void setGeneNumber(final int i, final Gene gene) {
+        //TODO test this!!
+        if (numOfGenes > i) {
+            genes.remove(i);
+            genes.add(i, gene);
+        }
+    }
 
+    protected Iterator<Byte> iterator(final int bits) {
+        return new GenomeIterator(genes, bits);
+    }
+
+    public abstract PlantBehavior getNextAct();
 
 }

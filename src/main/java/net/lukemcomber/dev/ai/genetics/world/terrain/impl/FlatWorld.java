@@ -1,10 +1,13 @@
 package net.lukemcomber.dev.ai.genetics.world.terrain.impl;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
+import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.service.CellHelper;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -18,8 +21,11 @@ public class FlatWorld implements Terrain {
 
     private Cell[][] organismMap;
     private Map<String, TerrainProperty>[][] environmentMap;
+    private List<Organism> population;
     private int worldHeight;
     private int worldWidth;
+    private int ticksPerDay;
+    private int ticksPerTurn;
     private boolean isInitialized = false;
 
     public void setTerrainProperty(final Coordinates coordinates, final  TerrainProperty terrainProperty) {
@@ -73,6 +79,10 @@ public class FlatWorld implements Terrain {
         worldWidth = x;
         organismMap = new Cell[x][y];
         environmentMap = new HashMap[x][y];
+        population = new ArrayList<>();
+
+        ticksPerDay = 10; //defaults
+        ticksPerTurn = 1;
 
         //we are at load time, spend extra time now initializing and less time later overall
         for (int i = 0; i < x; ++i) {

@@ -17,6 +17,12 @@ public class LeafCell extends PlantCell {
         super(parent);
         this.coordinates = coordinates;
     }
+
+    @Override
+    public String getCellType() {
+        return "leaf";
+    }
+
     /**
      * @return
      */

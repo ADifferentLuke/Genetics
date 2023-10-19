@@ -9,10 +9,8 @@ import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.*;
 
-
-public class TerrainStreamReader extends LGPStreamReader<TerrainStreamReader.ContextData,Terrain> {
+public class TerrainStreamReader extends LGPStreamLineReader<TerrainStreamReader.ContextData,Terrain> {
 
     final static boolean debug = false;
 
@@ -30,7 +28,7 @@ public class TerrainStreamReader extends LGPStreamReader<TerrainStreamReader.Con
         TerrainProperty property = null;
         int xMax = 0, yMax = 0, zMax = 0;
         Context context = Context.TYPE;
-        RangeValueItem item = null;
+        LGPReader.RangeValueItem item = null;
     }
 
     public static final String WORLD = "WORLD";

@@ -16,6 +16,11 @@ public class StemCell extends PlantCell {
         this.coordinates = coordinates;
     }
 
+    @Override
+    public String getCellType() {
+        return "stem";
+    }
+
     /**
      * @return
      */

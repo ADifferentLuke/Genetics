@@ -16,6 +16,11 @@ public class RootCell extends PlantCell {
         this.coordinates = coordinates;
     }
 
+    @Override
+    public String getCellType() {
+        return "root";
+    }
+
     /**
      * @return
      */

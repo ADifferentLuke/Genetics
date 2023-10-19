@@ -1,8 +1,10 @@
 package net.lukemcomber.dev.ai.genetics.world.terrain;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
+import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**

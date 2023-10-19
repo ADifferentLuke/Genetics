@@ -18,6 +18,11 @@ public class SeedCell extends PlantCell {
         this.coordinates = coordinates;
     }
 
+    @Override
+    public String getCellType() {
+        return "seed";
+    }
+
     public Coordinates getCoordinates() {
         return coordinates;
     }

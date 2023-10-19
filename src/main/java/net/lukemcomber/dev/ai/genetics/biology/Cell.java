@@ -40,5 +40,7 @@ public abstract class Cell {
         return children;
     }
 
+    public abstract String getCellType();
+
     public abstract Coordinates getCoordinates();
 }

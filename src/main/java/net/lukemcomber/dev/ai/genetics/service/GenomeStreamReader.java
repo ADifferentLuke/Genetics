@@ -1,16 +1,14 @@
 package net.lukemcomber.dev.ai.genetics.service;
 
-import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
-import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class GenomeStreamReader extends LGPStreamReader<GenomeStreamReader.ContextData,List<Organism>> {
+public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.ContextData,List<Organism>> {
 
     private enum Context {
         DECLARATION,
@@ -21,7 +19,7 @@ public class GenomeStreamReader extends LGPStreamReader<GenomeStreamReader.Conte
         List<Organism> organisms;
         String currentOrganismType;
         Context context = Context.DECLARATION;
-        RangeValueItem item = null;
+        LGPReader.RangeValueItem item = null;
     }
 
     public static final String ORGANISM = "ORGANISM ";

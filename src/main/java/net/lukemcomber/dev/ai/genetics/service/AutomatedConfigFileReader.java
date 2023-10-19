@@ -3,7 +3,7 @@ package net.lukemcomber.dev.ai.genetics.service;
 import net.lukemcomber.dev.ai.genetics.model.AutomatedConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class AutomatedConfigFileReader extends LGPStreamReader<AutomatedConfig,AutomatedConfig> {
+public class AutomatedConfigFileReader extends LGPStreamLineReader<AutomatedConfig,AutomatedConfig> {
 
     public static final String INIT_ENV_FILE="INITIALIZATION_FILE";
     public static final String INIT_ZOO_FILE="ZOO_FILE";

@@ -61,6 +61,31 @@ public class Ecosystem {
         totalTicks = 0;
         currentTick = 0;
     }
+    public int getTicksPerTurn(){
+        return ticksPerTurn;
+    }
+    public int getTicksPerDay(){
+        return ticksPerDay;
+    }
+
+    public void advance(){
+        for( int i = 0; i < ticksPerTurn; ++i ) {
+            this.totalTicks++;
+            this.currentTick++;
+            if( this.currentTick >= ticksPerDay ){
+                totalDays++;
+                this.currentTick = 0;
+                //TODO environment gets a new days!
+            }
+            for( final Organism organism : this.population ){
+                organism.leechResources(terrain);
+                organism.performAction(terrain);
+                organism.prettyPrint(System.out);
+
+                // TODO Grim reaping
+            }
+        }
+    }
 
     public boolean addOrganism(final Organism organism) {
         boolean retVal = false;

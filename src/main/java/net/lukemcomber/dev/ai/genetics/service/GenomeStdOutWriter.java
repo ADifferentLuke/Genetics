@@ -10,7 +10,7 @@ public class GenomeStdOutWriter {
 
     public static void prettyPrintGenomeToStdOut(final Genome genome) {
 
-        System.out.println("========================= GENOME=================================" );
+        System.out.println("========================= GENOME=================================");
         System.out.println("|                                                               |");
         for (int i = 0; genome.getNumberOfGenes() > i; ++i) {
             final Gene gene = genome.getGeneNumber(i);
@@ -21,22 +21,22 @@ public class GenomeStdOutWriter {
             System.out.println("|                                                               |");
         }
 
-        System.out.println("=================================================================" );
+        System.out.println("=================================================================");
     }
 
-    public static void hexPrintGenomeToStdOut( final Genome genome ){
-        System.out.println( "Encoded genome: " + GenomeSerDe.serialize(genome));
+    public static void hexPrintGenomeToStdOut(final Genome genome) {
+        System.out.println("Encoded genome: " + GenomeSerDe.serialize(genome));
     }
 
-    public static void binaryPrintGenomeToStdOut( final Genome genome ){
-        System.out.println( "Raw binary genome: " );
-        for( int i = 0; PlantGenome.GENE_COUNT > i; ++i ){
+    public static void binaryPrintGenomeToStdOut(final Genome genome) {
+        System.out.println("Raw binary genome: ");
+        for (int i = 0; genome.getNumberOfGenes() > i; ++i) {
             final Gene gene = genome.getGeneNumber(i);
             //When we change the byte to an int, the bits become two-compliment. Handle that.
-            System.out.print("\t" +Integer.toBinaryString((gene.nucleotideA & 0xFF) + 0x100).substring(1));
-            System.out.println( "  " + Integer.toBinaryString((gene.nucleotideB& 0xFF) + 0x100).substring(1));
-            System.out.print("\t" +Integer.toBinaryString((gene.nucleotideC & 0xFF) + 0x100).substring(1));
-            System.out.println( "  " + Integer.toBinaryString((gene.nucleotideD& 0xFF) + 0x100).substring(1));
+            System.out.print("\t" + Integer.toBinaryString((gene.nucleotideA & 0xFF) + 0x100).substring(1));
+            System.out.println("  " + Integer.toBinaryString((gene.nucleotideB & 0xFF) + 0x100).substring(1));
+            System.out.print("\t" + Integer.toBinaryString((gene.nucleotideC & 0xFF) + 0x100).substring(1));
+            System.out.println("  " + Integer.toBinaryString((gene.nucleotideD & 0xFF) + 0x100).substring(1));
             System.out.println();
 
         }

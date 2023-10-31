@@ -3,6 +3,7 @@ package net.lukemcomber.dev.ai.genetics.biology.plant.behavior;
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.LeafCell;
+import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
@@ -26,11 +27,11 @@ public class GrowLeaf implements PlantBehavior {
         Cell retVal = null;
         final Coordinates newCoordinates = function.apply(rootCell.getCoordinates());
         if( ! terrain.hasCell(newCoordinates)){
-           final LeafCell newCell = new LeafCell( rootCell, newCoordinates);
+           final LeafCell newCell = new LeafCell( rootCell, rootCell.getOrganism(), newCoordinates);
            terrain.setCell(newCell);
            retVal = newCell;
         } else {
-            System.out.println( "Leaf failed to grow because of blockage");
+            throw new EvolutionException("Leaf growth failed. Collision detected.");
         }
 
         return retVal;

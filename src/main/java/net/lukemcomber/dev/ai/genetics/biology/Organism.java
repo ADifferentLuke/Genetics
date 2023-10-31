@@ -1,5 +1,6 @@
 package net.lukemcomber.dev.ai.genetics.biology;
 
+import net.lukemcomber.dev.ai.genetics.service.CellHelper;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.io.OutputStream;
@@ -13,9 +14,25 @@ public interface Organism {
 
     Cell getCells();
 
+    int getEnergy();
+
+    void modifyEnergy(int delta);
+
     Cell performAction(final Terrain terrain);
 
-    void leechResources( final Terrain terrain);
+    String getUniqueID();
+
+    default void leechResources( final Terrain terrain){
+        final List<Cell> cells = CellHelper.getAllOrganismsCells(getCells());
+        int newEnergy = cells.stream().mapToInt(cell -> cell.generateEnergy(terrain)).sum();
+        int metaCost = cells.stream().mapToInt(Cell::getMetabolismCost).sum();
+
+        System.out.println( "Gathered: " + newEnergy );
+        System.out.println( "Cost: " + (-metaCost));
+
+        modifyEnergy(newEnergy);
+        modifyEnergy(-metaCost);
+    }
 
     void prettyPrint(final OutputStream out);
 

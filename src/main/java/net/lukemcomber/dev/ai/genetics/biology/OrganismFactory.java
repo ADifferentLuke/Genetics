@@ -13,7 +13,14 @@ public class OrganismFactory {
     public static Organism create(final Genome genome, final Coordinates coordinates) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
-            retVal = new PlantOrganism(genome, new SeedCell(coordinates));
+            //TODO MUTATION HERE
+
+            /*
+             * Our design falls apart here, which is a sign that we have a bad design.
+             * Which came first, the seed or the organism ....
+             */
+            final Cell seedCell =  new SeedCell(coordinates,genome);
+            retVal = seedCell.getOrganism();
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());
         }

@@ -1,6 +1,7 @@
 package net.lukemcomber.dev.ai.genetics.biology;
 
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,19 +14,30 @@ public abstract class Cell {
     private final List<Cell> children;
 
     private Cell parent = null;
+    private Organism organism;
 
-    public Cell() {
+    public Cell(final Organism organism) {
+        this.organism = organism;
         children = new LinkedList<>();
     }
 
-    public Cell(final Cell parent) {
+    public Cell(final Cell parent, final Organism organism) {
         children = new LinkedList<>();
         this.parent = parent;
+        this.organism = organism;
     }
 
-    public Cell(final Cell parent, final List<Cell> children) {
+    public Cell(final Cell parent, final Organism organism, final List<Cell> children) {
         this.parent = parent;
         this.children = children;
+        this.organism = organism;
+    }
+    protected void setOrganism(final Organism organism ){
+       this.organism = organism;
+    }
+
+    public Organism getOrganism(){
+        return organism;
     }
 
     public void addChild( final Cell child ){
@@ -43,4 +55,9 @@ public abstract class Cell {
     public abstract String getCellType();
 
     public abstract Coordinates getCoordinates();
+
+    public abstract int generateEnergy(final Terrain terrain);
+
+    public abstract int getMetabolismCost();
+
 }

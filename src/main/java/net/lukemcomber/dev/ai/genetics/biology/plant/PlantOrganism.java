@@ -4,6 +4,7 @@ import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
+import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.service.GenomeSerDe;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
@@ -11,6 +12,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 public class PlantOrganism implements Organism {
 
@@ -24,12 +26,15 @@ public class PlantOrganism implements Organism {
 
     private int debugSize = 0;
 
+    private final String uuid;
+
     public PlantOrganism(final Genome genome, final SeedCell cell) {
         this.genome = genome;
         this.cell = cell;
         this.energy = 5;
         activeCells = new LinkedList<>();
         activeCells.add(cell);
+        uuid = UUID.randomUUID().toString();
     }
 
     public Genome getGenome() {
@@ -52,6 +57,16 @@ public class PlantOrganism implements Organism {
         return cell;
     }
 
+    @Override
+    public int getEnergy() {
+        return this.energy;
+    }
+
+    @Override
+    public void modifyEnergy(int delta) {
+        this.energy += delta;
+    }
+
     /**
      * @param terrain
      * @return
@@ -59,7 +74,7 @@ public class PlantOrganism implements Organism {
     @Override
     public Cell performAction(final Terrain terrain) {
 
-        debugSize = dfs( cell, terrain, 0);
+        debugSize = dfs(cell, terrain, 0);
         /*
         //TODO for each cell, get behavior, can execute, do execute, pay price
         //TODO how does a cell tell if the behavior is acceptable
@@ -88,39 +103,46 @@ public class PlantOrganism implements Organism {
 
         return null;
     }
-    private int dfs( final PlantCell rootCell, final Terrain terrain, int cCount){
-        final List<Cell> children = rootCell.getChildren();
-        if( 0 < children.size()){
-           for( final Cell cell : children ){
-               cCount += dfs((PlantCell) cell,terrain, cCount);
-           }
-        }
-        cCount++;
-        // try behavior on rootCell
-        final PlantBehavior plantBehavior = genome.getNextAct();
-        if( null != plantBehavior){
-            //TODO can cell execute behavior?
-            if( rootCell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost() <= energy ){
-                System.out.println( "Attempting " + plantBehavior );
-                final Cell newCell = plantBehavior.performAction(terrain, cell);
-                if( null != newCell){
-                    cell.addChild(newCell);
-                    cCount++;
-                }
 
-                energy = energy - plantBehavior.getEnergyCost();
+    @Override
+    public String getUniqueID() {
+        return uuid;
+    }
+
+    private int dfs(final PlantCell rootCell, final Terrain terrain, final int cCount) {
+        final List<Cell> children = rootCell.getChildren();
+        int childCount = 0;
+        if (0 < children.size()) {
+            final Cell[] childList = children.toArray(new Cell[0]);
+            for (final Cell cell : childList) {
+                int c = dfs((PlantCell) cell, terrain, cCount);
+                childCount += c;
             }
         }
-        return cCount;
+        childCount++;
+        // try behavior on rootCell
+        final PlantBehavior plantBehavior = genome.getNextAct();
+        if (null != plantBehavior) {
+            //TODO can cell execute behavior?
+            if (rootCell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost() <= energy) {
+                System.out.println("Attempting " + plantBehavior);
+                try {
+                    final Cell newCell = plantBehavior.performAction(terrain, rootCell);
+                    if (null != newCell) {
+                        rootCell.addChild(newCell);
+                        childCount++;
+                    }
+                    energy = energy - plantBehavior.getEnergyCost();
+                } catch (final EvolutionException e) {
+                    System.out.println(e.getMessage());
+                }
+            } else if (!rootCell.canCellSupport(plantBehavior)) {
+                System.out.println("Cell " + rootCell + " Behavior not allowed: " + plantBehavior);
+            }
+        }
+        return childCount;
     }
 
-    /**
-     * @param terrain
-     */
-    @Override
-    public void leechResources(Terrain terrain) {
-        //noop - we're impotent
-    }
 
     /**
      * @param out
@@ -128,10 +150,10 @@ public class PlantOrganism implements Organism {
     @Override
     public void prettyPrint(final OutputStream out) {
         final PrintStream pout = new PrintStream(out);
-        pout.println( String.format("Organism: %s", GenomeSerDe.serialize(genome)));
-        pout.println( String.format("Age: %d" ,age ));
-        pout.println( String.format("Energy: %d", energy ));
-        pout.println( String.format( "Cells: %s", debugSize));
+        pout.println(String.format("Organism: %s", GenomeSerDe.serialize(genome)));
+        pout.println(String.format("Age: %d", age));
+        pout.println(String.format("Energy: %d", energy));
+        pout.println(String.format("Cells: %s", debugSize));
         pout.println();
     }
 

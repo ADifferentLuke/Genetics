@@ -2,6 +2,7 @@ package net.lukemcomber.dev.ai.genetics.biology.plant.behavior;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
+import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
@@ -24,7 +25,7 @@ public class GrowSeed implements PlantBehavior {
         //create new seed cell
         //create new organism
         //change stem to dead end?
-        return null;
+        throw new EvolutionException("Seeds are not yet supported.");
     }
 
 

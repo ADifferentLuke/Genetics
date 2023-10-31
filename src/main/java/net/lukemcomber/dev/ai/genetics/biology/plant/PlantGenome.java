@@ -56,57 +56,75 @@ public class PlantGenome extends Genome {
         //yuck
         switch (action) {
             case GROW_LEAF_LEFT:
+                System.out.println( "GROW_LEAF_LEFT");
                 plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis - 1, c.yAxis, c.zAxis));
                 break;
             case GROW_LEAF_RIGHT:
+                System.out.println( "GROW_LEAF_RIGHT");
                 plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis + 1, c.yAxis, c.zAxis));
                 break;
             case GROW_LEAF_UP:
+                System.out.println( "GROW_LEAF_UP");
                 plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis + 1, c.zAxis));
                 break;
             case GROW_LEAF_DOWN:
+                System.out.println( "GROW_LEAF_DOWN");
                 plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis - 1, c.zAxis));
                 break;
             case GROW_LEAF_FORWARD:
+                System.out.println( "GROW_LEAF_FORWARD");
                 plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis + 1));
                 break;
             case GROW_LEAF_BACK:
+                System.out.println( "GROW_LEAF_BACK");
                 plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis - 1));
                 break;
             case GROW_ROOT_LEFT:
+                System.out.println( "GROW_ROOT_LEFT");
                 plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis - 1, c.yAxis, c.zAxis));
                 break;
             case GROW_ROOT_RIGHT:
+                System.out.println( "GROW_ROOT_RIGHT");
                 plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis + 1, c.yAxis, c.zAxis));
                 break;
             case GROW_ROOT_UP:
+                System.out.println( "GROW_ROOT_UP");
                 plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis + 1, c.zAxis));
                 break;
             case GROW_ROOT_DOWN:
+                System.out.println( "GROW_ROOT_DOWN");
                 plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis - 1, c.zAxis));
                 break;
             case GROW_ROOT_FORWARD:
+                System.out.println( "GROW_ROOT_FORWARD");
                 plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis + 1));
                 break;
             case GROW_ROOT_BACK:
+                System.out.println( "GROW_ROOT_BACK");
                 plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis - 1));
                 break;
             case GROW_SEED_LEFT:
+                System.out.println( "GROW_SEED_LEFT");
                 plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis - 1, c.yAxis, c.zAxis));
                 break;
             case GROW_SEED_RIGHT:
+                System.out.println( "GROW_SEED_RIGHT");
                 plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis + 1, c.yAxis, c.zAxis));
                 break;
             case GROW_SEED_UP:
+                System.out.println( "GROW_SEED_UP");
                 plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis + 1, c.zAxis));
                 break;
             case GROW_SEED_DOWN:
+                System.out.println( "GROW_SEED_DOWN");
                 plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis - 1, c.zAxis));
                 break;
             case GROW_SEED_FORWARD:
+                System.out.println( "GROW_SEED_FORWARD");
                 plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis + 1));
                 break;
             case GROW_SEED_BACK:
+                System.out.println( "GROW_SEED_BACK");
                 plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis - 1));
                 break;
             default:

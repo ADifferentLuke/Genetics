@@ -28,14 +28,14 @@ public class FlatWorld implements Terrain {
     private int ticksPerTurn;
     private boolean isInitialized = false;
 
-    public void setTerrainProperty(final Coordinates coordinates, final  TerrainProperty terrainProperty) {
+    public void setTerrainProperty(final Coordinates coordinates, final TerrainProperty terrainProperty) {
         checkInitialized();
 
-        if( 0 == coordinates.zAxis ) {
+        if (0 == coordinates.zAxis) {
             //we are flat, ignore anything above the z axis
             checkCoordinates(coordinates.xAxis, coordinates.yAxis);
 
-            if( debug ) {
+            if (debug) {
                 System.out.println(String.format("(%d,%d,%d) - Set %s to %d", coordinates.zAxis,
                         coordinates.yAxis, coordinates.zAxis, terrainProperty.getId(),
                         terrainProperty.getValue()));
@@ -54,13 +54,13 @@ public class FlatWorld implements Terrain {
     }
 
     @Override
-    public void deleteTerrainProperty(final Coordinates coordinates,final String id) {
+    public void deleteTerrainProperty(final Coordinates coordinates, final String id) {
         checkInitialized();
         checkCoordinates(coordinates.xAxis, coordinates.yAxis);
         environmentMap[coordinates.xAxis][coordinates.yAxis].remove(id);
     }
 
-    public void setTerrain(final Coordinates coordinates,final List<TerrainProperty> propertyList) {
+    public void setTerrain(final Coordinates coordinates, final List<TerrainProperty> propertyList) {
         checkInitialized();
         checkCoordinates(coordinates.xAxis, coordinates.yAxis);
         environmentMap[coordinates.xAxis][coordinates.yAxis] = propertyList.stream().collect(
@@ -164,5 +164,17 @@ public class FlatWorld implements Terrain {
         if (!isInitialized) {
             throw new EvolutionException("FlatWorld has not yet been initialized.");
         }
+    }
+
+    /*
+     * z-axis will cause collisions because it doesn't exist, so
+     * we need to change the out of bounds check to ignore it
+     */
+    @Override
+    public boolean isOutOfBounds(final Coordinates coordinates) {
+        return !(getSizeOfXAxis() > coordinates.xAxis
+                && getSizeOfYAxis() > coordinates.yAxis
+                && 0 <= coordinates.xAxis
+                && 0 <= coordinates.yAxis);
     }
 }

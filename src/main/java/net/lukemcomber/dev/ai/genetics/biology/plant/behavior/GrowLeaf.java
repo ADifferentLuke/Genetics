@@ -18,18 +18,21 @@ public class GrowLeaf implements PlantBehavior {
     }
     /**
      * @param terrain
-     * @param rootCell
+     * @param cell
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain,final Cell rootCell) {
+    public Cell performAction(final Terrain terrain,final Cell cell) {
 
         Cell retVal = null;
-        final Coordinates newCoordinates = function.apply(rootCell.getCoordinates());
-        if( ! terrain.hasCell(newCoordinates)){
-           final LeafCell newCell = new LeafCell( rootCell, rootCell.getOrganism(), newCoordinates);
-           terrain.setCell(newCell);
-           retVal = newCell;
+        final Coordinates newCoordinates = function.apply(cell.getCoordinates());
+
+
+        //The boolean logic looks weird, but we need to use AND for short circuit
+        if((!terrain.isOutOfBounds(newCoordinates)) && (!terrain.hasCell(newCoordinates))){
+            final LeafCell newCell = new LeafCell( cell, cell.getOrganism(), newCoordinates);
+            terrain.setCell(newCell);
+            retVal = newCell;
         } else {
             throw new EvolutionException("Leaf growth failed. Collision detected.");
         }

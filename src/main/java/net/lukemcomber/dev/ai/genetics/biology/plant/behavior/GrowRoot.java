@@ -11,11 +11,12 @@ import java.util.function.Function;
 
 public class GrowRoot implements PlantBehavior {
 
-    private final Function<Coordinates,Coordinates> function;
+    private final Function<Coordinates, Coordinates> function;
 
-    public GrowRoot(final Function<Coordinates,Coordinates> func){
+    public GrowRoot(final Function<Coordinates, Coordinates> func) {
         this.function = func;
     }
+
     /**
      * @param terrain
      * @param rootCell
@@ -25,7 +26,7 @@ public class GrowRoot implements PlantBehavior {
     public Cell performAction(final Terrain terrain, final Cell rootCell) {
         Cell retVal = null;
         final Coordinates newCoordinates = function.apply(rootCell.getCoordinates());
-        if( ! terrain.hasCell(newCoordinates)){
+        if (!(terrain.isOutOfBounds(newCoordinates) || terrain.hasCell(newCoordinates))) {
             final RootCell newCell = new RootCell(rootCell, rootCell.getOrganism(), newCoordinates);
             terrain.setCell(newCell);
             retVal = newCell;

@@ -10,6 +10,7 @@ import java.util.List;
 
 public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.ContextData,List<Organism>> {
 
+    public static final String DEFAULT_PARENT_ID = "GOD";
     private enum Context {
         DECLARATION,
         EXPLANATION
@@ -84,7 +85,7 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
                                 //only support 1 organism per pixel. In the future, ranges should support large organisms?
                                 try {
                                     final Coordinates coordinates = new Coordinates(x,y,z);
-                                    final Organism organism = OrganismFactory.create(
+                                    final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
                                             GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates);
                                     contextData.organisms.add(organism);
                                 } catch (DecoderException e) {

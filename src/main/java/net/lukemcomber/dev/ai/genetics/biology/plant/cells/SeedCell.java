@@ -12,11 +12,11 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 public class SeedCell extends PlantCell {
 
     private final Coordinates coordinates;
-    //TODO - This is essentially the root node of a tree
-    public SeedCell(final Coordinates coordinates,final Genome genome) {
-        //seed cells don't have parents
+
+    public SeedCell(final String parentId, final Coordinates coordinates,final Genome genome) {
+        //seed cells don't have parents cells, they are root nodes
         super(null);
-        setOrganism(new PlantOrganism(genome,this));
+        setOrganism(new PlantOrganism(parentId, genome,this));
 
         this.coordinates = coordinates;
     }

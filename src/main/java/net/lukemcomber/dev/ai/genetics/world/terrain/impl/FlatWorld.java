@@ -28,6 +28,7 @@ public class FlatWorld implements Terrain {
     private int ticksPerTurn;
     private boolean isInitialized = false;
 
+
     public void setTerrainProperty(final Coordinates coordinates, final TerrainProperty terrainProperty) {
         checkInitialized();
 
@@ -153,6 +154,11 @@ public class FlatWorld implements Terrain {
         return 0;
     }
 
+    @Override
+    public boolean hasOrganism(Organism organism) {
+        return null != population && population.contains(organism);
+    }
+
     private void checkCoordinates(final int x, final int y) {
         if (x >= worldWidth || y >= worldHeight) {
             throw new ArrayIndexOutOfBoundsException("Coordinates (" + x + "," + y
@@ -177,4 +183,47 @@ public class FlatWorld implements Terrain {
                 && 0 <= coordinates.xAxis
                 && 0 <= coordinates.yAxis);
     }
+
+    public boolean addOrganism(final Organism organism) {
+        boolean retVal = false;
+        if (null != organism) {
+            if (!population.contains(organism)) {
+                final List<Cell> cells = CellHelper.getAllOrganismsCells(organism.getCells());
+                // Before setting the cells, make sure there are no conflicts
+                boolean doesOrganismFit = true;
+                for (final Cell cell : cells) {
+                    if (hasCell(cell.getCoordinates())) {
+                        final Cell currentCell = getCell(cell.getCoordinates());
+                        if (currentCell != cell) {
+                            doesOrganismFit = false;
+                        }
+                    }
+                }
+                if (doesOrganismFit) {
+                    cells.forEach(c -> setCell(c));
+                    population.add(organism);
+                    retVal = true;
+                } else {
+                    throw new RuntimeException("Failed to create terrain. Organisms physically conflict.");
+                }
+            }
+        }
+        return retVal;
+    }
+
+    public boolean deleteOrganism(final Organism organism) {
+        throw new NotImplementedException();
+    }
+
+    public Iterator<Organism> getOrganisms() {
+         /*
+          *   To prevent concurrent modification, create iterator from a shallow copy
+          *    so any changes to the underlying list does not invalidate the iterator
+          *
+          */
+        return new ArrayList<>(population).iterator();
+    }
+
+
+
 }

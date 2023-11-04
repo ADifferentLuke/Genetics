@@ -11,9 +11,12 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilNutrientsTerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
 
+import java.util.logging.Logger;
+
 //harvest soil nutrients
 public class RootCell extends PlantCell {
 
+    private static final Logger logger = Logger.getLogger(RootCell.class.getName());
     public static final int MAX_ENERGY_DRAW = 3;
     private final Coordinates coordinates;
 
@@ -42,7 +45,7 @@ public class RootCell extends PlantCell {
         if( null != property ){
             final SoilNutrientsTerrainProperty soil = (SoilNutrientsTerrainProperty) property;
             int val = soil.getValue();
-            System.out.println( String.format("RootNode - Current Soil %d at (%d,%d)", val,
+            logger.info( String.format("RootNode - Current Soil %d at (%d,%d)", val,
                     coordinates.xAxis, coordinates.yAxis));
             if( MAX_ENERGY_DRAW >= val ){
                 retVal = MAX_ENERGY_DRAW;

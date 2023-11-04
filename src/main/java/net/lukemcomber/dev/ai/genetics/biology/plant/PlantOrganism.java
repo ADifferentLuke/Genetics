@@ -13,8 +13,11 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class PlantOrganism implements Organism {
+
+    private static final Logger logger = Logger.getLogger(PlantOrganism.class.getName());
 
     public static final String TYPE = "PLANT";
     private final Genome genome;
@@ -27,14 +30,21 @@ public class PlantOrganism implements Organism {
     private int debugSize = 0;
 
     private final String uuid;
+    private final String parentUuid;
 
-    public PlantOrganism(final Genome genome, final SeedCell cell) {
+    public PlantOrganism(final String parentUuid, final Genome genome, final SeedCell cell) {
         this.genome = genome;
+        this.parentUuid = parentUuid;
         this.cell = cell;
         this.energy = 5;
         activeCells = new LinkedList<>();
         activeCells.add(cell);
         uuid = UUID.randomUUID().toString();
+    }
+
+    @Override
+    public String getParentId(){
+        return parentUuid;
     }
 
     public Genome getGenome() {
@@ -125,7 +135,7 @@ public class PlantOrganism implements Organism {
         if (null != plantBehavior) {
             //TODO can cell execute behavior?
             if (rootCell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost() <= energy) {
-                System.out.println("Attempting " + plantBehavior);
+                logger.info("Attempting " + plantBehavior);
                 try {
                     final Cell newCell = plantBehavior.performAction(terrain, rootCell);
                     if (null != newCell) {
@@ -134,10 +144,10 @@ public class PlantOrganism implements Organism {
                     }
                     energy = energy - plantBehavior.getEnergyCost();
                 } catch (final EvolutionException e) {
-                    System.out.println(e.getMessage());
+                    logger.warning(e.getMessage());
                 }
             } else if (!rootCell.canCellSupport(plantBehavior)) {
-                System.out.println("Cell " + rootCell + " Behavior not allowed: " + plantBehavior);
+                logger.info("Cell " + rootCell + " Behavior not allowed: " + plantBehavior);
             }
         }
         return childCount;

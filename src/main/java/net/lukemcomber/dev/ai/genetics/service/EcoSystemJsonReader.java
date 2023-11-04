@@ -15,6 +15,10 @@ import java.util.List;
 
 public class EcoSystemJsonReader extends LGPReader {
 
+    //TODO this is in two places, we should condense to single source of truth
+    public static final String DEFAULT_PARENT_ID = "GOD";
+
+
     public Ecosystem read(final JsonNode rootNode) {
 
         final String worldType = rootNode.path("world").asText("flat");
@@ -42,9 +46,9 @@ public class EcoSystemJsonReader extends LGPReader {
                             //only support 1 organism per pixel. In the future, ranges should support large organisms?
                             try {
                                 final Coordinates coordinates = new Coordinates(x, y, z);
-                                final Organism organism = OrganismFactory.create(
+                                final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
                                         GenomeSerDe.deserialize(currentOrganismType, rvi.value), coordinates);
-                                ecosystem.addOrganism(organism);
+                                terrain.addOrganism(organism);
                             } catch (DecoderException e) {
                                 throw new RuntimeException(e);
                             }

@@ -10,7 +10,7 @@ import java.util.List;
 
 public class OrganismFactory {
 
-    public static Organism create(final Genome genome, final Coordinates coordinates) {
+    public static Organism create(final String parentId, final Genome genome, final Coordinates coordinates) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
             //TODO MUTATION HERE
@@ -19,7 +19,7 @@ public class OrganismFactory {
              * Our design falls apart here, which is a sign that we have a bad design.
              * Which came first, the seed or the organism ....
              */
-            final Cell seedCell =  new SeedCell(coordinates,genome);
+            final Cell seedCell =  new SeedCell(parentId,coordinates,genome);
             retVal = seedCell.getOrganism();
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());

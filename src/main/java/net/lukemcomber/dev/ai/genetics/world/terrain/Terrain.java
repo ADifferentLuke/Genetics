@@ -3,6 +3,8 @@ package net.lukemcomber.dev.ai.genetics.world.terrain;
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.service.CellHelper;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Iterator;
 import java.util.List;
@@ -125,4 +127,13 @@ public interface Terrain {
 
     int getSizeOfZAxis();
 
+    /**
+     * Returns true iff the organism can fit, there are no cell collisions,
+     *  and the organism is added to the environment.
+     */
+    boolean addOrganism(final Organism organism);
+
+    boolean deleteOrganism(final Organism organism);
+    Iterator<Organism> getOrganisms();
+    boolean hasOrganism(final Organism organism);
 }

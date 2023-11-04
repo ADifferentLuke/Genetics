@@ -2,12 +2,16 @@ package net.lukemcomber.dev.ai.genetics.biology;
 
 
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
+import net.lukemcomber.dev.ai.genetics.biology.plant.PlantGenome;
+import net.lukemcomber.dev.ai.genetics.service.GenomeStdOutWriter;
 import org.testng.annotations.Test;
 
 import java.util.LinkedList;
 
 @Test
 public class GenomeTest {
+
+
 
     public void testGeneOrder(){
         final LinkedList<Gene> geneList = new LinkedList<>();

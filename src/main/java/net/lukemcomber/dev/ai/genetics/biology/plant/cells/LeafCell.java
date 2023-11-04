@@ -12,9 +12,12 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
 
+import java.util.logging.Logger;
+
 //Is able to gather energy from the sun
 public class LeafCell extends PlantCell {
 
+    private static final Logger logger = Logger.getLogger(LeafCell.class.getName());
     private final Coordinates coordinates;
 
     public LeafCell(final Cell parent, final Organism organism, final Coordinates coordinates){
@@ -42,7 +45,7 @@ public class LeafCell extends PlantCell {
         if( null != property ){
             final SolarEnergyTerrainProperty solar = (SolarEnergyTerrainProperty) property;
             int val = solar.getValue();;
-            System.out.println( String.format("LeafNode - Current Solar %d at (%d,%d)", val,
+            logger.info( String.format("LeafNode - Current Solar %d at (%d,%d)", val,
                     coordinates.xAxis, coordinates.yAxis));
             /*
              * DEV NOTE: Since the daily cost is 1, we need to gather at least 2 per tick

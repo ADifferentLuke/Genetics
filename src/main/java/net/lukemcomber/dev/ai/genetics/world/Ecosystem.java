@@ -1,22 +1,23 @@
 package net.lukemcomber.dev.ai.genetics.world;
 
-import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.Coordinates;
-import net.lukemcomber.dev.ai.genetics.service.CellHelper;
+import net.lukemcomber.dev.ai.genetics.service.LoggerOutputStream;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
-import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilNutrientsTerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilToxicityTerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
-import org.apache.commons.lang3.NotImplementedException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Ecosystem {
 
+    private static final Logger logger = Logger.getLogger(Ecosystem.class.getName());
+    private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
     public final static int SOLAR_ENERGY_PER_DAY = 6;
     public final static int INITIAL_SOIL_NUTRIENTS = 10;
 
@@ -57,13 +58,11 @@ public class Ecosystem {
     private long totalDays;
     private int currentTick;
 
-    private List<Organism> population;
 
     public Ecosystem(final int ticksPerTurn, final int ticksPerDay, final Terrain terrain) {
         this.terrain = terrain;
         this.ticksPerDay = ticksPerDay;
         this.ticksPerTurn = ticksPerTurn;
-        this.population = new LinkedList<>();
 
         totalDays = 0;
         totalTicks = 0;
@@ -98,62 +97,27 @@ public class Ecosystem {
             this.totalTicks++;
             this.currentTick++;
 
-            System.out.println( "=======================================================");
-            System.out.println( "=        Tick:  " + this.totalTicks);
-            System.out.println( "=======================================================");
+            logger.info( "Tick:  " + this.totalTicks);
 
             if (this.currentTick >= ticksPerDay) {
                 totalDays++;
                 this.currentTick = 0;
                 refreshResources();
             }
-            for (final Organism organism : this.population) {
+            for (final Iterator<Organism> it = terrain.getOrganisms(); it.hasNext(); ) {
+                Organism organism = it.next();
+                logger.info( "Ticking Organism: " + organism.getUniqueID());
                 organism.leechResources(terrain);
                 organism.performAction(terrain);
-                organism.prettyPrint(System.out);
+                organism.prettyPrint(loggerOutputStream);
 
                 if( 0 >= organism.getEnergy()){
-                    System.out.println( "Organism has died");
+                    logger.info( "Organism has died");
                 }
 
                 // TODO Grim reaping
             }
         }
-    }
-
-    public boolean addOrganism(final Organism organism) {
-        boolean retVal = false;
-        if (null != organism) {
-            if (!population.contains(organism)) {
-                final List<Cell> cells = CellHelper.getAllOrganismsCells(organism.getCells());
-                // Before setting the cells, make sure there are no conflicts
-                boolean doesOrganismFit = true;
-                for (final Cell cell : cells) {
-                    if (terrain.hasCell(cell.getCoordinates())) {
-                        final Cell currentCell = terrain.getCell(cell.getCoordinates());
-                        if (currentCell != cell) {
-                            doesOrganismFit = false;
-                        }
-                    }
-                }
-                if (doesOrganismFit) {
-                    cells.forEach(c -> terrain.setCell(c));
-                    population.add(organism);
-                    retVal = true;
-                } else {
-                    throw new RuntimeException("Failed to create terrain. Organisms physically conflict.");
-                }
-            }
-        }
-        return retVal;
-    }
-
-    public boolean deleteOrganism(final Organism organism) {
-        throw new NotImplementedException();
-    }
-
-    public Iterator<Organism> getOrganisms() {
-        return population.listIterator();
     }
 
 }

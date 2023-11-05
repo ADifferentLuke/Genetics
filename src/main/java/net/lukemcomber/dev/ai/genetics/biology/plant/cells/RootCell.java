@@ -20,8 +20,8 @@ public class RootCell extends PlantCell {
     public static final int MAX_ENERGY_DRAW = 3;
     private final Coordinates coordinates;
 
-    public RootCell(Cell parent, Organism organism, Coordinates coordinates) {
-        super(parent,organism);
+    public RootCell(Cell parent, Coordinates coordinates) {
+        super(parent);
         this.coordinates = coordinates;
     }
 

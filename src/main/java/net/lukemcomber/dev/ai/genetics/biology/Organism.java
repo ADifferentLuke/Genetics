@@ -21,12 +21,12 @@ public interface Organism {
 
     void modifyEnergy(int delta);
 
-    Cell performAction(final Terrain terrain);
+    Cell performAction(final Terrain terrain, final long currentTick );
 
     String getUniqueID();
     String getParentId();
 
-    default void leechResources( final Terrain terrain){
+    default void leechResources( final Terrain terrain, final long currentTick ){
         final List<Cell> cells = CellHelper.getAllOrganismsCells(getCells());
         int newEnergy = cells.stream().mapToInt(cell -> cell.generateEnergy(terrain)).sum();
         int metaCost = cells.stream().mapToInt(Cell::getMetabolismCost).sum();

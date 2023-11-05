@@ -14,34 +14,26 @@ public abstract class Cell {
     private final List<Cell> children;
 
     private Cell parent = null;
-    private Organism organism;
 
-    public Cell(final Organism organism) {
-        this.organism = organism;
+    public Cell() {
         children = new LinkedList<>();
     }
 
-    public Cell(final Cell parent, final Organism organism) {
+    public Cell(final Cell parent) {
         children = new LinkedList<>();
         this.parent = parent;
-        this.organism = organism;
     }
 
-    public Cell(final Cell parent, final Organism organism, final List<Cell> children) {
+    public Cell(final Cell parent, final List<Cell> children) {
         this.parent = parent;
         this.children = children;
-        this.organism = organism;
-    }
-    protected void setOrganism(final Organism organism ){
-       this.organism = organism;
-    }
-
-    public Organism getOrganism(){
-        return organism;
     }
 
     public void addChild( final Cell child ){
         children.add(child);
+    }
+    public boolean removeChild( final Cell child) {
+        return children.remove(child);
     }
 
     public Cell getParent() {

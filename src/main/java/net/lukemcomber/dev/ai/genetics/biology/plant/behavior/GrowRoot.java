@@ -1,6 +1,7 @@
 package net.lukemcomber.dev.ai.genetics.biology.plant.behavior;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
+import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.RootCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
@@ -23,12 +24,13 @@ public class GrowRoot implements PlantBehavior {
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain, final Cell rootCell) {
+    public Cell performAction(final Terrain terrain, final Cell rootCell, final Organism organism) {
         Cell retVal = null;
         final Coordinates newCoordinates = function.apply(rootCell.getCoordinates());
         if (!(terrain.isOutOfBounds(newCoordinates) || terrain.hasCell(newCoordinates))) {
-            final RootCell newCell = new RootCell(rootCell, rootCell.getOrganism(), newCoordinates);
-            terrain.setCell(newCell);
+            final RootCell newCell = new RootCell(rootCell, newCoordinates);
+            terrain.setCell(newCell,organism);
+            rootCell.addChild(newCell);
             retVal = newCell;
         } else {
             throw new EvolutionException("Root growth failed. Collision detected.");

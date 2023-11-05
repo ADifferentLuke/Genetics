@@ -99,7 +99,7 @@ public interface Terrain {
      * @param cell the cell to attempt to place
      * @return true if cell is successfully placed, otherwise false
      */
-    boolean setCell(final Cell cell);
+    boolean setCell(final Cell cell,final Organism organism);
 
     /**
      * Deletes a cell from the world at position (x,y,z). Die Cell Die!
@@ -120,6 +120,7 @@ public interface Terrain {
      * @return the cell at position (x,y,z) or null if one doesn't exist
      */
     Cell getCell(final Coordinates coordinates);
+    Organism getOrganism(final Coordinates coordinates);
 
     int getSizeOfXAxis();
 

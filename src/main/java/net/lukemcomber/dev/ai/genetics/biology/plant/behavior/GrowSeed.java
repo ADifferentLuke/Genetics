@@ -27,7 +27,7 @@ public class GrowSeed implements PlantBehavior {
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain,final Cell cell) {
+    public Cell performAction(final Terrain terrain,final Cell cell, final Organism organism) {
         Cell retVal = null;
 
         final Coordinates newCoordinates = function.apply(cell.getCoordinates());
@@ -35,21 +35,22 @@ public class GrowSeed implements PlantBehavior {
 
         //The boolean logic looks weird, but we need to use AND for short circuit
         if((!terrain.isOutOfBounds(newCoordinates)) && (!terrain.hasCell(newCoordinates))){
-            //TODO MUTATION NEEDED HERE
-            final Organism organism = cell.getOrganism();
-            final SeedCell newCell = new SeedCell(organism.getUniqueID(),newCoordinates,organism.getGenome());
-            logger.info( "Created new Organism: " + newCell.getOrganism().getUniqueID() + " at " + newCoordinates);
-            terrain.addOrganism(newCell.getOrganism());
 
-            retVal = null;
+            //TODO MUTATION NEEDED HERE
+
+            if( null != organism ) {
+                //Organism shouldn't be null, but we're in mid-redesign ... so blow up if it happens
+                final SeedCell newCell = new SeedCell(cell, organism.getGenome(), newCoordinates);
+                logger.info("Created new seed: " + organism.getUniqueID() + " at " + newCoordinates);
+                retVal = newCell;
+            } else {
+                throw new RuntimeException("Organism is null!");
+            }
         } else {
             throw new EvolutionException("Seed growth failed. Collision detected.");
         }
 
         return retVal;
-        //create new seed cell
-        //create new organism
-        //change stem to dead end?
     }
 
 

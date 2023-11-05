@@ -5,11 +5,7 @@ import net.lukemcomber.dev.ai.genetics.biology.Organism;
 
 public abstract class PlantCell extends Cell {
 
-    public PlantCell(Cell parent, Organism organism){super(parent,organism);}
-
-    public PlantCell(Organism organism) {
-        super(organism);
-    }
+    public PlantCell(Cell parent ){super(parent);}
 
     public abstract boolean canCellSupport(final PlantBehavior behavior);
 }

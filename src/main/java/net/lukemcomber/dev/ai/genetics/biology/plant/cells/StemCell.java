@@ -13,8 +13,8 @@ public class StemCell extends PlantCell {
 
     private final Coordinates coordinates;
 
-    public StemCell(final Cell parent, final Organism organism, Coordinates coordinates) {
-        super(parent,organism);
+    public StemCell(final Cell parent, Coordinates coordinates) {
+        super(parent);
         this.coordinates = coordinates;
     }
 

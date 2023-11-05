@@ -1,6 +1,8 @@
 package net.lukemcomber.dev.ai.genetics.biology.plant.cells;
 
+import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Genome;
+import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantOrganism;
@@ -12,13 +14,25 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 public class SeedCell extends PlantCell {
 
     private final Coordinates coordinates;
+    private final Genome genome;
 
-    public SeedCell(final String parentId, final Coordinates coordinates,final Genome genome) {
-        //seed cells don't have parents cells, they are root nodes
-        super(null);
-        setOrganism(new PlantOrganism(parentId, genome,this));
+    private boolean activated;
 
+    public SeedCell(final Cell parent, final Genome genome, final Coordinates coordinates){
+
+        super(parent);
+
+        this.genome = genome;
         this.coordinates = coordinates;
+        this.activated = false;
+    }
+
+   public void activate(){
+        this.activated = true;
+   }
+
+    public Genome getGenome(){
+        return genome;
     }
 
     @Override
@@ -46,6 +60,7 @@ public class SeedCell extends PlantCell {
      */
     @Override
     public boolean canCellSupport(final PlantBehavior behavior) {
-        return behavior instanceof GrowRoot || behavior instanceof GrowLeaf;
+        //Only allow growth if we are activated
+        return activated ? behavior instanceof GrowRoot || behavior instanceof GrowLeaf : false;
     }
 }

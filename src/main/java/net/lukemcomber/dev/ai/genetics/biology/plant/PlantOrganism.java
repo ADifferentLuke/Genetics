@@ -32,14 +32,20 @@ public class PlantOrganism implements Organism {
     private final String uuid;
     private final String parentUuid;
 
-    public PlantOrganism(final String parentUuid, final Genome genome, final SeedCell cell) {
-        this.genome = genome;
+    private final long birthTick;
+
+    public PlantOrganism(final String parentUuid, final SeedCell seed, final long currentTick) {
+        this.genome = seed.getGenome();
         this.parentUuid = parentUuid;
-        this.cell = cell;
+        this.cell = seed;
+
         this.energy = 5;
-        activeCells = new LinkedList<>();
-        activeCells.add(cell);
-        uuid = UUID.randomUUID().toString();
+        this.activeCells = new LinkedList<>();
+        this.activeCells.add(seed);
+        this.uuid = UUID.randomUUID().toString();
+        this.birthTick = currentTick;
+
+        seed.activate(); //Allow the seed to grow
     }
 
     @Override
@@ -82,34 +88,9 @@ public class PlantOrganism implements Organism {
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain) {
+    public Cell performAction(final Terrain terrain, final long currentTick) {
 
         debugSize = dfs(cell, terrain, 0);
-        /*
-        //TODO for each cell, get behavior, can execute, do execute, pay price
-        //TODO how does a cell tell if the behavior is acceptable
-        //TODO who converts leaves to stems?
-
-        // get position in genome
-        // get next sequence
-        final PlantBehavior plantBehavior = genome.getNextAct();
-        if( null != plantBehavior){
-            System.out.println( plantBehavior.toString() );
-            //TODO we need to figure out a way to
-            if( plantBehavior.getEnergyCost() <= energy ) {
-                final Cell newCell = plantBehavior.performAction(terrain, cell);
-                if( null != newCell){
-                    activeCells.add(newCell);
-                }
-
-                energy = energy - plantBehavior.getEnergyCost();
-            }
-        } else {
-            System.out.println( "Behavior is null");
-        }
-
-        //TODO increment age?
-        */
 
         return null;
     }
@@ -137,9 +118,8 @@ public class PlantOrganism implements Organism {
             if (rootCell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost() <= energy) {
                 logger.info("Attempting " + plantBehavior);
                 try {
-                    final Cell newCell = plantBehavior.performAction(terrain, rootCell);
+                    final Cell newCell = plantBehavior.performAction(terrain, rootCell,this);
                     if (null != newCell) {
-                        rootCell.addChild(newCell);
                         childCount++;
                     }
                     energy = energy - plantBehavior.getEnergyCost();

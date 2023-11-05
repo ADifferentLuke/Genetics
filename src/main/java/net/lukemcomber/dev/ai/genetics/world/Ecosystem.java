@@ -107,8 +107,8 @@ public class Ecosystem {
             for (final Iterator<Organism> it = terrain.getOrganisms(); it.hasNext(); ) {
                 Organism organism = it.next();
                 logger.info( "Ticking Organism: " + organism.getUniqueID());
-                organism.leechResources(terrain);
-                organism.performAction(terrain);
+                organism.leechResources(terrain, this.totalTicks);
+                organism.performAction(terrain,  this.totalTicks);
                 organism.prettyPrint(loggerOutputStream);
 
                 if( 0 >= organism.getEnergy()){

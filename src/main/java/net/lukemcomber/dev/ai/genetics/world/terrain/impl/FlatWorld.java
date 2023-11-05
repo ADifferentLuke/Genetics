@@ -11,15 +11,27 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class FlatWorld implements Terrain {
 
+    private static final Logger logger = Logger.getLogger(FlatWorld.class.getName());
     private final static boolean debug = false;
 
     public static final String ID = "FLAT_WORLD";
 
-    private Cell[][] organismMap;
+    private class MatrixCell {
+        Cell cell;
+        Organism organism;
+
+        boolean isNotEmpty(){
+            return null != cell && null != organism;
+        }
+
+    }
+
+    private MatrixCell[][] organismMap;
     private Map<String, TerrainProperty>[][] environmentMap;
     private List<Organism> population;
     private int worldHeight;
@@ -78,7 +90,7 @@ public class FlatWorld implements Terrain {
     public void initialize(int x, int y, int z) {
         worldHeight = y;
         worldWidth = x;
-        organismMap = new Cell[x][y];
+        organismMap = new MatrixCell[x][y];
         environmentMap = new HashMap[x][y];
         population = new ArrayList<>();
 
@@ -103,12 +115,16 @@ public class FlatWorld implements Terrain {
         return null != organismMap[coordinates.xAxis][coordinates.yAxis];
     }
 
-    public boolean setCell(final Cell cell) {
+    public boolean setCell(final Cell cell,final Organism organism) {
         checkInitialized();
         checkCoordinates(cell.getCoordinates().xAxis, cell.getCoordinates().yAxis);
-        final Cell currentCell = organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis];
+        final MatrixCell currentCell = organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis];
         if (null == currentCell) {
-            organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis] = cell;
+            final MatrixCell mCell = new MatrixCell();
+            mCell.cell = cell;
+            mCell.organism = organism;
+            organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis] = mCell;
+            logger.info("Set cell " + cell.getCellType() + " at " + cell.getCoordinates());
         }
         return null == currentCell;
     }
@@ -116,9 +132,10 @@ public class FlatWorld implements Terrain {
     public boolean deleteCell(final Coordinates coordinates) {
         checkInitialized();
         checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        final Cell currentCell = organismMap[coordinates.xAxis][coordinates.yAxis];
+        final MatrixCell currentCell = organismMap[coordinates.xAxis][coordinates.yAxis];
         organismMap[coordinates.xAxis][coordinates.yAxis] = null;
 
+        logger.info( "Deleted cell at " + coordinates + " was " + (null != currentCell));
         return null != currentCell;
     }
 
@@ -126,7 +143,20 @@ public class FlatWorld implements Terrain {
     public Cell getCell(final Coordinates coordinates) {
         checkInitialized();
         checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        return organismMap[coordinates.xAxis][coordinates.yAxis];
+        if( null != organismMap[coordinates.xAxis][coordinates.yAxis] ){
+            return organismMap[coordinates.xAxis][coordinates.yAxis].cell;
+        }
+        return null;
+    }
+
+    @Override
+    public Organism getOrganism(Coordinates coordinates) {
+        checkInitialized();
+        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+        if( null != organismMap[coordinates.xAxis][coordinates.yAxis] ){
+            return organismMap[coordinates.xAxis][coordinates.yAxis].organism;
+        }
+        return null;
     }
 
     /**
@@ -200,7 +230,7 @@ public class FlatWorld implements Terrain {
                     }
                 }
                 if (doesOrganismFit) {
-                    cells.forEach(c -> setCell(c));
+                    cells.forEach(c -> setCell(c,organism));
                     population.add(organism);
                     retVal = true;
                 } else {

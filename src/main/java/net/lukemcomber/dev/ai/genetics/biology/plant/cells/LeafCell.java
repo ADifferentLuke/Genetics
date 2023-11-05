@@ -20,8 +20,8 @@ public class LeafCell extends PlantCell {
     private static final Logger logger = Logger.getLogger(LeafCell.class.getName());
     private final Coordinates coordinates;
 
-    public LeafCell(final Cell parent, final Organism organism, final Coordinates coordinates){
-        super(parent,organism);
+    public LeafCell(final Cell parent, final Coordinates coordinates){
+        super(parent);
         this.coordinates = coordinates;
     }
 

@@ -86,7 +86,7 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
                                 try {
                                     final Coordinates coordinates = new Coordinates(x,y,z);
                                     final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
-                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates);
+                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates,0);
                                     contextData.organisms.add(organism);
                                 } catch (DecoderException e) {
                                     throw new RuntimeException(e);

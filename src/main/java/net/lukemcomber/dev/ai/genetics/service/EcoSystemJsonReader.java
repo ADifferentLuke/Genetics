@@ -47,7 +47,7 @@ public class EcoSystemJsonReader extends LGPReader {
                             try {
                                 final Coordinates coordinates = new Coordinates(x, y, z);
                                 final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
-                                        GenomeSerDe.deserialize(currentOrganismType, rvi.value), coordinates);
+                                        GenomeSerDe.deserialize(currentOrganismType, rvi.value), coordinates,0);
                                 terrain.addOrganism(organism);
                             } catch (DecoderException e) {
                                 throw new RuntimeException(e);

@@ -16,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -47,17 +49,20 @@ public class Genetics {
                     .map(Organism::getCells)
                     .collect(Collectors.toList());
 
+            /*
             cells.forEach(c -> {
                 System.out.println("Setting cell on " + c.getCoordinates());
                 terrain.setCell(c);
             });
-
+            */
             //the world is set up and the genome is set up. Begin simulation
+            final AtomicLong aInt = new AtomicLong(0);
             try {
                 while (true) {
                     organisms.stream().forEach( o -> {
-                        o.leechResources(terrain);
-                        o.performAction(terrain);
+                        long i  = aInt.getAndIncrement();
+                        o.leechResources(terrain,i);
+                        o.performAction(terrain,i);
                         o.prettyPrint(System.out);
                     });
                     Thread.sleep(CLOCK_DELAY_MS);

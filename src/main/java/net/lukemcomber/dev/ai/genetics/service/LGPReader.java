@@ -42,7 +42,7 @@ public abstract class LGPReader {
                     }
 
                 } else {
-                    throw new EvolutionException(String.format("Coordinates and value seem incomplete '%s'.", line));
+                    throw new EvolutionException(String.format("SpatialCoordinates and value seem incomplete '%s'.", line));
                 }
             } else {
                 //we have only a value

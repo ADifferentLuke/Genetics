@@ -2,12 +2,11 @@ package net.lukemcomber.dev.ai.genetics.world.terrain.impl;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.service.CellHelper;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -33,57 +32,55 @@ public class FlatWorld implements Terrain {
 
     private MatrixCell[][] organismMap;
     private Map<String, TerrainProperty>[][] environmentMap;
-    private List<Organism> population;
+    private Map<String,Organism> population;
     private int worldHeight;
     private int worldWidth;
-    private int ticksPerDay;
-    private int ticksPerTurn;
     private boolean isInitialized = false;
 
 
-    public void setTerrainProperty(final Coordinates coordinates, final TerrainProperty terrainProperty) {
+    public void setTerrainProperty(final SpatialCoordinates spatialCoordinates, final TerrainProperty terrainProperty) {
         checkInitialized();
 
-        if (0 == coordinates.zAxis) {
+        if (0 == spatialCoordinates.zAxis) {
             //we are flat, ignore anything above the z axis
-            checkCoordinates(coordinates.xAxis, coordinates.yAxis);
+            checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
 
             if (debug) {
-                System.out.println(String.format("(%d,%d,%d) - Set %s to %d", coordinates.zAxis,
-                        coordinates.yAxis, coordinates.zAxis, terrainProperty.getId(),
+                System.out.println(String.format("(%d,%d,%d) - Set %s to %d", spatialCoordinates.zAxis,
+                        spatialCoordinates.yAxis, spatialCoordinates.zAxis, terrainProperty.getId(),
                         terrainProperty.getValue()));
             }
 
             //on conflict overwrites
-            environmentMap[coordinates.xAxis][coordinates.yAxis].put(terrainProperty.getId(), terrainProperty);
+            environmentMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis].put(terrainProperty.getId(), terrainProperty);
         }
 
     }
 
-    public TerrainProperty getTerrainProperty(final Coordinates coordinates, final String id) {
+    public TerrainProperty getTerrainProperty(final SpatialCoordinates spatialCoordinates, final String id) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        return environmentMap[coordinates.xAxis][coordinates.yAxis].get(id);
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        return environmentMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis].get(id);
     }
 
     @Override
-    public void deleteTerrainProperty(final Coordinates coordinates, final String id) {
+    public void deleteTerrainProperty(final SpatialCoordinates spatialCoordinates, final String id) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        environmentMap[coordinates.xAxis][coordinates.yAxis].remove(id);
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        environmentMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis].remove(id);
     }
 
-    public void setTerrain(final Coordinates coordinates, final List<TerrainProperty> propertyList) {
+    public void setTerrain(final SpatialCoordinates spatialCoordinates, final List<TerrainProperty> propertyList) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        environmentMap[coordinates.xAxis][coordinates.yAxis] = propertyList.stream().collect(
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        environmentMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis] = propertyList.stream().collect(
                 Collectors.toMap(TerrainProperty::getId, Function.identity()));
     }
 
-    public List<TerrainProperty> getTerrain(final Coordinates coordinates) {
+    public List<TerrainProperty> getTerrain(final SpatialCoordinates spatialCoordinates) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        return new ArrayList<>(environmentMap[coordinates.xAxis][coordinates.yAxis].values());
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        return new ArrayList<>(environmentMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis].values());
     }
 
     @Override
@@ -92,10 +89,7 @@ public class FlatWorld implements Terrain {
         worldWidth = x;
         organismMap = new MatrixCell[x][y];
         environmentMap = new HashMap[x][y];
-        population = new ArrayList<>();
-
-        ticksPerDay = 10; //defaults
-        ticksPerTurn = 1;
+        population = new HashMap<>();
 
         //we are at load time, spend extra time now initializing and less time later overall
         for (int i = 0; i < x; ++i) {
@@ -110,9 +104,9 @@ public class FlatWorld implements Terrain {
     /**
      * @return
      */
-    public boolean hasCell(final Coordinates coordinates) {
+    public boolean hasCell(final SpatialCoordinates spatialCoordinates) {
         checkInitialized();
-        return null != organismMap[coordinates.xAxis][coordinates.yAxis];
+        return null != organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis];
     }
 
     public boolean setCell(final Cell cell,final Organism organism) {
@@ -129,32 +123,32 @@ public class FlatWorld implements Terrain {
         return null == currentCell;
     }
 
-    public boolean deleteCell(final Coordinates coordinates) {
+    public boolean deleteCell(final SpatialCoordinates spatialCoordinates) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        final MatrixCell currentCell = organismMap[coordinates.xAxis][coordinates.yAxis];
-        organismMap[coordinates.xAxis][coordinates.yAxis] = null;
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        final MatrixCell currentCell = organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis];
+        organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis] = null;
 
-        logger.info( "Deleted cell at " + coordinates + " was " + (null != currentCell));
+        logger.info( "Deleted cell at " + spatialCoordinates + " was " + (null != currentCell));
         return null != currentCell;
     }
 
     @Override
-    public Cell getCell(final Coordinates coordinates) {
+    public Cell getCell(final SpatialCoordinates spatialCoordinates) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        if( null != organismMap[coordinates.xAxis][coordinates.yAxis] ){
-            return organismMap[coordinates.xAxis][coordinates.yAxis].cell;
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        if( null != organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis] ){
+            return organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis].cell;
         }
         return null;
     }
 
     @Override
-    public Organism getOrganism(Coordinates coordinates) {
+    public Organism getOrganism(SpatialCoordinates spatialCoordinates) {
         checkInitialized();
-        checkCoordinates(coordinates.xAxis, coordinates.yAxis);
-        if( null != organismMap[coordinates.xAxis][coordinates.yAxis] ){
-            return organismMap[coordinates.xAxis][coordinates.yAxis].organism;
+        checkCoordinates(spatialCoordinates.xAxis, spatialCoordinates.yAxis);
+        if( null != organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis] ){
+            return organismMap[spatialCoordinates.xAxis][spatialCoordinates.yAxis].organism;
         }
         return null;
     }
@@ -185,13 +179,13 @@ public class FlatWorld implements Terrain {
     }
 
     @Override
-    public boolean hasOrganism(Organism organism) {
-        return null != population && population.contains(organism);
+    public boolean hasOrganism(final Organism organism) {
+        return null != population && population.containsKey(organism.getUniqueID());
     }
 
     private void checkCoordinates(final int x, final int y) {
         if (x >= worldWidth || y >= worldHeight) {
-            throw new ArrayIndexOutOfBoundsException("Coordinates (" + x + "," + y
+            throw new ArrayIndexOutOfBoundsException("SpatialCoordinates (" + x + "," + y
                     + ") are out of bounds for world size [" + worldWidth + "," + worldHeight + "].");
         }
     }
@@ -207,17 +201,17 @@ public class FlatWorld implements Terrain {
      * we need to change the out of bounds check to ignore it
      */
     @Override
-    public boolean isOutOfBounds(final Coordinates coordinates) {
-        return !(getSizeOfXAxis() > coordinates.xAxis
-                && getSizeOfYAxis() > coordinates.yAxis
-                && 0 <= coordinates.xAxis
-                && 0 <= coordinates.yAxis);
+    public boolean isOutOfBounds(final SpatialCoordinates spatialCoordinates) {
+        return !(getSizeOfXAxis() > spatialCoordinates.xAxis
+                && getSizeOfYAxis() > spatialCoordinates.yAxis
+                && 0 <= spatialCoordinates.xAxis
+                && 0 <= spatialCoordinates.yAxis);
     }
 
     public boolean addOrganism(final Organism organism) {
         boolean retVal = false;
         if (null != organism) {
-            if (!population.contains(organism)) {
+            if (!population.containsKey(organism.getUniqueID())) {
                 final List<Cell> cells = CellHelper.getAllOrganismsCells(organism.getCells());
                 // Before setting the cells, make sure there are no conflicts
                 boolean doesOrganismFit = true;
@@ -231,7 +225,7 @@ public class FlatWorld implements Terrain {
                 }
                 if (doesOrganismFit) {
                     cells.forEach(c -> setCell(c,organism));
-                    population.add(organism);
+                    population.put(organism.getUniqueID(),organism);
                     retVal = true;
                 } else {
                     throw new RuntimeException("Failed to create terrain. Organisms physically conflict.");
@@ -242,16 +236,28 @@ public class FlatWorld implements Terrain {
     }
 
     public boolean deleteOrganism(final Organism organism) {
-        throw new NotImplementedException();
+       boolean retVal = false;
+
+       if( null != organism && population.containsKey(organism.getUniqueID())){
+           CellHelper.getAllOrganismsCells(organism.getCells())
+                   .forEach(cell -> {
+                       //TODO do we replenish the ground?
+                       deleteCell(cell.getCoordinates());
+                   });
+           retVal = population.remove(organism.getUniqueID()) != null;
+
+       }
+
+       return retVal;
+    }
+
+    @Override
+    public Organism getOrganism(String oid) {
+        return population.get(oid);
     }
 
     public Iterator<Organism> getOrganisms() {
-         /*
-          *   To prevent concurrent modification, create iterator from a shallow copy
-          *    so any changes to the underlying list does not invalidate the iterator
-          *
-          */
-        return new ArrayList<>(population).iterator();
+        return population.values().iterator();
     }
 
 

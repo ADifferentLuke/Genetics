@@ -54,7 +54,6 @@ public class Genetics {
                 System.out.println("Setting cell on " + c.getCoordinates());
                 terrain.setCell(c);
             });
-            */
             //the world is set up and the genome is set up. Begin simulation
             final AtomicLong aInt = new AtomicLong(0);
             try {
@@ -70,6 +69,7 @@ public class Genetics {
             } catch (final InterruptedException e) {
                 throw new RuntimeException(e);
             }
+            */
         }
     }
 

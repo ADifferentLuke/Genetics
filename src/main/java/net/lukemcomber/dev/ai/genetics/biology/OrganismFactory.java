@@ -4,21 +4,22 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
 
 import java.util.List;
 
+//TODO might be redudant now
 public class OrganismFactory {
 
-    public static Organism create(final String parentId, final Genome genome, final Coordinates coordinates,
-                                  final long currentTick) {
+    public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
+                                  final TemporalCoordinates temporalCoordinates) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
-            //TODO MUTATION HERE
 
-            final SeedCell seedCell = new SeedCell(null, genome, coordinates);
+            final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates);
 
-            retVal = new PlantOrganism(parentId, seedCell, currentTick);
+            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates);
 
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());

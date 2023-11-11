@@ -1,6 +1,6 @@
 package net.lukemcomber.dev.ai.genetics.biology;
 
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.LinkedList;
@@ -46,7 +46,7 @@ public abstract class Cell {
 
     public abstract String getCellType();
 
-    public abstract Coordinates getCoordinates();
+    public abstract SpatialCoordinates getCoordinates();
 
     public abstract int generateEnergy(final Terrain terrain);
 

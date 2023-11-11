@@ -1,15 +1,13 @@
 package net.lukemcomber.dev.ai.genetics.biology.plant.cells;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
-import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowRoot;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilNutrientsTerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
 
 import java.util.logging.Logger;
 
@@ -18,11 +16,11 @@ public class RootCell extends PlantCell {
 
     private static final Logger logger = Logger.getLogger(RootCell.class.getName());
     public static final int MAX_ENERGY_DRAW = 3;
-    private final Coordinates coordinates;
+    private final SpatialCoordinates spatialCoordinates;
 
-    public RootCell(Cell parent, Coordinates coordinates) {
+    public RootCell(Cell parent, SpatialCoordinates spatialCoordinates) {
         super(parent);
-        this.coordinates = coordinates;
+        this.spatialCoordinates = spatialCoordinates;
     }
 
     @Override
@@ -34,20 +32,20 @@ public class RootCell extends PlantCell {
      * @return
      */
     @Override
-    public Coordinates getCoordinates() {
-        return coordinates;
+    public SpatialCoordinates getCoordinates() {
+        return spatialCoordinates;
     }
 
     @Override
     public int generateEnergy(final Terrain terrain) {
         int retVal = 0;
-        final TerrainProperty property = terrain.getTerrainProperty(coordinates, SoilNutrientsTerrainProperty.ID);
+        final TerrainProperty property = terrain.getTerrainProperty(spatialCoordinates, SoilNutrientsTerrainProperty.ID);
         if( null != property ){
             final SoilNutrientsTerrainProperty soil = (SoilNutrientsTerrainProperty) property;
             int val = soil.getValue();
             logger.info( String.format("RootNode - Current Soil %d at (%d,%d)", val,
-                    coordinates.xAxis, coordinates.yAxis));
-            if( MAX_ENERGY_DRAW >= val ){
+                    spatialCoordinates.xAxis, spatialCoordinates.yAxis));
+            if( MAX_ENERGY_DRAW < val ){
                 retVal = MAX_ENERGY_DRAW;
                 soil.setValue(val-MAX_ENERGY_DRAW);
             } else {

@@ -6,7 +6,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.LeafCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.StemCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
@@ -15,9 +15,9 @@ import java.util.logging.Logger;
 public class GrowLeaf implements PlantBehavior {
 
     private static final Logger logger = Logger.getLogger(GrowLeaf.class.getName());
-    private final Function<Coordinates,Coordinates> function;
+    private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
-    public GrowLeaf(final Function<Coordinates,Coordinates> func){
+    public GrowLeaf(final Function<SpatialCoordinates, SpatialCoordinates> func){
        this.function = func;
     }
     /**
@@ -29,11 +29,11 @@ public class GrowLeaf implements PlantBehavior {
     public Cell performAction(final Terrain terrain, final Cell cell, final Organism organism) {
 
         Cell retVal = null;
-        final Coordinates newCoordinates = function.apply(cell.getCoordinates());
+        final SpatialCoordinates newSpatialCoordinates = function.apply(cell.getCoordinates());
 
 
         //The boolean logic looks weird, but we need to use AND for short circuit
-        if((!terrain.isOutOfBounds(newCoordinates)) && (!terrain.hasCell(newCoordinates))){
+        if((!terrain.isOutOfBounds(newSpatialCoordinates)) && (!terrain.hasCell(newSpatialCoordinates))){
             Cell parentCell = cell;
             if( cell instanceof LeafCell){
                 //TODO what if leaf's parent is null?
@@ -63,9 +63,9 @@ public class GrowLeaf implements PlantBehavior {
 
                 parentCell = stemCell;
             }
-            final LeafCell newCell = new LeafCell( parentCell, newCoordinates);
+            final LeafCell newCell = new LeafCell( parentCell, newSpatialCoordinates);
 
-            logger.info( "Creating Leaf at " + newCoordinates + " with parent " + parentCell.getCellType());
+            logger.info( "Creating Leaf at " + newSpatialCoordinates + " with parent " + parentCell.getCellType());
 
             parentCell.addChild(newCell);
             terrain.setCell(newCell,organism);

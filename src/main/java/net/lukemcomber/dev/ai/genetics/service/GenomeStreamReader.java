@@ -2,7 +2,8 @@ package net.lukemcomber.dev.ai.genetics.service;
 
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
 import org.apache.commons.codec.DecoderException;
 
 import java.util.LinkedList;
@@ -84,9 +85,10 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
                             (x, y, z, v) -> {
                                 //only support 1 organism per pixel. In the future, ranges should support large organisms?
                                 try {
-                                    final Coordinates coordinates = new Coordinates(x,y,z);
+                                    final SpatialCoordinates spatialCoordinates = new SpatialCoordinates(x,y,z);
+                                    final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0,0,0);
                                     final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
-                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value),coordinates,0);
+                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value), spatialCoordinates,temporalCoordinates);
                                     contextData.organisms.add(organism);
                                 } catch (DecoderException e) {
                                     throw new RuntimeException(e);

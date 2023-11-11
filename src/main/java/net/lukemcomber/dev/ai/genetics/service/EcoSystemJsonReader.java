@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.Ecosystem;
 import net.lukemcomber.dev.ai.genetics.world.WorldFactory;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
-
-import java.util.LinkedList;
-import java.util.List;
 
 public class EcoSystemJsonReader extends LGPReader {
 
@@ -33,6 +31,7 @@ public class EcoSystemJsonReader extends LGPReader {
         terrain.initialize(xMax, yMax, zMax);
 
         final Ecosystem ecosystem = new Ecosystem( ticksPerTurn, ticksPerDay, terrain);
+        final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0,0,0);
 
         final ArrayNode zooArray = (ArrayNode) rootNode.path("zoo");
         if (!zooArray.isMissingNode() && 0 < zooArray.size()) {
@@ -45,9 +44,9 @@ public class EcoSystemJsonReader extends LGPReader {
                         (x, y, z, v) -> {
                             //only support 1 organism per pixel. In the future, ranges should support large organisms?
                             try {
-                                final Coordinates coordinates = new Coordinates(x, y, z);
+                                final SpatialCoordinates spatialCoordinates = new SpatialCoordinates(x, y, z);
                                 final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
-                                        GenomeSerDe.deserialize(currentOrganismType, rvi.value), coordinates,0);
+                                        GenomeSerDe.deserialize(currentOrganismType, rvi.value), spatialCoordinates,temporalCoordinates);
                                 terrain.addOrganism(organism);
                             } catch (DecoderException e) {
                                 throw new RuntimeException(e);

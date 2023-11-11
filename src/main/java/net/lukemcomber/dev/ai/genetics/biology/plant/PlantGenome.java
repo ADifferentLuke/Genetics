@@ -5,7 +5,7 @@ import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowLeaf;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowRoot;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowSeed;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 
 import java.util.Iterator;
 import java.util.List;
@@ -61,75 +61,75 @@ public class PlantGenome extends Genome {
         switch (action) {
             case GROW_LEAF_LEFT:
                 logger.info( "GROW_LEAF_LEFT");
-                plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis - 1, c.yAxis, c.zAxis));
+                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
                 break;
             case GROW_LEAF_RIGHT:
                 logger.info( "GROW_LEAF_RIGHT");
-                plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis + 1, c.yAxis, c.zAxis));
+                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
                 break;
             case GROW_LEAF_UP:
                 logger.info( "GROW_LEAF_UP");
-                plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis + 1, c.zAxis));
+                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
                 break;
             case GROW_LEAF_DOWN:
                 logger.info( "GROW_LEAF_DOWN");
-                plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis - 1, c.zAxis));
+                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
                 break;
             case GROW_LEAF_FORWARD:
                 logger.info( "GROW_LEAF_FORWARD");
-                plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis + 1));
+                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
                 break;
             case GROW_LEAF_BACK:
                 logger.info( "GROW_LEAF_BACK");
-                plantBehavior = new GrowLeaf(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis - 1));
+                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
                 break;
             case GROW_ROOT_LEFT:
                 logger.info( "GROW_ROOT_LEFT");
-                plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis - 1, c.yAxis, c.zAxis));
+                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
                 break;
             case GROW_ROOT_RIGHT:
                 logger.info( "GROW_ROOT_RIGHT");
-                plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis + 1, c.yAxis, c.zAxis));
+                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
                 break;
             case GROW_ROOT_UP:
                 logger.info( "GROW_ROOT_UP");
-                plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis + 1, c.zAxis));
+                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
                 break;
             case GROW_ROOT_DOWN:
                 logger.info( "GROW_ROOT_DOWN");
-                plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis - 1, c.zAxis));
+                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
                 break;
             case GROW_ROOT_FORWARD:
                 logger.info( "GROW_ROOT_FORWARD");
-                plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis + 1));
+                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
                 break;
             case GROW_ROOT_BACK:
                 logger.info( "GROW_ROOT_BACK");
-                plantBehavior = new GrowRoot(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis - 1));
+                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
                 break;
             case GROW_SEED_LEFT:
                 logger.info( "GROW_SEED_LEFT");
-                plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis - 1, c.yAxis, c.zAxis));
+                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
                 break;
             case GROW_SEED_RIGHT:
                 logger.info( "GROW_SEED_RIGHT");
-                plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis + 1, c.yAxis, c.zAxis));
+                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
                 break;
             case GROW_SEED_UP:
                 logger.info( "GROW_SEED_UP");
-                plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis + 1, c.zAxis));
+                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
                 break;
             case GROW_SEED_DOWN:
                 logger.info( "GROW_SEED_DOWN");
-                plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis - 1, c.zAxis));
+                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
                 break;
             case GROW_SEED_FORWARD:
                 logger.info( "GROW_SEED_FORWARD");
-                plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis + 1));
+                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
                 break;
             case GROW_SEED_BACK:
                 logger.info( "GROW_SEED_BACK");
-                plantBehavior = new GrowSeed(c -> new Coordinates(c.xAxis, c.yAxis, c.zAxis - 1));
+                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
                 break;
             default:
                 logger.info( "Junk DNA: " + action);

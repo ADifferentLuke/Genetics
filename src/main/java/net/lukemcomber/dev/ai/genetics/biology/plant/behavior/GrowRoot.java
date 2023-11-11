@@ -5,16 +5,16 @@ import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.RootCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
 
 public class GrowRoot implements PlantBehavior {
 
-    private final Function<Coordinates, Coordinates> function;
+    private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
-    public GrowRoot(final Function<Coordinates, Coordinates> func) {
+    public GrowRoot(final Function<SpatialCoordinates, SpatialCoordinates> func) {
         this.function = func;
     }
 
@@ -26,9 +26,9 @@ public class GrowRoot implements PlantBehavior {
     @Override
     public Cell performAction(final Terrain terrain, final Cell rootCell, final Organism organism) {
         Cell retVal = null;
-        final Coordinates newCoordinates = function.apply(rootCell.getCoordinates());
-        if (!(terrain.isOutOfBounds(newCoordinates) || terrain.hasCell(newCoordinates))) {
-            final RootCell newCell = new RootCell(rootCell, newCoordinates);
+        final SpatialCoordinates newSpatialCoordinates = function.apply(rootCell.getCoordinates());
+        if (!(terrain.isOutOfBounds(newSpatialCoordinates) || terrain.hasCell(newSpatialCoordinates))) {
+            final RootCell newCell = new RootCell(rootCell, newSpatialCoordinates);
             terrain.setCell(newCell,organism);
             rootCell.addChild(newCell);
             retVal = newCell;

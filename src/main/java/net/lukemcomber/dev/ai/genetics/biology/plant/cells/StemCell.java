@@ -1,21 +1,20 @@
 package net.lukemcomber.dev.ai.genetics.biology.plant.cells;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
-import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowLeaf;
-import net.lukemcomber.dev.ai.genetics.model.Coordinates;
+import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 //Support structure, does nothing else
 public class StemCell extends PlantCell {
 
-    private final Coordinates coordinates;
+    private final SpatialCoordinates spatialCoordinates;
 
-    public StemCell(final Cell parent, Coordinates coordinates) {
+    public StemCell(final Cell parent, SpatialCoordinates spatialCoordinates) {
         super(parent);
-        this.coordinates = coordinates;
+        this.spatialCoordinates = spatialCoordinates;
     }
 
     @Override
@@ -27,8 +26,8 @@ public class StemCell extends PlantCell {
      * @return
      */
     @Override
-    public Coordinates getCoordinates() {
-        return coordinates;
+    public SpatialCoordinates getCoordinates() {
+        return spatialCoordinates;
     }
 
     @Override

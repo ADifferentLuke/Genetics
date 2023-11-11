@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -99,7 +100,8 @@ public class PlantOrganism implements Organism {
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates) {
+    public Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
+                              final BiConsumer<Organism,Cell> onCellDeath) {
 
         final long mark = lastUpdateTime.totalDays();
         // allow each cell to attempt to perform an action
@@ -120,7 +122,10 @@ public class PlantOrganism implements Organism {
                         terrain.addOrganism(plantOrganism);
                     }
                 } else {
-                    //call a func interface for any reclaimation
+                    // Trigger any cell death callback
+                    if( null != onCellDeath){
+                        onCellDeath.accept(this, cell);
+                    }
                 }
             });
             //Spawn dem eggs

@@ -6,6 +6,7 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.io.OutputStream;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 import static java.util.logging.Logger.getLogger;
@@ -24,7 +25,8 @@ public interface Organism {
 
     void modifyEnergy(int delta);
 
-    Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates);
+    Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
+                       final BiConsumer<Organism,Cell> onCellDeath);
 
     void cleanup(final Terrain terrain);
 

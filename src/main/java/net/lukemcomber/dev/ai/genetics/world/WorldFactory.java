@@ -3,6 +3,7 @@ package net.lukemcomber.dev.ai.genetics.world;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.FlatWorld;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
+import net.lukemcomber.dev.ai.genetics.world.terrain.impl.FlatWorldResourceManager;
 
 public class WorldFactory {
 

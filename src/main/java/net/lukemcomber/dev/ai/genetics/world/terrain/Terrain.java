@@ -3,6 +3,7 @@ package net.lukemcomber.dev.ai.genetics.world.terrain;
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.world.ResourceManager;
 
 import java.util.Iterator;
 import java.util.List;
@@ -137,4 +138,6 @@ public interface Terrain {
     Organism getOrganism(final String oid);
     Iterator<Organism> getOrganisms();
     boolean hasOrganism(final Organism organism);
+
+    ResourceManager getResourceManager();
 }

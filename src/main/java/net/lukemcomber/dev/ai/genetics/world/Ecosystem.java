@@ -21,10 +21,8 @@ public class Ecosystem {
 
     private static final Logger logger = Logger.getLogger(Ecosystem.class.getName());
     private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
-    public final static int SOLAR_ENERGY_PER_DAY = 6;
-    public final static int INITIAL_SOIL_NUTRIENTS = 100;
-
     private Terrain terrain;
+    private ResourceManager resourceManager;
 
     private final int ticksPerTurn;
     private final int ticksPerDay;
@@ -71,7 +69,9 @@ public class Ecosystem {
         totalTicks = 0;
         currentTick = 0;
 
-        refreshResources(true);
+        if( null != terrain.getResourceManager()){
+            terrain.getResourceManager().initializeAllTerrainResources();
+        }
     }
 
     public int getTicksPerTurn() {
@@ -82,19 +82,10 @@ public class Ecosystem {
         return ticksPerDay;
     }
 
-    private void refreshResources(final boolean refreshSoil){
+    private void refreshResources(){
 
-        //TODO we can make this more elegent and more efficient
-        for (int x = 0; x < terrain.getSizeOfXAxis(); ++x) {
-            for (int y = 0; y < terrain.getSizeOfYAxis(); ++y) {
-                final SpatialCoordinates coord = new SpatialCoordinates(x,y,0);
-                terrain.setTerrainProperty(coord, new SolarEnergyTerrainProperty(SOLAR_ENERGY_PER_DAY));
-                if( refreshSoil) {
-                    terrain.setTerrainProperty(coord, new SoilNutrientsTerrainProperty(INITIAL_SOIL_NUTRIENTS));
-                }
-                terrain.setTerrainProperty(coord, new SoilToxicityTerrainProperty(0));
-            }
-        }
+        final ResourceManager manager = getTerrain().getResourceManager();
+        manager.renewDailyEnvironmentResource();
     }
 
     public void advance() {
@@ -107,7 +98,7 @@ public class Ecosystem {
             if (this.currentTick >= ticksPerDay) {
                 totalDays++;
                 this.currentTick = 0;
-                refreshResources(false);
+                refreshResources();
             }
             final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(this.totalTicks,this.totalDays,this.currentTick);
             for (final Iterator<Organism> it = terrain.getOrganisms(); it.hasNext(); ) {
@@ -115,7 +106,10 @@ public class Ecosystem {
                 if(organism.isAlive()) {
                     logger.info("Ticking Organism: " + organism.getUniqueID());
                     organism.leechResources(terrain, temporalCoordinates);
-                    organism.performAction(terrain, temporalCoordinates);
+                    organism.performAction(terrain, temporalCoordinates, ((organism1, cell) -> {
+                        final ResourceManager manager = terrain.getResourceManager();
+                        manager.renewEnvironmentResourceFromCellDeath(organism,cell);
+                    }));
                     organism.prettyPrint(loggerOutputStream);
 
                 } else {
@@ -124,21 +118,6 @@ public class Ecosystem {
                      to immediate death, move delete organism outside the else
                      */
                     terrain.deleteOrganism(organism);
-                    //replenish soil
-
-                    //TODO it would be nice if the soil recharged less and less each time, but that needs a state saved
-                    final int nutrients = Math.round(organism.getMetabolismCost() / 2);
-
-                    for( final Cell cell : CellHelper.getAllOrganismsCells(organism.getCells())){
-                        final SpatialCoordinates coords = cell.getCoordinates();
-                        SoilNutrientsTerrainProperty soil = (SoilNutrientsTerrainProperty) terrain.getTerrainProperty(coords,SoilNutrientsTerrainProperty.ID);
-                        if( null == soil ){
-                            //erm how?
-                            soil = new SoilNutrientsTerrainProperty(0);
-                        }
-                        soil.setValue(soil.getValue() + nutrients);
-                        terrain.setTerrainProperty(coords,soil);
-                    }
                 }
             }
         }

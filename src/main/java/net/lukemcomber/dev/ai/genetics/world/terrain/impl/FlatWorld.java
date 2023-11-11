@@ -4,6 +4,7 @@ import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.service.CellHelper;
+import net.lukemcomber.dev.ai.genetics.world.ResourceManager;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
@@ -37,6 +38,7 @@ public class FlatWorld implements Terrain {
     private int worldWidth;
     private boolean isInitialized = false;
 
+    private ResourceManager resourceManager;
 
     public void setTerrainProperty(final SpatialCoordinates spatialCoordinates, final TerrainProperty terrainProperty) {
         checkInitialized();
@@ -98,7 +100,9 @@ public class FlatWorld implements Terrain {
             }
         }
         System.out.println(String.format("World %s initialized to (%d,%d,%d).", ID, x, y, z));
+
         isInitialized = true;
+        resourceManager = new FlatWorldResourceManager(this);
     }
 
     /**
@@ -183,6 +187,12 @@ public class FlatWorld implements Terrain {
         return null != population && population.containsKey(organism.getUniqueID());
     }
 
+    @Override
+    public ResourceManager getResourceManager() {
+        checkInitialized();
+        return resourceManager;
+    }
+
     private void checkCoordinates(final int x, final int y) {
         if (x >= worldWidth || y >= worldHeight) {
             throw new ArrayIndexOutOfBoundsException("SpatialCoordinates (" + x + "," + y
@@ -235,6 +245,13 @@ public class FlatWorld implements Terrain {
         return retVal;
     }
 
+    /**
+     * Forces a cleanup of all cells in an organism. If a cell has already been cleared, don't error but
+     * continue clearing cells.
+     *
+     * @param organism
+     * @return
+     */
     public boolean deleteOrganism(final Organism organism) {
        boolean retVal = false;
 

@@ -7,12 +7,15 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.cells.LeafCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.StemCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
 import java.util.logging.Logger;
 
 public class GrowLeaf implements PlantBehavior {
+
+    public final static String PROPERTY_GROW_LEAF_COST = "action.leaf.grow";
 
     private static final Logger logger = Logger.getLogger(GrowLeaf.class.getName());
     private final Function<SpatialCoordinates, SpatialCoordinates> function;
@@ -81,7 +84,7 @@ public class GrowLeaf implements PlantBehavior {
      * @return
      */
     @Override
-    public int getEnergyCost() {
-        return 1;
+    public int getEnergyCost(final UniverseConstants properties) {
+        return properties.get(PROPERTY_GROW_LEAF_COST, Integer.class);
     }
 }

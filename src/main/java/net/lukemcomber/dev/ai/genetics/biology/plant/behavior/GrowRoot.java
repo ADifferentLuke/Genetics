@@ -6,11 +6,14 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.RootCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
 
 public class GrowRoot implements PlantBehavior {
+
+    public final static String PROPERTY_GROW_ROOT_COST = "action.root.grow";
 
     private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
@@ -42,7 +45,7 @@ public class GrowRoot implements PlantBehavior {
      * @return
      */
     @Override
-    public int getEnergyCost() {
-        return 2;
+    public int getEnergyCost(final UniverseConstants properties) {
+        return properties.get(PROPERTY_GROW_ROOT_COST, Integer.class);
     }
 }

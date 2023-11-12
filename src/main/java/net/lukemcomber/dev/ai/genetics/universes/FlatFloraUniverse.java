@@ -2,6 +2,9 @@ package net.lukemcomber.dev.ai.genetics.universes;
 
 import com.google.common.collect.ImmutableMap;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantOrganism;
+import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowLeaf;
+import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowRoot;
+import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowSeed;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.LeafCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.RootCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
@@ -36,6 +39,10 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(StemCell.PROPERTY_METACOST, 1)
                 .put(RootCell.PROPERTY_ENERGY, 2)
                 .put(RootCell.PROPERTY_METACOST, 1)
+                /* Action Costs */
+                .put(GrowLeaf.PROPERTY_GROW_LEAF_COST, 1)
+                .put(GrowRoot.PROPERTY_GROW_ROOT_COST, 2)
+                .put(GrowSeed.PROPERTY_GROW_SEED_COST, 10)
                 .build();
     }
 

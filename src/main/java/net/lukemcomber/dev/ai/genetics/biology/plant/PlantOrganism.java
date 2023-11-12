@@ -158,7 +158,7 @@ public class PlantOrganism implements Organism {
                 final PlantBehavior plantBehavior = genome.getNextAct();
                 if (null != plantBehavior) {
 
-                    if (cell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost() <= energy) {
+                    if (cell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost(terrain.getProperties()) <= energy) {
                         logger.info("Attempting " + plantBehavior);
                         try {
                             final Cell newCell = plantBehavior.performAction(terrain, cell, this);
@@ -169,7 +169,7 @@ public class PlantOrganism implements Organism {
                             } else {
                                 logger.info("Action " + plantBehavior + " returned no cells");
                             }
-                            energy = energy - plantBehavior.getEnergyCost();
+                            energy = energy - plantBehavior.getEnergyCost(terrain.getProperties());
                         } catch (final EvolutionException e) {
                             logger.warning(e.getMessage());
                         }

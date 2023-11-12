@@ -8,12 +8,16 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.PlantGenomeTranscriber;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
 import java.util.logging.Logger;
 
 public class GrowSeed implements PlantBehavior {
+
+
+    public final static String PROPERTY_GROW_SEED_COST = "action.seed.grow";
 
     private Logger logger = Logger.getLogger(GrowSeed.class.toString());
 
@@ -67,7 +71,7 @@ public class GrowSeed implements PlantBehavior {
      * @return
      */
     @Override
-    public int getEnergyCost() {
-        return 10;
+    public int getEnergyCost(final UniverseConstants properties) {
+        return properties.get(PROPERTY_GROW_SEED_COST, Integer.class);
     }
 }

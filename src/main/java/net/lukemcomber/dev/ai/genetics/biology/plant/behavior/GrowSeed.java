@@ -1,8 +1,10 @@
 package net.lukemcomber.dev.ai.genetics.biology.plant.behavior;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
+import net.lukemcomber.dev.ai.genetics.biology.GenomeTransciber;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
+import net.lukemcomber.dev.ai.genetics.biology.plant.PlantGenomeTranscriber;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
@@ -18,30 +20,37 @@ public class GrowSeed implements PlantBehavior {
 
     private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
-    public GrowSeed(final Function<SpatialCoordinates, SpatialCoordinates> func){
+    public GrowSeed(final Function<SpatialCoordinates, SpatialCoordinates> func) {
         this.function = func;
     }
+
     /**
      * @param terrain
      * @param cell
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain,final Cell cell, final Organism organism) {
+    public Cell performAction(final Terrain terrain, final Cell cell, final Organism organism) {
         Cell retVal = null;
 
         final SpatialCoordinates newSpatialCoordinates = function.apply(cell.getCoordinates());
 
 
         //The boolean logic looks weird, but we need to use AND for short circuit
-        if((!terrain.isOutOfBounds(newSpatialCoordinates)) && (!terrain.hasCell(newSpatialCoordinates))){
+        if ((!terrain.isOutOfBounds(newSpatialCoordinates)) && (!terrain.hasCell(newSpatialCoordinates))) {
 
-            //TODO MUTATION NEEDED HERE
-
-            if( null != organism ) {
+            if (null != organism) {
                 //Organism shouldn't be null, but we're in mid-redesign ... so blow up if it happens
-                final SeedCell newCell = new SeedCell(cell, organism.getGenome(), newSpatialCoordinates);
+
+                final GenomeTransciber transciber = new PlantGenomeTranscriber();
+
+                /*
+                 * DEV NOTE: This is where mutation is initiated!
+                 */
+                final SeedCell newCell = new SeedCell(cell, transciber.transcribe(organism.getGenome()), newSpatialCoordinates);
                 logger.info("Created new seed: " + organism.getUniqueID() + " at " + newSpatialCoordinates);
+                cell.addChild(newCell);
+                terrain.setCell(newCell,organism);
                 retVal = newCell;
             } else {
                 throw new RuntimeException("Organism is null!");

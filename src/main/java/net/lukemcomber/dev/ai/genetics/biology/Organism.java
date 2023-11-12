@@ -25,6 +25,10 @@ public interface Organism {
 
     void modifyEnergy(int delta);
 
+    long getBirthTick();
+
+    long getLastUpdatedTick();
+
     Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
                        final BiConsumer<Organism,Cell> onCellDeath);
 

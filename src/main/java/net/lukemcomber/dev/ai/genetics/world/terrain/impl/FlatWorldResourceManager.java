@@ -11,7 +11,7 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 public class FlatWorldResourceManager implements ResourceManager {
 
     public static final int SOLAR_ENERGY_PER_DAY = 10;
-    public static final int INITIAL_SOIL_NUTRIENTS = 100;
+    public static final int INITIAL_SOIL_NUTRIENTS = 1000000;
 
 
     private Terrain terrain;

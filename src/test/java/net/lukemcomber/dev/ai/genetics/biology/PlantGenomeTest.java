@@ -18,8 +18,8 @@ public class PlantGenomeTest {
             final Gene gene = new Gene();
             gene.nucleotideA = PlantGenome.GROW_LEAF_UP;
             gene.nucleotideB = PlantGenome.GROW_LEAF_UP;
-            gene.nucleotideB = PlantGenome.GROW_ROOT_DOWN;
-            gene.nucleotideD = 120;
+            gene.nucleotideC = PlantGenome.GROW_ROOT_DOWN;
+            gene.nucleotideD = PlantGenome.GROW_SEED_LEFT;
 
             genes.add(gene);
         }

@@ -95,6 +95,16 @@ public class PlantOrganism implements Organism {
         this.energy += delta;
     }
 
+    @Override
+    public long getBirthTick() {
+        return birthTime.totalTicks();
+    }
+
+    @Override
+    public long getLastUpdatedTick() {
+        return lastUpdateTime.totalTicks();
+    }
+
     /**
      * @param terrain
      * @return
@@ -103,7 +113,7 @@ public class PlantOrganism implements Organism {
     public Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
                               final BiConsumer<Organism,Cell> onCellDeath) {
 
-        final long mark = lastUpdateTime.totalDays();
+        final long mark = temporalCoordinates.totalDays();
         // allow each cell to attempt to perform an action
 
         if (!alive) {
@@ -128,12 +138,14 @@ public class PlantOrganism implements Organism {
                     }
                 }
             });
+            terrain.deleteOrganism(this);
             //Spawn dem eggs
             //get all seeds
             //remove seeds from this organism
             // create new organism and add to terrain
         } else {
             performActionOnAllCells((PlantCell) getCells(), cell -> {
+                logger.info("Actioning cell " + cell);
                 final PlantBehavior plantBehavior = genome.getNextAct();
                 if (null != plantBehavior) {
 
@@ -145,6 +157,8 @@ public class PlantOrganism implements Organism {
                                 //Update last updated time
                                 lastUpdateTime = temporalCoordinates;
                                 childCount++;
+                            } else {
+                                logger.info("Action " + plantBehavior + " returned no cells");
                             }
                             energy = energy - plantBehavior.getEnergyCost();
                         } catch (final EvolutionException e) {
@@ -152,6 +166,8 @@ public class PlantOrganism implements Organism {
                         }
                     } else if (!cell.canCellSupport(plantBehavior)) {
                         logger.info("Cell " + cell + " Behavior not allowed: " + plantBehavior);
+                    } else {
+                        logger.info( "Not enough energy for " + plantBehavior);
                     }
                 }
             });
@@ -161,12 +177,12 @@ public class PlantOrganism implements Organism {
                 logger.info("Organism " + uuid + " + died from exhaustion.");
                 alive = false;
             }
-            if (10 < lastUpdateTime.totalDays() - mark) {
+            if (10 < mark - lastUpdateTime.totalDays() ) {
                 logger.info("Organism " + uuid + " + died from stagnation.");
                 //stagnant
                 alive = false;
             }
-            if (100 < birthTime.totalDays()) {
+            if (100 < temporalCoordinates.totalDays() - birthTime.totalDays() ) {
                 logger.info("Organism " + uuid + " + died from old age.");
                 alive = false;
             }
@@ -210,6 +226,7 @@ public class PlantOrganism implements Organism {
         final PrintStream pout = new PrintStream(out);
         pout.println(String.format("Organism: %s", GenomeSerDe.serialize(genome)));
         pout.println(String.format("Birth Tick: %d", birthTime.totalTicks()));
+        pout.println(String.format("Last Updated: %d", lastUpdateTime.totalTicks()));
         pout.println(String.format("Energy: %d", energy));
         pout.println(String.format("Cells: %s", childCount));
         pout.println();

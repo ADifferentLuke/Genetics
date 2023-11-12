@@ -69,7 +69,7 @@ public class Ecosystem {
         totalTicks = 0;
         currentTick = 0;
 
-        if( null != terrain.getResourceManager()){
+        if (null != terrain.getResourceManager()) {
             terrain.getResourceManager().initializeAllTerrainResources();
         }
     }
@@ -82,7 +82,7 @@ public class Ecosystem {
         return ticksPerDay;
     }
 
-    private void refreshResources(){
+    private void refreshResources() {
 
         final ResourceManager manager = getTerrain().getResourceManager();
         manager.renewDailyEnvironmentResource();
@@ -93,32 +93,24 @@ public class Ecosystem {
             this.totalTicks++;
             this.currentTick++;
 
-            logger.info( "Tick:  " + this.totalTicks);
+            logger.info("Tick:  " + this.totalTicks);
 
             if (this.currentTick >= ticksPerDay) {
                 totalDays++;
                 this.currentTick = 0;
                 refreshResources();
             }
-            final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(this.totalTicks,this.totalDays,this.currentTick);
+            final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(this.totalTicks, this.totalDays, this.currentTick);
             for (final Iterator<Organism> it = terrain.getOrganisms(); it.hasNext(); ) {
                 Organism organism = it.next();
-                if(organism.isAlive()) {
-                    logger.info("Ticking Organism: " + organism.getUniqueID());
-                    organism.leechResources(terrain, temporalCoordinates);
-                    organism.performAction(terrain, temporalCoordinates, ((organism1, cell) -> {
-                        final ResourceManager manager = terrain.getResourceManager();
-                        manager.renewEnvironmentResourceFromCellDeath(organism,cell);
-                    }));
-                    organism.prettyPrint(loggerOutputStream);
+                logger.info("Ticking Organism: " + organism.getUniqueID());
+                organism.leechResources(terrain, temporalCoordinates);
+                organism.performAction(terrain, temporalCoordinates, ((organism1, cell) -> {
+                    final ResourceManager manager = terrain.getResourceManager();
+                    manager.renewEnvironmentResourceFromCellDeath(organism, cell);
+                }));
+                organism.prettyPrint(loggerOutputStream);
 
-                } else {
-                    /*
-                     A dead organism will be in the terrain for one turn before cleanup. To change this
-                     to immediate death, move delete organism outside the else
-                     */
-                    terrain.deleteOrganism(organism);
-                }
             }
         }
     }

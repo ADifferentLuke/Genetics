@@ -258,7 +258,6 @@ public class FlatWorld implements Terrain {
        if( null != organism && population.containsKey(organism.getUniqueID())){
            CellHelper.getAllOrganismsCells(organism.getCells())
                    .forEach(cell -> {
-                       //TODO do we replenish the ground?
                        deleteCell(cell.getCoordinates());
                    });
            retVal = population.remove(organism.getUniqueID()) != null;

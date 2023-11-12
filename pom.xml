@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.lukemcomber.dev.ai</groupId>
   <artifactId>Genetics</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.0.1-alpha</version>
   <build>
     <plugins>
       <plugin>
@@ -76,6 +76,11 @@
             <version>28.2-android</version>
         </dependency>
     </dependencies>
-    <name>Archetype - Genetics</name>
-  <url>http://maven.apache.org</url>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/ADifferentLuke/Genetics</url>
+        </repository>
+    </distributionManagement>
 </project>

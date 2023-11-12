@@ -1,18 +1,20 @@
-package net.lukemcomber.dev.ai.genetics.world.terrain.impl;
+package net.lukemcomber.dev.ai.genetics.world.terrain.properties;
 
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 
-public class RadioactiveTerrainProperty implements TerrainProperty<Integer> {
+public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
 
-    public static final String ID = "RADIOACTIVE";
+    public static final String ID = "SOIL_TOXICITY";
     private Integer value;
 
-    public RadioactiveTerrainProperty(){
-       value = null;
+    public SoilToxicityTerrainProperty() {
+        value = null;
     }
-    public RadioactiveTerrainProperty(final int value){
+
+    public SoilToxicityTerrainProperty(final int value) {
         this.value = value;
     }
+
     /**
      * @return
      */
@@ -50,10 +52,10 @@ public class RadioactiveTerrainProperty implements TerrainProperty<Integer> {
      */
     @Override
     public TerrainProperty<Integer> clone() {
-        if( null == value ){
-            return new RadioactiveTerrainProperty();
+        if (null == value) {
+            return new SoilToxicityTerrainProperty();
         } else {
-            return new RadioactiveTerrainProperty(value);
+            return new SoilToxicityTerrainProperty(value);
         }
     }
 }

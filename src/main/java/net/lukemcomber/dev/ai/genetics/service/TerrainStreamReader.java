@@ -4,7 +4,7 @@ import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainPropertyFactory;
-import net.lukemcomber.dev.ai.genetics.world.WorldFactory;
+import net.lukemcomber.dev.ai.genetics.WorldFactory;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;

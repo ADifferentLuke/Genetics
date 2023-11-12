@@ -6,8 +6,8 @@ import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
-import net.lukemcomber.dev.ai.genetics.world.Ecosystem;
-import net.lukemcomber.dev.ai.genetics.world.WorldFactory;
+import net.lukemcomber.dev.ai.genetics.Ecosystem;
+import net.lukemcomber.dev.ai.genetics.WorldFactory;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
 
@@ -26,6 +26,8 @@ public class EcoSystemJsonReader extends LGPReader {
 
         final int ticksPerDay = rootNode.path("ticksPerDay").asInt(10);
         final int ticksPerTurn = rootNode.path("ticksPerTurn").asInt(1);
+
+        //TODO Simluation Constants need to be set here
 
         final Terrain terrain = WorldFactory.createWorld(worldType);
         terrain.initialize(xMax, yMax, zMax);

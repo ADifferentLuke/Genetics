@@ -70,6 +70,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.15.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.2-android</version>
+        </dependency>
     </dependencies>
     <name>Archetype - Genetics</name>
   <url>http://maven.apache.org</url>

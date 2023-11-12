@@ -3,6 +3,7 @@ package net.lukemcomber.dev.ai.genetics.world.terrain.impl;
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.service.CellHelper;
 import net.lukemcomber.dev.ai.genetics.world.ResourceManager;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
@@ -34,11 +35,16 @@ public class FlatWorld implements Terrain {
     private MatrixCell[][] organismMap;
     private Map<String, TerrainProperty>[][] environmentMap;
     private Map<String,Organism> population;
+    private final UniverseConstants constants;
     private int worldHeight;
     private int worldWidth;
     private boolean isInitialized = false;
 
     private ResourceManager resourceManager;
+
+    public FlatWorld(final UniverseConstants constants ){
+        this.constants = constants;
+    }
 
     public void setTerrainProperty(final SpatialCoordinates spatialCoordinates, final TerrainProperty terrainProperty) {
         checkInitialized();
@@ -102,7 +108,7 @@ public class FlatWorld implements Terrain {
         System.out.println(String.format("World %s initialized to (%d,%d,%d).", ID, x, y, z));
 
         isInitialized = true;
-        resourceManager = new FlatWorldResourceManager(this);
+        resourceManager = new FlatWorldResourceManager(this, constants);
     }
 
     /**

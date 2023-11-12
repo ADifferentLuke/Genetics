@@ -140,4 +140,5 @@ public interface Terrain {
     boolean hasOrganism(final Organism organism);
 
     ResourceManager getResourceManager();
+
 }

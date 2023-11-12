@@ -7,7 +7,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowRoot;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilNutrientsTerrainProperty;
+import net.lukemcomber.dev.ai.genetics.world.terrain.properties.SoilNutrientsTerrainProperty;
 
 import java.util.logging.Logger;
 

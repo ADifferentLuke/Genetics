@@ -9,7 +9,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowSeed;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
+import net.lukemcomber.dev.ai.genetics.world.terrain.properties.SolarEnergyTerrainProperty;
 
 import java.util.logging.Logger;
 

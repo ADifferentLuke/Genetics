@@ -1,17 +1,18 @@
-package net.lukemcomber.dev.ai.genetics.world.terrain.impl;
+package net.lukemcomber.dev.ai.genetics.world.terrain.properties;
 
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 
-public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
+public class SoilNutrientsTerrainProperty implements TerrainProperty<Integer> {
 
-    public static final String ID = "SOIL_TOXICITY";
+    public static final String ID = "SOIL_NUTRIENTS";
+
     private Integer value;
 
-    public SoilToxicityTerrainProperty() {
-        value = null;
+    //TODO these may need a factory
+    public SoilNutrientsTerrainProperty(){
+       value = null;
     }
-
-    public SoilToxicityTerrainProperty(final int value) {
+    public SoilNutrientsTerrainProperty(final int value){
         this.value = value;
     }
 
@@ -27,7 +28,7 @@ public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
      * @param integer the value to set
      */
     @Override
-    public void setValue(Integer integer) {
+    public void setValue(final Integer integer) {
         value = integer;
     }
 
@@ -52,10 +53,10 @@ public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
      */
     @Override
     public TerrainProperty<Integer> clone() {
-        if (null == value) {
-            return new SoilToxicityTerrainProperty();
-        } else {
-            return new SoilToxicityTerrainProperty(value);
+        if( null == value ){
+            return new SoilNutrientsTerrainProperty();
+        }else {
+            return new SoilNutrientsTerrainProperty(value);
         }
     }
 }

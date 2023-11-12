@@ -1,19 +1,13 @@
-package net.lukemcomber.dev.ai.genetics.world;
+package net.lukemcomber.dev.ai.genetics;
 
-import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
-import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
-import net.lukemcomber.dev.ai.genetics.service.CellHelper;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.service.LoggerOutputStream;
+import net.lukemcomber.dev.ai.genetics.world.ResourceManager;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
-import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilNutrientsTerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilToxicityTerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +17,7 @@ public class Ecosystem {
     private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
     private Terrain terrain;
     private ResourceManager resourceManager;
-
+    private UniverseConstants universeConstants;
     private final int ticksPerTurn;
     private final int ticksPerDay;
 
@@ -68,6 +62,7 @@ public class Ecosystem {
         totalDays = 0;
         totalTicks = 0;
         currentTick = 0;
+
 
         if (null != terrain.getResourceManager()) {
             terrain.getResourceManager().initializeAllTerrainResources();

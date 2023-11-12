@@ -1,10 +1,10 @@
 package net.lukemcomber.dev.ai.genetics.world.terrain;
 
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.RadioactiveTerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilNutrientsTerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SoilToxicityTerrainProperty;
-import net.lukemcomber.dev.ai.genetics.world.terrain.impl.SolarEnergyTerrainProperty;
+import net.lukemcomber.dev.ai.genetics.world.terrain.properties.RadioactiveTerrainProperty;
+import net.lukemcomber.dev.ai.genetics.world.terrain.properties.SoilNutrientsTerrainProperty;
+import net.lukemcomber.dev.ai.genetics.world.terrain.properties.SoilToxicityTerrainProperty;
+import net.lukemcomber.dev.ai.genetics.world.terrain.properties.SolarEnergyTerrainProperty;
 
 public class TerrainPropertyFactory {
 

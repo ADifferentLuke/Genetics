@@ -2,8 +2,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.lukemcomber.dev.ai</groupId>
-  <artifactId>Genetics</artifactId>
-  <version>0.0.1-alpha</version>
+  <artifactId>genetics</artifactId>
+  <version>0.0.3-alpha</version>
   <build>
     <plugins>
       <plugin>

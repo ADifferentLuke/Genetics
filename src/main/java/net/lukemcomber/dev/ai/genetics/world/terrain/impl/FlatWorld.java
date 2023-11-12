@@ -199,6 +199,14 @@ public class FlatWorld implements Terrain {
         return resourceManager;
     }
 
+    @Override
+    public UniverseConstants getProperties() {
+        /*
+         * Does not need to be initialized() first
+         */
+        return constants;
+    }
+
     private void checkCoordinates(final int x, final int y) {
         if (x >= worldWidth || y >= worldHeight) {
             throw new ArrayIndexOutOfBoundsException("SpatialCoordinates (" + x + "," + y

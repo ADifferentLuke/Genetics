@@ -4,6 +4,7 @@ import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import org.apache.commons.codec.DecoderException;
 
 import java.util.LinkedList;
@@ -27,16 +28,18 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
     public static final String ORGANISM = "ORGANISM ";
     public static final String END = "END";
 
-    final int sizeOfXAxis;
-    final int sizeOfYAxis;
-    final int sizeOfZAxis;
+    private final int sizeOfXAxis;
+    private final int sizeOfYAxis;
+    private final int sizeOfZAxis;
 
+    private UniverseConstants properties;
 
-    public GenomeStreamReader(int sizeOfXAxis, int sizeOfYAxis, int sizeOfZAxis) {
+    public GenomeStreamReader(int sizeOfXAxis, int sizeOfYAxis, int sizeOfZAxis, final UniverseConstants properties) {
         super();
         this.sizeOfXAxis = sizeOfXAxis;
         this.sizeOfYAxis = sizeOfYAxis;
         this.sizeOfZAxis = sizeOfZAxis;
+        this.properties = properties;
     }
 
     /**
@@ -88,7 +91,8 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
                                     final SpatialCoordinates spatialCoordinates = new SpatialCoordinates(x,y,z);
                                     final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0,0,0);
                                     final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
-                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value), spatialCoordinates,temporalCoordinates);
+                                            GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value), spatialCoordinates,temporalCoordinates,
+                                            properties);
                                     contextData.organisms.add(organism);
                                 } catch (DecoderException e) {
                                     throw new RuntimeException(e);

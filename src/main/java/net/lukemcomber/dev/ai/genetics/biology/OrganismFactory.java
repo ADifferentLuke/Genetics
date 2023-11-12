@@ -6,6 +6,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 
 import java.util.List;
 
@@ -13,13 +14,13 @@ import java.util.List;
 public class OrganismFactory {
 
     public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
-                                  final TemporalCoordinates temporalCoordinates) {
+                                  final TemporalCoordinates temporalCoordinates, final UniverseConstants properties ) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
 
-            final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates);
+            final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates,properties);
 
-            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates);
+            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties);
 
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());

@@ -16,8 +16,6 @@ public class Ecosystem {
     private static final Logger logger = Logger.getLogger(Ecosystem.class.getName());
     private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
     private Terrain terrain;
-    private ResourceManager resourceManager;
-    private UniverseConstants universeConstants;
     private final int ticksPerTurn;
     private final int ticksPerDay;
 

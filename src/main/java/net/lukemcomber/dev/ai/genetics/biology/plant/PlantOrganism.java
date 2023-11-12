@@ -6,6 +6,7 @@ import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.service.GenomeSerDe;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 
@@ -15,13 +16,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class PlantOrganism implements Organism {
 
     private static final Logger logger = Logger.getLogger(PlantOrganism.class.getName());
+
+    public static final String PROPERTY_STARTING_ENERGY = "initial.plant.energy";
+    public static final String PROPERTY_OLD_AGE_LIMIT = "death.plant.age-limit-days";
+    public static final String PROPERTY_STAGNATION_LIMIT  = "death.plant.stagnation-limit-days";
+    public static final String PROPERTY_STARVATION_LIMIT = "death.plant.starvation-limit-energy";
 
     public static final String TYPE = "PLANT";
     private final Genome genome;
@@ -39,12 +44,16 @@ public class PlantOrganism implements Organism {
     private TemporalCoordinates lastUpdateTime;
     private boolean alive;
 
-    public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates) {
+    private final UniverseConstants properties;
+
+    public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates,
+                         final UniverseConstants properties ) {
         this.genome = seed.getGenome();
         this.parentUuid = parentUuid;
         this.cell = seed;
+        this.properties = properties;
 
-        this.energy = 5;
+        this.energy = properties.get(PROPERTY_STARTING_ENERGY, Integer.class);
         this.activeCells = new LinkedList<>();
         this.activeCells.add(seed);
         this.uuid = UUID.randomUUID().toString();
@@ -124,8 +133,8 @@ public class PlantOrganism implements Organism {
                     final SeedCell seed = (SeedCell) cell;
                     if (!seed.isActivated()) {
 
-                        SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates());
-                        final PlantOrganism plantOrganism = new PlantOrganism( getUniqueID(), activatedSeed, temporalCoordinates );
+                        SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
+                        final PlantOrganism plantOrganism = new PlantOrganism( getUniqueID(), activatedSeed, temporalCoordinates, properties );
 
                         logger.info( "New Organism born: " + plantOrganism.getUniqueID());
 
@@ -172,17 +181,22 @@ public class PlantOrganism implements Organism {
                 }
             });
 
-            if (0 > energy) {
+            //These are optional
+            final Integer ageLimit = properties.get(PROPERTY_OLD_AGE_LIMIT,Integer.class,-1);
+            final Integer stagnationLimit = properties.get(PROPERTY_STAGNATION_LIMIT,Integer.class,-1);
+            final Integer starvationLimit = properties.get(PROPERTY_STARVATION_LIMIT,Integer.class,-1);
+
+            if (0 <= starvationLimit && starvationLimit >= energy) {
                 //too exhausted to live
                 logger.info("Organism " + uuid + " + died from exhaustion.");
                 alive = false;
             }
-            if (10 < mark - lastUpdateTime.totalDays() ) {
+            if (0 <= stagnationLimit && stagnationLimit < mark - lastUpdateTime.totalDays() ) {
                 logger.info("Organism " + uuid + " + died from stagnation.");
                 //stagnant
                 alive = false;
             }
-            if (100 < temporalCoordinates.totalDays() - birthTime.totalDays() ) {
+            if (0 <= ageLimit && ageLimit < temporalCoordinates.totalDays() - birthTime.totalDays() ) {
                 logger.info("Organism " + uuid + " + died from old age.");
                 alive = false;
             }

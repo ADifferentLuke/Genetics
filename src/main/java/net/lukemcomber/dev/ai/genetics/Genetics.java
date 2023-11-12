@@ -3,9 +3,11 @@ package net.lukemcomber.dev.ai.genetics;
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.AutomatedConfig;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.service.AutomatedConfigFileReader;
 import net.lukemcomber.dev.ai.genetics.service.GenomeStreamReader;
 import net.lukemcomber.dev.ai.genetics.service.TerrainStreamReader;
+import net.lukemcomber.dev.ai.genetics.universes.FlatFloraUniverse;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,12 +37,13 @@ public class Genetics {
 
     public void run(final InputStream initEnv, final InputStream zoo) throws IOException {
 
+        final UniverseConstants properties = new FlatFloraUniverse();
         //Builds the world
         final Terrain terrain = new TerrainStreamReader().parse(initEnv);
 
         //reads a genome
         final GenomeStreamReader genomeStreamReader = new GenomeStreamReader(terrain.getSizeOfXAxis(),
-                terrain.getSizeOfYAxis(), terrain.getSizeOfZAxis());
+                terrain.getSizeOfYAxis(), terrain.getSizeOfZAxis(), properties);
 
         if (null != zoo) {
             final List<Organism> organisms = genomeStreamReader.parse(zoo);

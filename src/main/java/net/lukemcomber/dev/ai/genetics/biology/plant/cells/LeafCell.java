@@ -7,6 +7,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.PlantCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowLeaf;
 import net.lukemcomber.dev.ai.genetics.biology.plant.behavior.GrowSeed;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
 import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.world.terrain.properties.SolarEnergyTerrainProperty;
@@ -16,12 +17,17 @@ import java.util.logging.Logger;
 //Is able to gather energy from the sun
 public class LeafCell extends PlantCell {
 
+    public static final String PROPERTY_METACOST = "cell.leaf.metabolic-rate";
+    public static final String PROPERTY_ENERGY = "cell.leaf.max-energy-production";
     private static final Logger logger = Logger.getLogger(LeafCell.class.getName());
     private final SpatialCoordinates spatialCoordinates;
 
-    public LeafCell(final Cell parent, final SpatialCoordinates spatialCoordinates){
+    private final int metabolismCost;
+
+    public LeafCell(final Cell parent, final SpatialCoordinates spatialCoordinates, final UniverseConstants properties){
         super(parent);
         this.spatialCoordinates = spatialCoordinates;
+        this.metabolismCost = properties.get(PROPERTY_METACOST, Integer.class);
     }
 
     @Override
@@ -40,6 +46,8 @@ public class LeafCell extends PlantCell {
     @Override
     public int generateEnergy(final Terrain terrain) {
         int retVal = 0;
+        final int maxEnergyInput = terrain.getProperties().get(PROPERTY_ENERGY, Integer.class);
+
         final TerrainProperty property = terrain.getTerrainProperty(spatialCoordinates, SolarEnergyTerrainProperty.ID);
         if( null != property ){
             final SolarEnergyTerrainProperty solar = (SolarEnergyTerrainProperty) property;
@@ -49,12 +57,12 @@ public class LeafCell extends PlantCell {
             /*
              * DEV NOTE: Since the daily cost is 1, we need to gather at least 2 per tick
              */
-            if( 1 < val){
-                retVal += 2;
-                solar.setValue(val-2);
-            } else if( 1 == val ){
-                retVal++;
-                solar.setValue(--val);
+            if( maxEnergyInput < val){
+                retVal = maxEnergyInput;
+                solar.setValue(val-maxEnergyInput);
+            } else {
+                retVal = val;
+                solar.setValue(0);
             }
         }
         return retVal;
@@ -62,7 +70,7 @@ public class LeafCell extends PlantCell {
 
     @Override
     public int getMetabolismCost() {
-        return 1;
+        return metabolismCost;
     }
 
     /**

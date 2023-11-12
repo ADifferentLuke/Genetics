@@ -28,7 +28,7 @@ public class GrowRoot implements PlantBehavior {
         Cell retVal = null;
         final SpatialCoordinates newSpatialCoordinates = function.apply(rootCell.getCoordinates());
         if (!(terrain.isOutOfBounds(newSpatialCoordinates) || terrain.hasCell(newSpatialCoordinates))) {
-            final RootCell newCell = new RootCell(rootCell, newSpatialCoordinates);
+            final RootCell newCell = new RootCell(rootCell, newSpatialCoordinates, terrain.getProperties());
             terrain.setCell(newCell,organism);
             rootCell.addChild(newCell);
             retVal = newCell;

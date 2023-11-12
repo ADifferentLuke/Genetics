@@ -40,7 +40,7 @@ public class GrowLeaf implements PlantBehavior {
                 logger.info( "\tWe need to create a stem!");
                 final Cell grandParentCell = cell.getParent();
                 logger.info( "Grandparent cell is: " + grandParentCell.getCellType() + " at " + grandParentCell.getCoordinates());
-                final StemCell stemCell = new StemCell(grandParentCell,  cell.getCoordinates());
+                final StemCell stemCell = new StemCell(grandParentCell,  cell.getCoordinates(), terrain.getProperties());
 
                 logger.info( "Stem created at " + stemCell.getCoordinates());
 
@@ -63,7 +63,7 @@ public class GrowLeaf implements PlantBehavior {
 
                 parentCell = stemCell;
             }
-            final LeafCell newCell = new LeafCell( parentCell, newSpatialCoordinates);
+            final LeafCell newCell = new LeafCell( parentCell, newSpatialCoordinates, terrain.getProperties());
 
             logger.info( "Creating Leaf at " + newSpatialCoordinates + " with parent " + parentCell.getCellType());
 

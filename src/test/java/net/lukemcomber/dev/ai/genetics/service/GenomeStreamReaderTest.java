@@ -3,6 +3,8 @@ package net.lukemcomber.dev.ai.genetics.service;
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
+import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
+import net.lukemcomber.dev.ai.genetics.universes.FlatFloraUniverse;
 import org.apache.commons.codec.DecoderException;
 import org.testng.annotations.Test;
 
@@ -45,7 +47,8 @@ public class GenomeStreamReaderTest {
 
     public void testReader() throws IOException {
         final URL url = Thread.currentThread().getContextClassLoader().getResource(testInitFile);
-        final GenomeStreamReader reader = new GenomeStreamReader( 90,90,90 );
+        final UniverseConstants props = new FlatFloraUniverse();
+        final GenomeStreamReader reader = new GenomeStreamReader( 90,90,90, props );
         final List<Organism> organisms = reader.parse( Files.newInputStream(Paths.get(url.getPath())));
 
     }

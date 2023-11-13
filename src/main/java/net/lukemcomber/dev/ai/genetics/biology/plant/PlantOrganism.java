@@ -132,6 +132,8 @@ public class PlantOrganism implements Organism {
                 if (cell instanceof SeedCell) {
                     final SeedCell seed = (SeedCell) cell;
                     if (!seed.isActivated()) {
+                        //Remove the cell from the parent organism
+                        cell.getParent().removeChild(cell);
 
                         SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
                         final PlantOrganism plantOrganism = new PlantOrganism( getUniqueID(), activatedSeed, temporalCoordinates, properties );
@@ -148,10 +150,6 @@ public class PlantOrganism implements Organism {
                 }
             });
             terrain.deleteOrganism(this);
-            //Spawn dem eggs
-            //get all seeds
-            //remove seeds from this organism
-            // create new organism and add to terrain
         } else {
             performActionOnAllCells((PlantCell) getCells(), cell -> {
                 logger.info("Actioning cell " + cell);

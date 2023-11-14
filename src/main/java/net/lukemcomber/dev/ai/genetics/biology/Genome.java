@@ -15,7 +15,9 @@ public abstract class Genome {
     private final int numOfGenes;
     private final LinkedList<Gene> genes;
 
-    public Genome(int numOfGenes) {
+    private final String type;
+
+    public Genome(int numOfGenes, String type) {
         this.numOfGenes = numOfGenes;
         genes = new LinkedList<>();
         for (int i = 0; this.numOfGenes > i; ++i) {
@@ -26,12 +28,18 @@ public abstract class Genome {
             gene.nucleotideD = 0;
             genes.add(gene);
         }
+        this.type = type;
     }
 
-    public Genome(final List<Gene> genes) {
+    public Genome(final List<Gene> genes, final String type ) {
         numOfGenes = genes.size();
         this.genes = new LinkedList<>(genes);
+        this.type = type;
 
+    }
+
+    public String getType(){
+        return type;
     }
 
     /**

@@ -4,8 +4,8 @@ import net.lukemcomber.dev.ai.genetics.biology.Cell;
 import net.lukemcomber.dev.ai.genetics.biology.GenomeTransciber;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
-import net.lukemcomber.dev.ai.genetics.biology.plant.PlantGenomeTranscriber;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
+import net.lukemcomber.dev.ai.genetics.biology.transcription.IdentityGenomeTranscriber;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
@@ -46,12 +46,13 @@ public class GrowSeed implements PlantBehavior {
             if (null != organism) {
                 //Organism shouldn't be null, but we're in mid-redesign ... so blow up if it happens
 
-                final GenomeTransciber transciber = new PlantGenomeTranscriber();
+                final GenomeTransciber transciber = new IdentityGenomeTranscriber();
 
                 /*
                  * DEV NOTE: This is where mutation is initiated!
                  */
-                final SeedCell newCell = new SeedCell(cell, transciber.transcribe(organism.getGenome()), newSpatialCoordinates, terrain.getProperties());
+                final SeedCell newCell = new SeedCell(cell, transciber.transcribe(terrain.getProperties(),
+                        organism.getGenome()), newSpatialCoordinates, terrain.getProperties());
                 logger.info("Created new seed: " + organism.getUniqueID() + " at " + newSpatialCoordinates);
                 cell.addChild(newCell);
                 terrain.setCell(newCell,organism);

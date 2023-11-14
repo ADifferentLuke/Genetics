@@ -24,7 +24,7 @@ public class GenomeTest {
             geneList.addLast(gene);
         }
 
-        final Genome genome = new Genome(geneList) {
+        final Genome genome = new Genome(geneList, "test") {
             @Override
             public PlantBehavior getNextAct() {
                 return null;

@@ -44,7 +44,7 @@ public class PlantGenome extends Genome {
     private final Iterator<Byte> iterator;
 
     public PlantGenome(final List<Gene> genes) {
-        super(genes);
+        super(genes,PlantOrganism.TYPE);
         iterator = iterator(numberOfBits);
     }
 

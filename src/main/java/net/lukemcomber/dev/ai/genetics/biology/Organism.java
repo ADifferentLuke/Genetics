@@ -13,6 +13,8 @@ import static java.util.logging.Logger.getLogger;
 
 public interface Organism {
 
+    GenomeTransciber getTranscriber();
+
     Genome getGenome();
 
     String getOrganismType();

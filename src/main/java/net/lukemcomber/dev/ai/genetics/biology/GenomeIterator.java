@@ -15,18 +15,7 @@ public class GenomeIterator implements Iterator<Byte> {
 
         this.index = 0;
         this.numBits = numberOfBits;
-
-        final int[] byteArray = geneList.stream()
-                .flatMap(gene -> Stream.of(gene.nucleotideA, gene.nucleotideB, gene.nucleotideC, gene.nucleotideD))
-                .mapToInt(Byte::intValue)
-                .map(value -> (byte) value)
-                .toArray();
-
-        binaryGenome = new byte[byteArray.length];
-        for (int i = 0; i < byteArray.length; i++) {
-            binaryGenome[i] = (byte) byteArray[i];
-        }
-
+        binaryGenome = Genome.toBytes(geneList);
     }
 
     /**

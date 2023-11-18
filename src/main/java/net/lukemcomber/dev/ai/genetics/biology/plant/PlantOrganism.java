@@ -1,6 +1,7 @@
 package net.lukemcomber.dev.ai.genetics.biology.plant;
 
 import net.lukemcomber.dev.ai.genetics.biology.Cell;
+import net.lukemcomber.dev.ai.genetics.biology.GenomeTransciber;
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
@@ -46,8 +47,10 @@ public class PlantOrganism implements Organism {
 
     private final UniverseConstants properties;
 
+    private final GenomeTransciber transciber;
+
     public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates,
-                         final UniverseConstants properties ) {
+                         final UniverseConstants properties, final GenomeTransciber transciber ) {
         this.genome = seed.getGenome();
         this.parentUuid = parentUuid;
         this.cell = seed;
@@ -59,6 +62,7 @@ public class PlantOrganism implements Organism {
         this.uuid = UUID.randomUUID().toString();
         this.birthTime = temporalCoordinates;
         this.lastUpdateTime = temporalCoordinates;
+        this.transciber = transciber;
 
         seed.activate(); //Allow the seed to grow
         alive = true; //It's allliiiiiiiivvvvveeee!
@@ -67,6 +71,11 @@ public class PlantOrganism implements Organism {
     @Override
     public String getParentId() {
         return parentUuid;
+    }
+
+    @Override
+    public GenomeTransciber getTranscriber() {
+        return transciber;
     }
 
     public Genome getGenome() {
@@ -136,7 +145,7 @@ public class PlantOrganism implements Organism {
                         cell.getParent().removeChild(cell);
 
                         SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
-                        final PlantOrganism plantOrganism = new PlantOrganism( getUniqueID(), activatedSeed, temporalCoordinates, properties );
+                        final PlantOrganism plantOrganism = new PlantOrganism( getUniqueID(), activatedSeed, temporalCoordinates, properties, transciber );
 
                         logger.info( "New Organism born: " + plantOrganism.getUniqueID());
 
@@ -159,7 +168,9 @@ public class PlantOrganism implements Organism {
                     if (cell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost(terrain.getProperties()) <= energy) {
                         logger.info("Attempting " + plantBehavior);
                         try {
+                            logger.info( "Start newCell");
                             final Cell newCell = plantBehavior.performAction(terrain, cell, this);
+                            logger.info( "Start endCell");
                             if (null != newCell) {
                                 //Update last updated time
                                 lastUpdateTime = temporalCoordinates;

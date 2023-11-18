@@ -3,9 +3,9 @@ package net.lukemcomber.dev.ai.genetics.biology;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This is a common interface for genomes interfacing with the world
@@ -31,14 +31,25 @@ public abstract class Genome {
         this.type = type;
     }
 
-    public Genome(final List<Gene> genes, final String type ) {
+    public Genome(final List<Gene> genes, final String type) {
         numOfGenes = genes.size();
         this.genes = new LinkedList<>(genes);
         this.type = type;
 
     }
 
-    public String getType(){
+    public static byte[] toBytes(final List<Gene> geneList) {
+        return geneList.stream()
+                .map(Gene::toBytes)
+                .reduce(new byte[0], (a,b) -> {
+                    byte[] result = new byte[a.length + b.length];
+                    System.arraycopy(a, 0, result, 0, a.length);
+                    System.arraycopy(b, 0, result, a.length, b.length);
+                    return result;
+                });
+    }
+
+    public String getType() {
         return type;
     }
 

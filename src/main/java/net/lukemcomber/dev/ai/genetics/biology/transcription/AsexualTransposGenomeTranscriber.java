@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import net.lukemcomber.dev.ai.genetics.biology.Gene;
 import net.lukemcomber.dev.ai.genetics.biology.Genome;
 import net.lukemcomber.dev.ai.genetics.biology.GenomeTransciber;
+import net.lukemcomber.dev.ai.genetics.biology.OrganismFactory;
 import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 
 import java.util.Arrays;
@@ -22,10 +23,12 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
     private Random rng;
 
     @Override
-    public Genome transcribe(final UniverseConstants properties, final Genome genome) {
+    public Genome transcribe(final UniverseConstants properties, final Genome originalGenome) {
         final float probability = 1 / properties.get(GENOME_TRANSPOSE_PROBABILITY, Integer.class);
         final int flankLength = properties.get(GENOME_TRANSPOSE_FLANK_LENGTH, Integer.class, 2);
         final int randomSeed = properties.get(GENOME_TRANSPOSE_SEED, Integer.class, 0);
+
+        final Genome genome = OrganismFactory.cloneGenome(originalGenome);
 
         if (null == rng) {
             if (0 < randomSeed) {
@@ -124,6 +127,7 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
     }
 
 
+    // TODO - put this in a more logical place
     // little method for debugging
     public static String byteArrayToString(byte[] array) {
         StringBuilder stringBuilder = new StringBuilder("[");

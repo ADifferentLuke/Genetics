@@ -11,6 +11,7 @@ import net.lukemcomber.dev.ai.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class FlatWorld implements Terrain {
         }
 
     }
+
 
     private MatrixCell[][] organismMap;
     private Map<String, TerrainProperty>[][] environmentMap;
@@ -97,7 +99,16 @@ public class FlatWorld implements Terrain {
         worldWidth = x;
         organismMap = new MatrixCell[x][y];
         environmentMap = new HashMap[x][y];
-        population = new HashMap<>();
+        /*
+         * Because we only allow iterator access to the organism data structure and the
+         * organisms themselves can remove themselves from terrain, we have a concurrency problem.
+         *
+         * Dirty fix is to use a Concurrent map, but does not solve the underlying design problem
+         * that essentially guarantees concurrent access in a single thread context. Bad design maybe?
+         *
+         * TODO think more on this
+         */
+        population = new ConcurrentHashMap<>();
 
         //we are at load time, spend extra time now initializing and less time later overall
         for (int i = 0; i < x; ++i) {
@@ -284,6 +295,11 @@ public class FlatWorld implements Terrain {
     @Override
     public Organism getOrganism(String oid) {
         return population.get(oid);
+    }
+
+    @Override
+    public int getOrganismCount() {
+        return isInitialized ? population.size() : 0;
     }
 
     public Iterator<Organism> getOrganisms() {

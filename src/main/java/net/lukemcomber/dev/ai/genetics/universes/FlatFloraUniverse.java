@@ -10,6 +10,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.cells.RootCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.StemCell;
 import net.lukemcomber.dev.ai.genetics.biology.transcription.AsexualTransposGenomeTranscriber;
+import net.lukemcomber.dev.ai.genetics.biology.transcription.MutationGenomeTranscriber;
 import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.world.terrain.impl.FlatWorldResourceManager;
 
@@ -45,7 +46,8 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(GrowRoot.PROPERTY_GROW_ROOT_COST, 2)
                 .put(GrowSeed.PROPERTY_GROW_SEED_COST, 10)
                 /* Genome Modification / Reproduction */
-                .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY,1)
+                .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY,5)
+                .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY,5)
                 .build();
     }
 

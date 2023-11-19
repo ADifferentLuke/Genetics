@@ -137,6 +137,8 @@ public interface Terrain {
     boolean deleteOrganism(final Organism organism);
 
     Organism getOrganism(final String oid);
+
+    int getOrganismCount();
     Iterator<Organism> getOrganisms();
     boolean hasOrganism(final Organism organism);
 

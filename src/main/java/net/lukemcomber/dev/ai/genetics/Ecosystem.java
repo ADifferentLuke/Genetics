@@ -2,7 +2,6 @@ package net.lukemcomber.dev.ai.genetics;
 
 import net.lukemcomber.dev.ai.genetics.biology.Organism;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
-import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import net.lukemcomber.dev.ai.genetics.service.LoggerOutputStream;
 import net.lukemcomber.dev.ai.genetics.world.ResourceManager;
 import net.lukemcomber.dev.ai.genetics.world.terrain.Terrain;
@@ -94,6 +93,15 @@ public class Ecosystem {
                 refreshResources();
             }
             final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(this.totalTicks, this.totalDays, this.currentTick);
+            logger.info( "Organism count " + terrain.getOrganismCount());
+
+            /*
+             * Organisms remove themselves (or rather the terrain removes them) from
+             *  the world which can cause a Concurrency problem. We can solve this
+             *  by creating a new reference to the collection.
+             *
+             * More thought should be given to making this purely asynchronous
+             */
             for (final Iterator<Organism> it = terrain.getOrganisms(); it.hasNext(); ) {
                 Organism organism = it.next();
                 logger.info("Ticking Organism: " + organism.getUniqueID());

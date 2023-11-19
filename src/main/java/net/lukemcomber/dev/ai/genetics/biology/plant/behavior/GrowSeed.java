@@ -3,7 +3,6 @@ package net.lukemcomber.dev.ai.genetics.biology.plant.behavior;
 import net.lukemcomber.dev.ai.genetics.biology.*;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
-import net.lukemcomber.dev.ai.genetics.biology.transcription.IdentityGenomeTranscriber;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
@@ -34,7 +33,6 @@ public class GrowSeed implements PlantBehavior {
     @Override
     public Cell performAction(final Terrain terrain, final Cell cell, final Organism organism) {
         final long cur = System.currentTimeMillis();
-        logger.info( "grow " + cur + " start");
         Cell retVal = null;
 
         final SpatialCoordinates newSpatialCoordinates = function.apply(cell.getCoordinates());
@@ -47,27 +45,23 @@ public class GrowSeed implements PlantBehavior {
                 //Organism shouldn't be null, but we're in mid-redesign ... so blow up if it happens
 
                 final GenomeTransciber transciber = organism.getTranscriber();
-                final Genome newGenome = OrganismFactory.cloneGenome(organism.getGenome());
 
                 /*
                  * DEV NOTE: This is where mutation is initiated!
                  */
                 final SeedCell newCell = new SeedCell(cell, transciber.transcribe(terrain.getProperties(),
-                        newGenome), newSpatialCoordinates, terrain.getProperties());
+                        organism.getGenome()), newSpatialCoordinates, terrain.getProperties());
                 logger.info("Created new seed: " + organism.getUniqueID() + " at " + newSpatialCoordinates);
                 cell.addChild(newCell);
                 terrain.setCell(newCell,organism);
                 retVal = newCell;
             } else {
-                logger.info( "grow " + cur + " error");
                 throw new RuntimeException("Organism is null!");
             }
         } else {
-            logger.info( "grow " + cur + " error");
             throw new EvolutionException("Seed growth failed. Collision detected.");
         }
 
-        logger.info( "grow " + cur + " end");
         return retVal;
     }
 

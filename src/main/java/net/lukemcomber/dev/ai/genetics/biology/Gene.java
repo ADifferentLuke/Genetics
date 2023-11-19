@@ -33,4 +33,8 @@ public final class Gene {
         }
         return retVal;
     }
+
+    public String toString(){
+        return String.format( "[%d,%d,%d,%d]", nucleotideA, nucleotideB, nucleotideC,nucleotideD);
+    }
 }

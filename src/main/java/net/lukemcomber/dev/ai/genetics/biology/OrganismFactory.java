@@ -4,6 +4,7 @@ import net.lukemcomber.dev.ai.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.dev.ai.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.dev.ai.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.dev.ai.genetics.biology.transcription.AsexualTransposGenomeTranscriber;
+import net.lukemcomber.dev.ai.genetics.biology.transcription.AsexualTransposeAndMutateGeneTranscriber;
 import net.lukemcomber.dev.ai.genetics.exception.EvolutionException;
 import net.lukemcomber.dev.ai.genetics.model.SpatialCoordinates;
 import net.lukemcomber.dev.ai.genetics.model.TemporalCoordinates;
@@ -12,7 +13,6 @@ import net.lukemcomber.dev.ai.genetics.model.UniverseConstants;
 import java.util.LinkedList;
 import java.util.List;
 
-//TODO might be redudant now
 public class OrganismFactory {
 
     public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
@@ -21,7 +21,7 @@ public class OrganismFactory {
         if (genome instanceof PlantGenome) {
 
             final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates,properties);
-            final GenomeTransciber transciber = new AsexualTransposGenomeTranscriber();
+            final GenomeTransciber transciber = new AsexualTransposeAndMutateGeneTranscriber();
 
             retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber);
 

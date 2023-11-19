@@ -38,6 +38,7 @@ public class GrowRoot implements PlantBehavior {
         } else {
             throw new EvolutionException("Root growth failed. Collision detected.");
         }
+
         return retVal;
     }
 

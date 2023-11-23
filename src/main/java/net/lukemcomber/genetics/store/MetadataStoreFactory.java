@@ -1,10 +1,14 @@
 package net.lukemcomber.genetics.store;
 
+/*
+ * (c) 2023 Luke McOmber
+ * This code is licensed under MIT license (see LICENSE.txt for details)
+ */
+
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.impl.TmpMetaDataStore;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,21 +36,18 @@ public class MetadataStoreFactory {
                     while (true) {
                         Thread.sleep(60000l);
 
-                        final long currentTime = System.currentTimeMillis();
+                        //TODO - remove key set call
+                        metadataStoreBySession.forEach((sessionId,storeMap) -> {
 
-                        //the keyset call here is important
-                        metadataStoreBySession.keySet().forEach(sessionId -> {
-
-                            //TODO may need to change to more concurrrent functions
-                            final Map<String, MetadataStore<?>> storeMap = metadataStoreBySession.get(sessionId);
                             final Set<String> metaKeys = storeMap.keySet();
 
                             for (String key : metaKeys) {
                                 MetadataStore<?> store = storeMap.get(key);
 
                                 try {
+                                    //Iterate and check expiration
                                     if (store.expire()) {
-                                        //TODO lock here
+                                        //GC will cull the store once all references scope out
                                         storeMap.remove(store);
                                     }
                                 } catch (IOException e) {
@@ -73,7 +74,6 @@ public class MetadataStoreFactory {
     /*
      * Returns a thread-safe data store backed by a tmp file
      */
-    // TODO we can do better than locking the entire method
     public synchronized static <T extends Metadata> MetadataStore<T> getMetadataStore(
             final String session, final Class<T> clazz, final UniverseConstants properties)
             throws IOException {

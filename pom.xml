@@ -75,6 +75,13 @@
             <artifactId>guava</artifactId>
             <version>28.2-android</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.esotericsoftware.kryo/kryo5 -->
+        <dependency>
+            <groupId>com.esotericsoftware.kryo</groupId>
+            <artifactId>kryo5</artifactId>
+            <version>5.5.0</version>
+        </dependency>
+
     </dependencies>
     <distributionManagement>
         <repository>

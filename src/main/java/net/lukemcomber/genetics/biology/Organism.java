@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.biology;
 
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.service.CellHelper;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.OutputStream;
@@ -16,6 +17,7 @@ import java.util.logging.Logger;
 
 import static java.util.logging.Logger.getLogger;
 
+//TODO clean up this interface. It's NASTY!
 public interface Organism {
 
     GenomeTransciber getTranscriber();
@@ -70,12 +72,5 @@ public interface Organism {
         return LogHolder.LOGGER;
     }
 
-
-    //needs a genome
-    //needs cells
-    //needs age
-    //needs energy
-    //sensors
-    //efficiency of energy consumption decreases with time
 
 }

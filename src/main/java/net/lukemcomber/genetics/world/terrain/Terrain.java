@@ -13,6 +13,7 @@ import net.lukemcomber.genetics.world.ResourceManager;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A representation of the environment. The stage of life if you will.
@@ -123,5 +124,7 @@ public interface Terrain {
     ResourceManager getResourceManager();
 
     UniverseConstants getProperties();
+
+    UUID getUUID();
 
 }

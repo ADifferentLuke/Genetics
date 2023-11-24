@@ -126,14 +126,13 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
                                     }
 
                                 } else {
-                                    //TODO make less ambigious
-                                    logger.finest("Expire failed: " + inactiveTime + " <= " + ttl);
+                                    //We have not expired yet
                                 }
                             } catch (final InterruptedException e) {
                                 logger.info(writeThread.getName() + " woken up.");
                             }
                         }
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         throw new RuntimeException(e);
                     }
                     logger.info( writeThread.getName() + " shutting down.");

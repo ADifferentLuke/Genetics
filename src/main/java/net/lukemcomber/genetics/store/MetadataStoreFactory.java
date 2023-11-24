@@ -75,15 +75,15 @@ public class MetadataStoreFactory {
      * Returns a thread-safe data store backed by a tmp file
      */
     public synchronized static <T extends Metadata> MetadataStore<T> getMetadataStore(
-            final String session, final Class<T> clazz, final UniverseConstants properties)
+            final String simulation, final Class<T> clazz, final UniverseConstants properties)
             throws IOException {
 
         final Map<String, MetadataStore<?>> sessionStore;
-        if (insance.metadataStoreBySession.containsKey(session)) {
-            sessionStore = insance.metadataStoreBySession.get(session);
+        if (insance.metadataStoreBySession.containsKey(simulation)) {
+            sessionStore = insance.metadataStoreBySession.get(simulation);
         } else {
             sessionStore = new ConcurrentHashMap<>();
-            insance.metadataStoreBySession.put(session, sessionStore);
+            insance.metadataStoreBySession.put(simulation, sessionStore);
         }
         MetadataStore<T> metadataStore = (MetadataStore<T>) sessionStore.get(clazz.getName());
         if (null == metadataStore) {

@@ -12,6 +12,7 @@ import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,7 +112,7 @@ public class Ecosystem {
                 Organism organism = it.next();
                 logger.info("Ticking Organism: " + organism.getUniqueID());
                 organism.leechResources(terrain, temporalCoordinates);
-                organism.performAction(terrain, temporalCoordinates, ((organism1, cell) -> {
+                organism.performAction(terrain, temporalCoordinates,  ((organism1, cell) -> {
                     final ResourceManager manager = terrain.getResourceManager();
                     manager.renewEnvironmentResourceFromCellDeath(organism, cell);
                 }));

@@ -17,6 +17,9 @@ import net.lukemcomber.genetics.biology.plant.cells.StemCell;
 import net.lukemcomber.genetics.biology.transcription.AsexualTransposGenomeTranscriber;
 import net.lukemcomber.genetics.biology.transcription.MutationGenomeTranscriber;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.metadata.Genealogy;
+import net.lukemcomber.genetics.store.metadata.Genome;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorldResourceManager;
 
 import java.util.Map;
@@ -53,6 +56,10 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 /* Genome Modification / Reproduction */
                 .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY,5)
                 .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY,5)
+                /* Metadata Store */
+                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400l) // One day in seconds
+                .put(Genealogy.PROPERTY_GENEALOGY_ENABLE, true)
+                .put(Genome.PROPERTY_GENOME_ENABLE, true)
                 .build();
     }
 

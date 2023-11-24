@@ -14,8 +14,12 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.service.GenomeSerDe;
+import net.lukemcomber.genetics.store.metadata.Genealogy;
+import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -151,6 +155,8 @@ public class PlantOrganism implements Organism {
 
                         SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
                         final PlantOrganism plantOrganism = new PlantOrganism( getUniqueID(), activatedSeed, temporalCoordinates, properties, transciber );
+
+
 
                         logger.info( "New Organism born: " + plantOrganism.getUniqueID());
 

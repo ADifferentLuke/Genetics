@@ -20,6 +20,8 @@ import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.metadata.Genealogy;
 import net.lukemcomber.genetics.store.metadata.Genome;
+import net.lukemcomber.genetics.world.terrain.Terrain;
+import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorldResourceManager;
 
 import java.util.Map;
@@ -32,6 +34,8 @@ public final class FlatFloraUniverse extends UniverseConstants {
 
     static {
         CONSTANTS = new ImmutableMap.Builder<String, Object>()
+                /* World Type */
+                .put(Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID)
                 /* World Properties */
                 .put(FlatWorldResourceManager.DAILY_SOLAR_PROPERTY, 10)
                 .put(FlatWorldResourceManager.INITIAL_SOIL_PROPERTY, 100)
@@ -54,8 +58,8 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(GrowRoot.PROPERTY_GROW_ROOT_COST, 2)
                 .put(GrowSeed.PROPERTY_GROW_SEED_COST, 10)
                 /* Genome Modification / Reproduction */
-                .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY,5)
-                .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY,5)
+                .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY, 5)
+                .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 5)
                 /* Metadata Store */
                 .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400l) // One day in seconds
                 .put(Genealogy.PROPERTY_GENEALOGY_ENABLE, true)

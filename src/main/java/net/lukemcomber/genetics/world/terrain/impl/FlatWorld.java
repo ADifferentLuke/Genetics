@@ -8,6 +8,7 @@ import net.lukemcomber.genetics.service.CellHelper;
 import net.lukemcomber.genetics.service.GenomeSerDe;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.metadata.Genealogy;
 import net.lukemcomber.genetics.store.metadata.Genome;
 import net.lukemcomber.genetics.world.ResourceManager;
@@ -52,9 +53,12 @@ public class FlatWorld implements Terrain {
 
     private ResourceManager resourceManager;
 
-    public FlatWorld(final UniverseConstants constants ){
+    private final MetadataStoreGroup metadataStoreGroup;
+
+    public FlatWorld(final UniverseConstants constants, final MetadataStoreGroup metadataStoreGroup ){
         this.constants = constants;
         uuid = UUID.randomUUID();
+        this.metadataStoreGroup = metadataStoreGroup;
     }
 
     public void setTerrainProperty(final SpatialCoordinates spatialCoordinates, final TerrainProperty terrainProperty) {
@@ -283,20 +287,19 @@ public class FlatWorld implements Terrain {
                          */
 
                         final Genealogy metaData = new Genealogy();
-                        metaData.parentId = organism.getUniqueID();
-                        metaData.childId = organism.getParentId();
+                        metaData.parentName = organism.getParentId();
+                        metaData.childName = organism.getUniqueID();
                         metaData.birthTickDate = organism.getBirthTick();
 
                         final MetadataStore<Genealogy> genealogyMetadataMetadataStore =
-                                MetadataStoreFactory.getMetadataStore(uuid.toString(), Genealogy.class, getProperties());
+                                metadataStoreGroup.get(Genealogy.class);
                         genealogyMetadataMetadataStore.store(metaData);
 
                         final Genome geneomData =new Genome();
                         geneomData.name = organism.getUniqueID();
                         geneomData.dna = GenomeSerDe.serialize(organism.getGenome());
 
-                        final MetadataStore<Genome> genomeMetadataStore =
-                                MetadataStoreFactory.getMetadataStore(uuid.toString(), Genome.class, getProperties());
+                        final MetadataStore<Genome> genomeMetadataStore = metadataStoreGroup.get(Genome.class);
                         genomeMetadataStore.store(geneomData);
 
                     } catch (IOException e) {

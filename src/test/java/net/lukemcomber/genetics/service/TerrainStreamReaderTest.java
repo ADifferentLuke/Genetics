@@ -16,7 +16,7 @@ public class TerrainStreamReaderTest {
 
     public void testReader() throws IOException {
         final URL url = Thread.currentThread().getContextClassLoader().getResource(testInitFile);
-        final TerrainStreamReader fileReader = new TerrainStreamReader();
+        final TerrainStreamReader fileReader = new TerrainStreamReader("unit-test");
 
         assert url != null;
         final Terrain terrain = fileReader.parse(Files.newInputStream(Paths.get(url.getPath())));
@@ -37,7 +37,7 @@ public class TerrainStreamReaderTest {
 
         final int max = 100;
 
-        final TerrainStreamReader reader = new TerrainStreamReader();
+        final TerrainStreamReader reader = new TerrainStreamReader("unit-test");
         final Range<Integer> testRange1 = reader.parseRange(range1,max);
         final Range<Integer> testRange2 = reader.parseRange(range2,max);
         final Range<Integer> testRange3 = reader.parseRange(range3,max);

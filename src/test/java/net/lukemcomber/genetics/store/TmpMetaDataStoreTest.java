@@ -7,6 +7,8 @@ package net.lukemcomber.genetics.store;
 
 import com.google.common.collect.ImmutableMap;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.world.terrain.Terrain;
+import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -19,7 +21,7 @@ import static org.testng.AssertJUnit.*;
 @Test
 public class TmpMetaDataStoreTest {
 
-    private static final Logger logger = Logger.getLogger( TmpMetaDataStoreTest.class.getName());
+    private static final Logger logger = Logger.getLogger(TmpMetaDataStoreTest.class.getName());
 
     public static class TestUniverse extends UniverseConstants {
         public TestUniverse(Map<String, Object> map) {
@@ -29,11 +31,12 @@ public class TmpMetaDataStoreTest {
 
     public void test() throws IOException, InterruptedException {
         final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
+                Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
                 "metadata.TestMetadata.enabled", true,
                 MetadataStore.PROPERTY_DATASTORE_TTL, 1l
         ));
-        final MetadataStore<TestMetadata> testMetaStore = MetadataStoreFactory.getMetadataStore("test",
-                TestMetadata.class, testUniverse);
+        final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore("unit-test-2", testUniverse);
+        final MetadataStore<TestMetadata> testMetaStore = group.get(TestMetadata.class);
 
         final TestMetadata testMetadata = new TestMetadata();
         testMetadata.str = "Hello World!";
@@ -49,7 +52,7 @@ public class TmpMetaDataStoreTest {
         assertFalse(testMetadata.str == results.get(0).str);
 
         logger.info("Waiting for cache cleanup .... ");
-        for( int loopCounter = 0; 1000 > loopCounter && !testMetaStore.expire(); ++loopCounter){
+        for (int loopCounter = 0; 1000 > loopCounter && !testMetaStore.expire(); ++loopCounter) {
             Thread.sleep(30l);
         }
 

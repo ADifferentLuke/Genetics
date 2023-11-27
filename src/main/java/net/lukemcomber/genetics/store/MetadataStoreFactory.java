@@ -6,11 +6,10 @@ package net.lukemcomber.genetics.store;
  */
 
 import net.lukemcomber.genetics.model.UniverseConstants;
-import net.lukemcomber.genetics.store.impl.TmpMetaDataStore;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /*
@@ -18,8 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MetadataStoreFactory {
 
-    // Session ID - Type - Store
-    private final Map<String, Map<String, MetadataStore<?>>> metadataStoreBySession;
+    private final Map<String, WeakReference<MetadataStoreGroup>> metadataStoreBySession;
 
     /*
      * We can do this in static context because we are using the default constructor
@@ -34,29 +32,16 @@ public class MetadataStoreFactory {
             public void run() {
                 try {
                     while (true) {
+                        //TODO switch to configurable?
                         Thread.sleep(60000l);
 
-                        //TODO - remove key set call
-                        metadataStoreBySession.forEach((sessionId,storeMap) -> {
+                        metadataStoreBySession.forEach((sessionId, reference) -> {
 
-                            final Set<String> metaKeys = storeMap.keySet();
-
-                            for (String key : metaKeys) {
-                                MetadataStore<?> store = storeMap.get(key);
-
-                                try {
-                                    //Iterate and check expiration
-                                    if (store.expire()) {
-                                        //GC will cull the store once all references scope out
-                                        storeMap.remove(store);
-                                    }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                            }
-
-                            if(0 == storeMap.size()){
+                            final MetadataStoreGroup group = reference.get();
+                            if( null != group ){
+                                group.expire();
+                            } else {
+                                // The store has been GC'ed, remove the map entry
                                 metadataStoreBySession.remove(sessionId);
                             }
                         });
@@ -74,22 +59,19 @@ public class MetadataStoreFactory {
     /*
      * Returns a thread-safe data store backed by a tmp file
      */
-    public synchronized static <T extends Metadata> MetadataStore<T> getMetadataStore(
-            final String simulation, final Class<T> clazz, final UniverseConstants properties)
+    public synchronized static <T extends Metadata> MetadataStoreGroup getMetadataStore(
+            final String simulation, final UniverseConstants properties)
             throws IOException {
 
-        final Map<String, MetadataStore<?>> sessionStore;
+        MetadataStoreGroup sessionStore = null;
         if (insance.metadataStoreBySession.containsKey(simulation)) {
-            sessionStore = insance.metadataStoreBySession.get(simulation);
-        } else {
-            sessionStore = new ConcurrentHashMap<>();
-            insance.metadataStoreBySession.put(simulation, sessionStore);
+            final WeakReference<MetadataStoreGroup> reference = insance.metadataStoreBySession.get(simulation);
+            sessionStore = reference.get();
         }
-        MetadataStore<T> metadataStore = (MetadataStore<T>) sessionStore.get(clazz.getName());
-        if (null == metadataStore) {
-            metadataStore = new TmpMetaDataStore<T>(clazz, properties);
-            sessionStore.put(clazz.getName(), metadataStore);
+        if( null == sessionStore ){
+            sessionStore = new MetadataStoreGroup(properties);
+            insance.metadataStoreBySession.put(simulation, new WeakReference<>(sessionStore));
         }
-        return metadataStore;
+        return sessionStore;
     }
 }

@@ -8,10 +8,13 @@ package net.lukemcomber.genetics;
 import net.lukemcomber.genetics.biology.Cell;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.model.AutomatedConfig;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.service.AutomatedConfigFileReader;
 import net.lukemcomber.genetics.service.GenomeStreamReader;
 import net.lukemcomber.genetics.service.TerrainStreamReader;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
@@ -35,13 +38,15 @@ public class Genetics {
 
     public void run(final InputStream initEnv, final InputStream zoo) throws IOException {
 
-        final UniverseConstants properties = new FlatFloraUniverse();
         //Builds the world
-        final Terrain terrain = new TerrainStreamReader().parse(initEnv);
+        final Terrain terrain = new TerrainStreamReader("genetics").parse(initEnv);
 
+        final SpatialCoordinates dimensions = new SpatialCoordinates(terrain.getSizeOfXAxis(),
+                terrain.getSizeOfYAxis(), terrain.getSizeOfZAxis());
+        final MetadataStoreGroup metadataStoreGroup = MetadataStoreFactory.getMetadataStore("genetics", terrain.getProperties());
         //reads a genome
-        final GenomeStreamReader genomeStreamReader = new GenomeStreamReader(terrain.getSizeOfXAxis(),
-                terrain.getSizeOfYAxis(), terrain.getSizeOfZAxis(), properties);
+        final GenomeStreamReader genomeStreamReader = new GenomeStreamReader(
+                dimensions, terrain.getProperties(), metadataStoreGroup);
 
         if (null != zoo) {
             final List<Organism> organisms = genomeStreamReader.parse(zoo);
@@ -79,6 +84,6 @@ public class Genetics {
     }
 
     public static void main(final String[] args) throws IOException {
-        System.out.println( "Thank you for using my Genetics library.");
+        System.out.println("Thank you for using my Genetics library.");
     }
 }

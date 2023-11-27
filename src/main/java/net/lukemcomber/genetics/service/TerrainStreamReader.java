@@ -6,6 +6,10 @@ package net.lukemcomber.genetics.service;
  */
 
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
+import net.lukemcomber.genetics.universes.PreCannedUniverses;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.genetics.world.terrain.TerrainPropertyFactory;
@@ -13,6 +17,8 @@ import net.lukemcomber.genetics.WorldFactory;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.io.IOException;
 
 
 public class TerrainStreamReader extends LGPStreamLineReader<TerrainStreamReader.ContextData,Terrain> {
@@ -34,18 +40,25 @@ public class TerrainStreamReader extends LGPStreamLineReader<TerrainStreamReader
         int xMax = 0, yMax = 0, zMax = 0;
         Context context = Context.TYPE;
         LGPReader.RangeValueItem item = null;
+        UniverseConstants properties = null;
+        MetadataStoreGroup metadataStoreGroup = null;
     }
 
+    private final String sessionId;
     public static final String WORLD = "WORLD";
     public static final String GRID = "GRID";
     public static final String START = "START ";
     public static final String END = "END";
 
+    public TerrainStreamReader(final String sessionId ){
+       this.sessionId = sessionId;
+    }
+
     /**
      * @return
      */
     @Override
-    ContextData initPayload() {
+    ContextData initPayload() throws IOException {
         ContextData data = new ContextData();
         return data;
     }
@@ -69,7 +82,13 @@ public class TerrainStreamReader extends LGPStreamLineReader<TerrainStreamReader
             case TYPE: {
                 final Pair<String, String> pair = requireNameValue(line);
                 if (WORLD.equalsIgnoreCase(pair.getLeft())) {
-                    data.terrain = WorldFactory.createWorld(pair.getRight());
+                    data.properties = PreCannedUniverses.get(pair.getRight());
+                    try {
+                        data.metadataStoreGroup = MetadataStoreFactory.getMetadataStore(sessionId, data.properties);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    data.terrain = WorldFactory.createWorld(data.properties, data.metadataStoreGroup);
                     data.context = Context.INIT;
                 }
                 break;

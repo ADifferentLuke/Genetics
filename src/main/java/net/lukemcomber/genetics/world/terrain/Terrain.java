@@ -20,6 +20,8 @@ import java.util.UUID;
  */
 public interface Terrain {
 
+    String PROPERTY_TERRAIN_TYPE = "terrain.type";
+
     /**
      * Set a specific terrain property for the tile at coordinations of (x,y,z)
      *

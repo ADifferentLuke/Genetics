@@ -2,7 +2,10 @@ package net.lukemcomber.genetics.service;
 
 import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.Organism;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 import org.apache.commons.codec.DecoderException;
 import org.testng.annotations.Test;
@@ -47,7 +50,9 @@ public class GenomeStreamReaderTest {
     public void testReader() throws IOException {
         final URL url = Thread.currentThread().getContextClassLoader().getResource(testInitFile);
         final UniverseConstants props = new FlatFloraUniverse();
-        final GenomeStreamReader reader = new GenomeStreamReader( 90,90,90, props );
+        final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore("GenomeSttreamReaderTest::testReader", props);
+        final SpatialCoordinates dimensions = new SpatialCoordinates(90,90,90);
+        final GenomeStreamReader reader = new GenomeStreamReader( dimensions, props,groupStore );
         final List<Organism> organisms = reader.parse( Files.newInputStream(Paths.get(url.getPath())));
 
     }

@@ -6,11 +6,17 @@ package net.lukemcomber.genetics;
  */
 
 import net.lukemcomber.genetics.biology.Organism;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
+import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.service.LoggerOutputStream;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
+import net.lukemcomber.genetics.universes.PreCannedUniverses;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -23,6 +29,8 @@ public class Ecosystem {
     private Terrain terrain;
     private final int ticksPerTurn;
     private final int ticksPerDay;
+    private final String uuid;
+    private final UniverseConstants properties;
 
     public long getTotalTicks() {
         return totalTicks;
@@ -56,9 +64,8 @@ public class Ecosystem {
     private long totalDays;
     private int currentTick;
 
+    public Ecosystem(final int ticksPerTurn, final int ticksPerDay, final SpatialCoordinates size, final String type ) throws IOException {
 
-    public Ecosystem(final int ticksPerTurn, final int ticksPerDay, final Terrain terrain) {
-        this.terrain = terrain;
         this.ticksPerDay = ticksPerDay;
         this.ticksPerTurn = ticksPerTurn;
 
@@ -66,10 +73,21 @@ public class Ecosystem {
         totalTicks = 0;
         currentTick = 0;
 
+        properties = PreCannedUniverses.get(type);
+        uuid = UUID.randomUUID().toString();
+
+        final MetadataStoreGroup metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid,properties);
+
+        terrain = WorldFactory.createWorld(properties, metadataStoreGroup);
+        terrain.initialize( size.xAxis, size.yAxis, size.zAxis);
 
         if (null != terrain.getResourceManager()) {
             terrain.getResourceManager().initializeAllTerrainResources();
         }
+    }
+
+    public String getId(){
+        return uuid;
     }
 
     public int getTicksPerTurn() {

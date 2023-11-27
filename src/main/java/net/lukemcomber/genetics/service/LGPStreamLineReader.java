@@ -50,7 +50,7 @@ public abstract class LGPStreamLineReader<S,T> extends LGPReader{
     }
 
 
-    abstract S initPayload();
+    abstract S initPayload() throws IOException;
     //class private
     abstract T getResult(S s);
     abstract void parse(final String line, final S s);

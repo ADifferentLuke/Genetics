@@ -11,7 +11,7 @@ public class Genealogy implements Metadata {
 
     public static final String PROPERTY_GENEALOGY_ENABLE = "metadata.Genealogy.enabled";
 
-    public String parentId = "";
-    public String childId = "";
+    public String parentName = "";
+    public String childName = "";
     public long birthTickDate = 0l;
 }

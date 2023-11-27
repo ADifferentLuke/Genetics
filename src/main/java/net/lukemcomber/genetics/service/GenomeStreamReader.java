@@ -10,6 +10,7 @@ import net.lukemcomber.genetics.biology.OrganismFactory;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import org.apache.commons.codec.DecoderException;
 
 import java.util.LinkedList;
@@ -39,11 +40,15 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
 
     private UniverseConstants properties;
 
-    public GenomeStreamReader(int sizeOfXAxis, int sizeOfYAxis, int sizeOfZAxis, final UniverseConstants properties) {
+    private final MetadataStoreGroup metadataStoreGroup;
+
+    public GenomeStreamReader(final SpatialCoordinates dimensions, final UniverseConstants properties,
+                              final MetadataStoreGroup metadataStoreGroup ) {
         super();
-        this.sizeOfXAxis = sizeOfXAxis;
-        this.sizeOfYAxis = sizeOfYAxis;
-        this.sizeOfZAxis = sizeOfZAxis;
+        this.sizeOfXAxis = dimensions.xAxis;
+        this.sizeOfYAxis = dimensions.yAxis;
+        this.sizeOfZAxis = dimensions.zAxis;
+        this.metadataStoreGroup = metadataStoreGroup;
         this.properties = properties;
     }
 
@@ -97,7 +102,7 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
                                     final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0,0,0);
                                     final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
                                             GenomeSerDe.deserialize(contextData.currentOrganismType, contextData.item.value), spatialCoordinates,temporalCoordinates,
-                                            properties);
+                                            properties, metadataStoreGroup);
                                     contextData.organisms.add(organism);
                                 } catch (DecoderException e) {
                                     throw new RuntimeException(e);

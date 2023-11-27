@@ -7,22 +7,23 @@ package net.lukemcomber.genetics;
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 public class WorldFactory {
 
-    public static Terrain createWorld(final String type) {
+    public static Terrain createWorld(final UniverseConstants properties , final MetadataStoreGroup metadataStoreGroup) {
         Terrain world;
-        switch (type) {
-            case FlatFloraUniverse.ID:
-                final UniverseConstants universe = new FlatFloraUniverse();
-                world = new FlatWorld(universe);
+        final String worldType = properties.get(Terrain.PROPERTY_TERRAIN_TYPE,String.class);
+        switch (worldType) {
+            case FlatWorld.ID:
+                world = new FlatWorld(properties, metadataStoreGroup);
                 System.out.println("Allocated a new " + FlatWorld.ID);
                 break;
             default:
-                throw new EvolutionException("World type [" + type + "] not recognized.");
+                throw new EvolutionException("World type [" + worldType + "] not recognized.");
         }
         return world;
     }

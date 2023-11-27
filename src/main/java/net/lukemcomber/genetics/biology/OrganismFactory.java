@@ -13,6 +13,7 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -20,14 +21,15 @@ import java.util.List;
 public class OrganismFactory {
 
     public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
-                                  final TemporalCoordinates temporalCoordinates, final UniverseConstants properties ) {
+                                  final TemporalCoordinates temporalCoordinates, final UniverseConstants properties,
+                                  final MetadataStoreGroup groupStore ) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
 
             final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates,properties);
             final GenomeTransciber transciber = new AsexualTransposeAndMutateGeneTranscriber();
 
-            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber);
+            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, groupStore);
 
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());

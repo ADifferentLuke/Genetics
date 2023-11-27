@@ -60,7 +60,6 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
         } else {
             ttl = cTtl;
         }
-
         kryo = new Kryo();
 
         kryo.register(type);
@@ -71,6 +70,7 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
 
         forceShutdown = false;
         enabled = properties.get(propertyName, Boolean.class, false);
+
         outputQueue = new LinkedBlockingQueue<>();
         lastAccessed = new AtomicLong();
         ioSystemLock = new ReentrantReadWriteLock(true); //fair
@@ -116,10 +116,10 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
                                 }
                                 final long inactiveTime = (System.currentTimeMillis() / 1000) - lastAccessed.get();
                                 if (forceShutdown || inactiveTime > ttl) {
-                                    enabled = false;
 
                                     try {
                                         ioSystemLock.writeLock().lock();
+                                        enabled = false;
                                         Files.deleteIfExists(tmpFilePath);
                                     } finally {
                                         ioSystemLock.writeLock().unlock();

@@ -4,6 +4,8 @@ import net.lukemcomber.genetics.store.Metadata;
 
 public class Performance implements Metadata {
 
+    public static final String PROPERTY_PERFORMANCE_ENABLE = "metadata.Performance.enabled";
+
     public String name;
 
     public Long age;

@@ -22,17 +22,18 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Ecosystem {
+public abstract class Ecosystem {
 
     private static final Logger logger = Logger.getLogger(Ecosystem.class.getName());
     private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
     private Terrain terrain;
-    private final int ticksPerTurn;
     private final int ticksPerDay;
     private final String uuid;
     private final UniverseConstants properties;
 
     private boolean active;
+    private boolean steppable;
+
 
     public long getTotalTicks() {
         return totalTicks;
@@ -66,10 +67,9 @@ public class Ecosystem {
     private long totalDays;
     private int currentTick;
 
-    public Ecosystem(final int ticksPerTurn, final int ticksPerDay, final SpatialCoordinates size, final String type ) throws IOException {
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type ) throws IOException {
 
         this.ticksPerDay = ticksPerDay;
-        this.ticksPerTurn = ticksPerTurn;
 
         totalDays = 0;
         totalTicks = 0;
@@ -93,15 +93,11 @@ public class Ecosystem {
         return uuid;
     }
 
-    public int getTicksPerTurn() {
-        return ticksPerTurn;
-    }
-
     public int getTicksPerDay() {
         return ticksPerDay;
     }
 
-    private void refreshResources() {
+    void refreshResources() {
         if( active ) {
             final ResourceManager manager = getTerrain().getResourceManager();
             manager.renewDailyEnvironmentResource();
@@ -112,45 +108,63 @@ public class Ecosystem {
         return active;
     }
 
-    public boolean advance() {
-        if (active) {
-            for (int i = 0; i < ticksPerTurn; ++i) {
-                this.totalTicks++;
-                this.currentTick++;
-
-                logger.info("Tick:  " + this.totalTicks);
-
-                if (this.currentTick >= ticksPerDay) {
-                    totalDays++;
-                    this.currentTick = 0;
-                    refreshResources();
-                }
-                final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(this.totalTicks, this.totalDays, this.currentTick);
-                logger.info("Organism count " + terrain.getOrganismCount());
-
-                /*
-                 * Organisms remove themselves (or rather the terrain removes them) from
-                 *  the world which can cause a Concurrency problem. We can solve this
-                 *  by creating a new reference to the collection.
-                 *
-                 * More thought should be given to making this purely asynchronous
-                 */
-                for (final Iterator<Organism> it = terrain.getOrganisms(); it.hasNext(); ) {
-                    Organism organism = it.next();
-                    logger.info("Ticking Organism: " + organism.getUniqueID());
-                    organism.leechResources(terrain, temporalCoordinates);
-                    organism.performAction(terrain, temporalCoordinates, ((organism1, cell) -> {
-                        final ResourceManager manager = terrain.getResourceManager();
-                        manager.renewEnvironmentResourceFromCellDeath(organism, cell);
-                    }));
-                    organism.prettyPrint(loggerOutputStream);
-
-                }
-                if( 0 == terrain.getOrganismCount()){
-                    active = false;
-                }
-            }
-        }
-        return active;
+    void isActive(final boolean active){
+        this.active = active;
     }
+
+    private void tick(final int steps){
+        this.totalTicks += steps;
+        this.currentTick += steps;
+
+        if (this.currentTick >= ticksPerDay) {
+            totalDays++;
+            this.currentTick = 0;
+        }
+    }
+
+    public abstract boolean advance();
+
+    protected void tickEnvironment(){
+        final long currentDay = getTotalDays();
+        tick(1);
+
+        logger.info("Tick:  " + getTotalTicks());
+
+        // We advanced a day
+        if (getTotalDays() > currentDay ) {
+            refreshResources();
+        }
+    }
+    protected void tickOrganisms(){
+        final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(getTotalTicks(), getTotalDays(), getCurrentTick());
+        logger.info("Organism count " + getTerrain().getOrganismCount());
+
+        /*
+         * Organisms remove themselves (or rather the terrain removes them) from
+         *  the world which can cause a Concurrency problem. We can solve this
+         *  by creating a new reference to the collection.
+         *
+         * More thought should be given to making this purely asynchronous
+         */
+        for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
+            Organism organism = it.next();
+            logger.info("Ticking Organism: " + organism.getUniqueID());
+            organism.leechResources(getTerrain(), temporalCoordinates);
+            organism.performAction(getTerrain(), temporalCoordinates, ((organism1, cell) -> {
+                final ResourceManager manager = getTerrain().getResourceManager();
+                manager.renewEnvironmentResourceFromCellDeath(organism, cell);
+            }));
+            organism.prettyPrint(loggerOutputStream);
+
+        }
+        if( 0 == getTerrain().getOrganismCount()){
+            isActive(false);
+        }
+    }
+
+
+    public void preTick(){}
+    public void postTIck(){}
+
+
 }

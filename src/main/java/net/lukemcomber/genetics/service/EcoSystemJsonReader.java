@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import net.lukemcomber.genetics.SteppableEcosystem;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.OrganismFactory;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
@@ -33,11 +34,21 @@ public class EcoSystemJsonReader extends LGPReader {
         final int zMax = rootNode.path("depth").asInt(90);
 
         final int ticksPerDay = rootNode.path("ticksPerDay").asInt(10);
-        final int ticksPerTurn = rootNode.path("ticksPerTurn").asInt(1);
+        final JsonNode ticksPerTurnNode = rootNode.path("ticksPerTurn");
 
         final SpatialCoordinates gridSize = new SpatialCoordinates(xMax,yMax,zMax);
 
-        final Ecosystem ecosystem = new Ecosystem( ticksPerTurn, ticksPerDay, gridSize, worldType );
+        final Ecosystem ecosystem;
+        if( ! ticksPerTurnNode.isMissingNode() ) {
+            final int ticksPerTurn = ticksPerTurnNode.asInt();
+            if( 0 < ticksPerTurn ){
+                ecosystem = new SteppableEcosystem(ticksPerTurn, ticksPerDay, gridSize, worldType);
+            } else {
+                throw new RuntimeException("False not acceptable as steppable parameter. Weird right?");
+            }
+        } else {
+            throw new RuntimeException("Non-steppable ecosystems not yet supported");
+        }
         final Terrain terrain = ecosystem.getTerrain();
         final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(ecosystem.getId(),terrain.getProperties());
         final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0,0,0);

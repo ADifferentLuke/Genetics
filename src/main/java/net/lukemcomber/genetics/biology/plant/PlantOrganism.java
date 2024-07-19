@@ -218,16 +218,16 @@ public class PlantOrganism implements Organism {
             String deathLogStr = "";
             if (0 <= starvationLimit && starvationLimit >= energy) {
                 //too exhausted to live
-                deathLogStr = ("Organism " + uuid + " + died from exhaustion.");
+                deathLogStr = ("Organism " + uuid + " died from exhaustion.");
                 alive = false;
             }
             if (0 <= stagnationLimit && stagnationLimit < mark - lastUpdateTime.totalDays()) {
-                deathLogStr = ("Organism " + uuid + " + died from stagnation.");
+                deathLogStr = ("Organism " + uuid + " died from stagnation.");
                 //stagnant
                 alive = false;
             }
             if (0 <= ageLimit && ageLimit < temporalCoordinates.totalDays() - birthTime.totalDays()) {
-                deathLogStr = ("Organism " + uuid + " + died from old age.");
+                deathLogStr = ("Organism " + uuid + " died from old age.");
                 alive = false;
             }
 

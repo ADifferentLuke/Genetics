@@ -36,6 +36,22 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
     }
 
+    public double getCatastrophicProbability(){
+        return catastrophicProbability;
+    }
+
+    public double getCatastrophicSurvivalRate(){
+        return catastrophicSurvivalRate;
+    }
+
+    public long getMaxDays(){
+        return maxDays;
+    }
+
+    public long getTickDelayMs(){
+        return tickDelayMs;
+    }
+
     @Override
     public boolean advance() {
         // You can not advance an automatic ecosystem.

@@ -12,6 +12,7 @@ public class Performance implements Metadata {
     public Long birthTick;
     public Integer offspring; //Number of seeds
 
+    public Integer cells;
 
     //Must be called at death?
     public String causeOfDeath;

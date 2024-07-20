@@ -26,6 +26,7 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -247,6 +248,11 @@ public class PlantOrganism implements Organism {
                 performance.deathTick = temporalCoordinates.totalTicks();
                 performance.causeOfDeath = deathLogStr;
                 performance.age = performance.deathTick - performance.birthTick;
+
+                AtomicInteger atomicInteger = new AtomicInteger(0);
+                performActionOnAllCells(cell, s -> atomicInteger.incrementAndGet() );
+
+                performance.cells = atomicInteger.get();
 
                 if( null != fitnessFunction ){
                     performance.fitness = fitnessFunction.apply(performance);

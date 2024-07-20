@@ -5,6 +5,8 @@ package net.lukemcomber.genetics.biology;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
+import net.lukemcomber.genetics.biology.fitness.impl.RandomFitnessFunction;
 import net.lukemcomber.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
@@ -28,8 +30,9 @@ public class OrganismFactory {
 
             final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates,properties);
             final GenomeTransciber transciber = new AsexualTransposeAndMutateGeneTranscriber();
+            final FitnessFunction fitnessFunction = new RandomFitnessFunction();
 
-            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, groupStore);
+            retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, fitnessFunction, groupStore);
 
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());

@@ -17,4 +17,6 @@ public class Performance implements Metadata {
     public String causeOfDeath;
     public Integer deathEnergy;
     public Long deathTick;
+
+    public Float fitness;
 }

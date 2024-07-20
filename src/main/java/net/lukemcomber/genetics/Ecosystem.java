@@ -83,10 +83,13 @@ public abstract class Ecosystem {
         terrain = WorldFactory.createWorld(properties, metadataStoreGroup);
         terrain.initialize( size.xAxis, size.yAxis, size.zAxis);
 
+        this.active = true;
+    }
+
+    public void initialize(){
         if (null != terrain.getResourceManager()) {
             terrain.getResourceManager().initializeAllTerrainResources();
         }
-        this.active = true;
     }
 
     public String getId(){

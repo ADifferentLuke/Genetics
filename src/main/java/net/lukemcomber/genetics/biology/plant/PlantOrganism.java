@@ -9,6 +9,7 @@ import net.lukemcomber.genetics.biology.Cell;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.Genome;
+import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
@@ -61,8 +62,11 @@ public class PlantOrganism implements Organism {
     private final MetadataStoreGroup metadataStoreGroup;
     private final GenomeTransciber transciber;
 
+    private final FitnessFunction fitnessFunction;
+
     public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates,
                          final UniverseConstants properties, final GenomeTransciber transciber,
+                         final FitnessFunction fitnessFunction,
                          final MetadataStoreGroup metadataStoreGroup) {
 
         this.genome = seed.getGenome();
@@ -70,6 +74,7 @@ public class PlantOrganism implements Organism {
         this.cell = seed;
         this.properties = properties;
         this.metadataStoreGroup = metadataStoreGroup;
+        this.fitnessFunction = fitnessFunction;
 
         this.energy = properties.get(PROPERTY_STARTING_ENERGY, Integer.class);
         this.activeCells = new LinkedList<>();
@@ -161,7 +166,7 @@ public class PlantOrganism implements Organism {
 
                         SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
                         final PlantOrganism plantOrganism = new PlantOrganism(getUniqueID(), activatedSeed,
-                                temporalCoordinates, properties, transciber, metadataStoreGroup);
+                                temporalCoordinates, properties, transciber, fitnessFunction, metadataStoreGroup);
 
 
                         logger.info("New Organism born: " + plantOrganism.getUniqueID());
@@ -242,6 +247,12 @@ public class PlantOrganism implements Organism {
                 performance.deathTick = temporalCoordinates.totalTicks();
                 performance.causeOfDeath = deathLogStr;
                 performance.age = performance.deathTick - performance.birthTick;
+
+                if( null != fitnessFunction ){
+                    performance.fitness = fitnessFunction.apply(performance);
+                } else {
+                    performance.fitness = 0f;
+                }
 
                 try {
                     final MetadataStore<Performance> performanceStore = metadataStoreGroup.get(Performance.class);

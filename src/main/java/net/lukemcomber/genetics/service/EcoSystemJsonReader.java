@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import net.lukemcomber.genetics.AutomaticEcosystem;
 import net.lukemcomber.genetics.SteppableEcosystem;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.OrganismFactory;
@@ -47,7 +48,13 @@ public class EcoSystemJsonReader extends LGPReader {
                 throw new RuntimeException("False not acceptable as steppable parameter. Weird right?");
             }
         } else {
-            throw new RuntimeException("Non-steppable ecosystems not yet supported");
+            final long maxDays = rootNode.path("maxDays").asLong(1);
+            final long tickDelay = rootNode.path("tickDelay").asLong(1000);
+            final double cataclysmProbability = rootNode.path("cataclysmProbability").asDouble(0);
+            final double cataclysmSurvivalRate = rootNode.path("cataclysmSurvivalRate").asDouble(0);
+
+//TODO race condition the ecosystem can start before the organism
+            ecosystem = new AutomaticEcosystem(ticksPerDay, gridSize, worldType,maxDays, tickDelay, cataclysmProbability, cataclysmSurvivalRate);
         }
         final Terrain terrain = ecosystem.getTerrain();
         final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(ecosystem.getId(),terrain.getProperties());
@@ -78,6 +85,7 @@ public class EcoSystemJsonReader extends LGPReader {
             });
 
         }
+        ecosystem.initialize();
         return ecosystem;
     }
 

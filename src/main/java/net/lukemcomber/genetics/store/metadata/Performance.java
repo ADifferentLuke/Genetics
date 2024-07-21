@@ -13,11 +13,13 @@ public class Performance implements Metadata {
     public Integer offspring; //Number of seeds
 
     public Integer cells;
+    public Integer totalEnergyHarvested;
+    public Integer totalEnergyMetabolized;
 
     //Must be called at death?
     public String causeOfDeath;
     public Integer deathEnergy;
     public Long deathTick;
 
-    public Float fitness;
+    public Double fitness;
 }

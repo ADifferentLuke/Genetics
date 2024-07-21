@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.universes;
 
 import com.google.common.collect.ImmutableMap;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
+import net.lukemcomber.genetics.biology.plant.behavior.EjectSeed;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowLeaf;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowRoot;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowSeed;
@@ -58,6 +59,7 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(GrowLeaf.PROPERTY_GROW_LEAF_COST, 1)
                 .put(GrowRoot.PROPERTY_GROW_ROOT_COST, 2)
                 .put(GrowSeed.PROPERTY_GROW_SEED_COST, 10)
+                .put(EjectSeed.PROPERTY_EJECT_LEAF_COST, 1)
                 /* Genome Modification / Reproduction */
                 .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY, 5)
                 .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 5)
@@ -65,7 +67,7 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400l) // One day in seconds
                 .put(Genealogy.PROPERTY_GENEALOGY_ENABLE, true)
                 .put(Genome.PROPERTY_GENOME_ENABLE, true)
-                .put(Performance.PROPERTY_PERFORMANCE_ENABLE,true)
+                .put(Performance.PROPERTY_PERFORMANCE_ENABLE, true)
                 .build();
     }
 

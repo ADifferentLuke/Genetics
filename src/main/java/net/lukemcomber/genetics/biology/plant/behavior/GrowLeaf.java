@@ -12,7 +12,9 @@ import net.lukemcomber.genetics.biology.plant.cells.LeafCell;
 import net.lukemcomber.genetics.biology.plant.cells.StemCell;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
@@ -31,10 +33,12 @@ public class GrowLeaf implements PlantBehavior {
     /**
      * @param terrain
      * @param cell
+     * @param temporalCoordinates
+     * @param metadataStoreGroup
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain, final Cell cell, final Organism organism) {
+    public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism, final Cell cell, TemporalCoordinates temporalCoordinates, MetadataStoreGroup metadataStoreGroup) {
 
         Cell retVal = null;
         final SpatialCoordinates newSpatialCoordinates = function.apply(cell.getCoordinates());
@@ -81,6 +85,7 @@ public class GrowLeaf implements PlantBehavior {
         } else {
             throw new EvolutionException("Leaf growth failed. Collision detected.");
         }
+        organism.spendEnergy(getEnergyCost(properties));
 
         return retVal;
     }

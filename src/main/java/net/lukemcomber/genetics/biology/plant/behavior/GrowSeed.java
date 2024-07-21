@@ -11,7 +11,9 @@ import net.lukemcomber.genetics.biology.plant.PlantBehavior;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 
@@ -35,10 +37,12 @@ public class GrowSeed implements PlantBehavior {
     /**
      * @param terrain
      * @param cell
+     * @param temporalCoordinates
+     * @param metadataStoreGroup
      * @return
      */
     @Override
-    public Cell performAction(final Terrain terrain, final Cell cell, final Organism organism) {
+    public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism, final Cell cell, TemporalCoordinates temporalCoordinates, MetadataStoreGroup metadataStoreGroup) {
         final long cur = System.currentTimeMillis();
         Cell retVal = null;
 
@@ -69,6 +73,7 @@ public class GrowSeed implements PlantBehavior {
             throw new EvolutionException("Seed growth failed. Collision detected.");
         }
 
+        organism.spendEnergy(getEnergyCost(properties));
         return retVal;
     }
 

@@ -5,6 +5,7 @@ package net.lukemcomber.genetics.biology;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.service.CellHelper;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
@@ -32,7 +33,7 @@ public interface Organism {
 
     boolean isAlive();
 
-    void modifyEnergy(int delta);
+    //void modifyEnergy(int delta);
 
     long getBirthTick();
 
@@ -58,9 +59,16 @@ public interface Organism {
         logger().info( "Gathered: " + newEnergy );
         logger().info( "Cost: " + (-metaCost));
 
-        modifyEnergy(newEnergy);
-        modifyEnergy(-metaCost);
+        addEnergyFromEcosystem(newEnergy);
+        removeEnergyFromMetabolism(metaCost);
     }
+
+    void addEnergyFromEcosystem(int energy);
+    void removeEnergyFromMetabolism(int energy);
+
+    void spendEnergy(int energy);
+
+    FitnessFunction getFitnessFunction();
 
     void prettyPrint(final OutputStream out);
 

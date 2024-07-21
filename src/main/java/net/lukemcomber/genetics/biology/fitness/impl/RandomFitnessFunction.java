@@ -15,7 +15,7 @@ public class RandomFitnessFunction implements FitnessFunction {
 
 
     @Override
-    public Float apply(final Performance performance) {
-        return rng.nextFloat();
+    public Double apply(final Performance performance) {
+        return rng.nextDouble();
     }
 }

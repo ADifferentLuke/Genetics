@@ -43,7 +43,7 @@ public class PlantOrganism implements Organism {
 
     public static final String TYPE = "PLANT";
     private final Genome genome;
-    private PlantCell cell;
+    private SeedCell cell;
     private List<Cell> activeCells;
 
     private int energy;
@@ -57,6 +57,8 @@ public class PlantOrganism implements Organism {
     private final TemporalCoordinates birthTime;
     private TemporalCoordinates lastUpdateTime;
     private boolean alive;
+    private int totalResourcesGathered;
+    private int totalEnergyMetabolized;
 
     private final UniverseConstants properties;
 
@@ -76,6 +78,8 @@ public class PlantOrganism implements Organism {
         this.properties = properties;
         this.metadataStoreGroup = metadataStoreGroup;
         this.fitnessFunction = fitnessFunction;
+        this.totalResourcesGathered = 0;
+        this.totalEnergyMetabolized = 0;
 
         this.energy = properties.get(PROPERTY_STARTING_ENERGY, Integer.class);
         this.activeCells = new LinkedList<>();
@@ -85,13 +89,34 @@ public class PlantOrganism implements Organism {
         this.lastUpdateTime = temporalCoordinates;
         this.transciber = transciber;
 
-        seed.activate(); //Allow the seed to grow
         alive = true; //It's allliiiiiiiivvvvveeee!
     }
 
     @Override
     public String getParentId() {
         return parentUuid;
+    }
+
+    @Override
+    public void addEnergyFromEcosystem(int energy) {
+        totalResourcesGathered += energy;
+       this.energy += energy;
+    }
+
+    @Override
+    public void removeEnergyFromMetabolism(int energy) {
+        totalEnergyMetabolized += energy;
+        spendEnergy(energy);
+    }
+
+    @Override
+    public void spendEnergy(int energy) {
+        this.energy -= energy;
+    }
+
+    @Override
+    public FitnessFunction getFitnessFunction() {
+        return fitnessFunction;
     }
 
     @Override
@@ -129,10 +154,12 @@ public class PlantOrganism implements Organism {
         return alive;
     }
 
-    @Override
+    /*
     public void modifyEnergy(int delta) {
         this.energy += delta;
     }
+
+     */
 
     @Override
     public long getBirthTick() {
@@ -159,21 +186,19 @@ public class PlantOrganism implements Organism {
             performActionOnAllCells((PlantCell) getCells(), cell -> {
                 terrain.deleteCell(cell.getCoordinates());
 
-                if (cell instanceof SeedCell) {
+                if (cell instanceof SeedCell && cell != getCells()) {
                     final SeedCell seed = (SeedCell) cell;
-                    if (!seed.isActivated()) {
-                        //Remove the cell from the parent organism
-                        cell.getParent().removeChild(cell);
+                    //Remove the cell from the parent organism
+                    cell.getParent().removeChild(cell);
 
-                        SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
-                        final PlantOrganism plantOrganism = new PlantOrganism(getUniqueID(), activatedSeed,
-                                temporalCoordinates, properties, transciber, fitnessFunction, metadataStoreGroup);
+                    SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
+                    final PlantOrganism plantOrganism = new PlantOrganism(getUniqueID(), activatedSeed,
+                            temporalCoordinates, properties, transciber, fitnessFunction, metadataStoreGroup);
 
 
-                        logger.info("New Organism born: " + plantOrganism.getUniqueID());
+                    logger.info("New Organism born: " + plantOrganism.getUniqueID());
 
-                        terrain.addOrganism(plantOrganism);
-                    }
+                    terrain.addOrganism(plantOrganism);
                 } else {
                     // Trigger any cell death callback
                     if (null != onCellDeath) {
@@ -182,6 +207,11 @@ public class PlantOrganism implements Organism {
                 }
             });
             terrain.deleteOrganism(this);
+        } else if (!cell.isActivated()) {
+            //Do whatever the seed needs to do to activate
+            if( cell instanceof PlantBehavior ){
+                ((PlantBehavior)cell).performAction(properties,terrain, this, cell, temporalCoordinates, metadataStoreGroup);
+            }
         } else {
             performActionOnAllCells((PlantCell) getCells(), cell -> {
                 logger.info("Actioning cell " + cell);
@@ -192,7 +222,9 @@ public class PlantOrganism implements Organism {
                         logger.info("Attempting " + plantBehavior);
                         try {
                             logger.info("Start newCell");
-                            final Cell newCell = plantBehavior.performAction(terrain, cell, this);
+                            final Cell newCell = plantBehavior.performAction(properties, terrain, this,
+                                    cell, temporalCoordinates, metadataStoreGroup );
+
                             logger.info("Start endCell");
                             if (null != newCell) {
                                 //Update last updated time
@@ -204,7 +236,6 @@ public class PlantOrganism implements Organism {
                             } else {
                                 logger.info("Action " + plantBehavior + " returned no cells");
                             }
-                            energy = energy - plantBehavior.getEnergyCost(terrain.getProperties());
                         } catch (final EvolutionException e) {
                             logger.warning(e.getMessage());
                         }
@@ -248,23 +279,22 @@ public class PlantOrganism implements Organism {
                 performance.deathTick = temporalCoordinates.totalTicks();
                 performance.causeOfDeath = deathLogStr;
                 performance.age = performance.deathTick - performance.birthTick;
+                performance.totalEnergyHarvested = totalResourcesGathered;
+                performance.totalEnergyMetabolized = totalEnergyMetabolized;
 
-                AtomicInteger atomicInteger = new AtomicInteger(0);
-                performActionOnAllCells(cell, s -> atomicInteger.incrementAndGet() );
+                performance.cells = childCount + 1; // Added 1 for current cell that's not a child
 
-                performance.cells = atomicInteger.get();
-
-                if( null != fitnessFunction ){
+                if (null != fitnessFunction) {
                     performance.fitness = fitnessFunction.apply(performance);
                 } else {
-                    performance.fitness = 0f;
+                    performance.fitness = 0d;
                 }
 
                 try {
                     final MetadataStore<Performance> performanceStore = metadataStoreGroup.get(Performance.class);
                     performanceStore.store(performance);
                 } catch (IOException e) {
-                    logger.log(Level.WARNING,e.getMessage(),e);
+                    logger.log(Level.WARNING, e.getMessage(), e);
                 }
 
                 logger.info(deathLogStr);

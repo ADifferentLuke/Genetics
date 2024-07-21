@@ -5,10 +5,41 @@ import net.lukemcomber.genetics.service.GenomeStdOutWriter;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Test
 public class PlantGenomeTest {
+
+    public void testGenomeWithBehavior(){
+
+        final ArrayList<Gene> genes = new ArrayList<>(PlantGenome.GENE_COUNT);
+
+        // Create genes for the desired actions
+        genes.add(createGene(PlantGenome.GROW_LEAF_LEFT));
+        genes.add(createGene(PlantGenome.GROW_LEAF_RIGHT));
+        genes.add(createGene(PlantGenome.EJECT_SEED_UP));
+
+        for (int i = 3; i < PlantGenome.GENE_COUNT; i++) {
+            genes.add(createGene((byte) 0b11111));  // assuming 0b11111 represents junk DNA
+        }
+
+        System.out.println( "Ejecting genome:");
+        PlantGenome genome = new PlantGenome(genes);
+        GenomeStdOutWriter.hexPrintGenomeToStdOut(genome);
+
+
+
+    }
+
+    private static Gene createGene(byte action) {
+        Gene gene = new Gene();
+        gene.nucleotideA = action;
+        gene.nucleotideB = 0;
+        gene.nucleotideC = 0;
+        gene.nucleotideD = 0;
+        return gene;
+    }
 
 
 

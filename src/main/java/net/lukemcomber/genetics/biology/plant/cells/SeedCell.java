@@ -37,6 +37,11 @@ public class SeedCell extends PlantCell {
         this.activated = false;
 
         this.metabolismCost = properties.get(PROPERTY_METACOST, Integer.class);
+
+        // Seeds at the root of a plant are active
+        if( null == parent){
+            activate();
+        }
     }
     public boolean isActivated(){
         return activated;

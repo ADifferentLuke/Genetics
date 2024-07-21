@@ -6,6 +6,7 @@ package net.lukemcomber.genetics.biology;
  */
 
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
+import net.lukemcomber.genetics.biology.fitness.impl.BasicFitnessFunction;
 import net.lukemcomber.genetics.biology.fitness.impl.RandomFitnessFunction;
 import net.lukemcomber.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
@@ -30,7 +31,7 @@ public class OrganismFactory {
 
             final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates,properties);
             final GenomeTransciber transciber = new AsexualTransposeAndMutateGeneTranscriber();
-            final FitnessFunction fitnessFunction = new RandomFitnessFunction();
+            final FitnessFunction fitnessFunction = new BasicFitnessFunction(properties);
 
             retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, fitnessFunction, groupStore);
 

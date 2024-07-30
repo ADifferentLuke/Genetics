@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 //Is able to gather energy from the sun
 public class LeafCell extends PlantCell {
 
+    public static final String TYPE = "leaf";
+
     public static final String PROPERTY_METACOST = "cell.leaf.metabolic-rate";
     public static final String PROPERTY_ENERGY = "cell.leaf.max-energy-production";
     private static final Logger logger = Logger.getLogger(LeafCell.class.getName());
@@ -37,7 +39,7 @@ public class LeafCell extends PlantCell {
 
     @Override
     public String getCellType() {
-        return "leaf";
+        return TYPE;
     }
 
     /**

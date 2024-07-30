@@ -65,7 +65,8 @@ public class EjectSeed implements PlantBehavior {
                 final PlantOrganism plantOrganism = new PlantOrganism(organism.getUniqueID(), retVal,
                         temporalCoordinates, properties, transciber, organism.getFitnessFunction(), metadataStoreGroup);
 
-                logger.info("Created new seed: " + organism.getUniqueID() + " at " + newSpatialCoordinates);
+                logger.info(String.format("Created %s at %s from EjectedSeed", plantOrganism.getUniqueID(), newSpatialCoordinates));
+
                 terrain.setCell(retVal, organism);
                 terrain.addOrganism(plantOrganism);
 

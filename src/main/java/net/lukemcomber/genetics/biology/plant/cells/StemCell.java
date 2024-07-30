@@ -18,6 +18,8 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 //Support structure, does nothing else
 public class StemCell extends PlantCell {
 
+    public static final String TYPE = "stem";
+
     public static final String PROPERTY_METACOST = "cell.stem.metabolic-rate";
     public static final String PROPERTY_ENERGY = "cell.stem.max-energy-production";
     private final SpatialCoordinates spatialCoordinates;
@@ -33,7 +35,7 @@ public class StemCell extends PlantCell {
 
     @Override
     public String getCellType() {
-        return "stem";
+        return TYPE;
     }
 
     /**

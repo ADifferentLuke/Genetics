@@ -129,4 +129,6 @@ public interface Terrain {
 
     UUID getUUID();
 
+   long getTotalOrganismCount();
+
 }

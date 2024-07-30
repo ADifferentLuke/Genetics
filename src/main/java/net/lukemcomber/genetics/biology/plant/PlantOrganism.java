@@ -100,7 +100,7 @@ public class PlantOrganism implements Organism {
     @Override
     public void addEnergyFromEcosystem(int energy) {
         totalResourcesGathered += energy;
-       this.energy += energy;
+        this.energy += energy;
     }
 
     @Override
@@ -195,6 +195,8 @@ public class PlantOrganism implements Organism {
                     final PlantOrganism plantOrganism = new PlantOrganism(getUniqueID(), activatedSeed,
                             temporalCoordinates, properties, transciber, fitnessFunction, metadataStoreGroup);
 
+                    logger.info(String.format("Created %s at %s from Seed", plantOrganism.getUniqueID(), seed.getCoordinates()));
+
 
                     logger.info("New Organism born: " + plantOrganism.getUniqueID());
 
@@ -209,8 +211,8 @@ public class PlantOrganism implements Organism {
             terrain.deleteOrganism(this);
         } else if (!cell.isActivated()) {
             //Do whatever the seed needs to do to activate
-            if( cell instanceof PlantBehavior ){
-                ((PlantBehavior)cell).performAction(properties,terrain, this, cell, temporalCoordinates, metadataStoreGroup);
+            if (cell instanceof PlantBehavior) {
+                ((PlantBehavior) cell).performAction(properties, terrain, this, cell, temporalCoordinates, metadataStoreGroup);
             }
         } else {
             performActionOnAllCells((PlantCell) getCells(), cell -> {
@@ -223,7 +225,7 @@ public class PlantOrganism implements Organism {
                         try {
                             logger.info("Start newCell");
                             final Cell newCell = plantBehavior.performAction(properties, terrain, this,
-                                    cell, temporalCoordinates, metadataStoreGroup );
+                                    cell, temporalCoordinates, metadataStoreGroup);
 
                             logger.info("Start endCell");
                             if (null != newCell) {
@@ -237,7 +239,7 @@ public class PlantOrganism implements Organism {
                                 logger.info("Action " + plantBehavior + " returned no cells");
                             }
                         } catch (final EvolutionException e) {
-                            logger.warning(e.getMessage());
+                            // logger.warning(e.getMessage());
                         }
                     } else if (!cell.canCellSupport(plantBehavior)) {
                         logger.info("Cell " + cell + " Behavior not allowed: " + plantBehavior);
@@ -273,6 +275,8 @@ public class PlantOrganism implements Organism {
 
                 final Performance performance = new Performance();
                 performance.name = this.uuid;
+                performance.parentId = this.parentUuid;
+                performance.dna = GenomeSerDe.serialize(getGenome());
                 performance.offspring = seedCount;
                 performance.birthTick = this.birthTime.totalTicks();
                 performance.deathEnergy = this.energy;
@@ -297,6 +301,7 @@ public class PlantOrganism implements Organism {
                     logger.log(Level.WARNING, e.getMessage(), e);
                 }
 
+                logger.info("Fitness " + performance.fitness + ", Children: " + performance.offspring + ", DNA:" + GenomeSerDe.serialize(genome));
                 logger.info(deathLogStr);
 
             }

@@ -9,4 +9,5 @@ package net.lukemcomber.genetics.store;
  * This only exists to force type conformity in the metadata cache system
  */
 public interface Metadata {
+
 }

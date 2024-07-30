@@ -51,8 +51,8 @@ public class PlantGenome extends Genome {
     public final static byte EJECT_SEED_FORWARD = 0b10110;
     public final static byte EJECT_SEED_BACK = 0b10111;
 
-    //private final static int numberOfBits= 5;
-    public final static int numberOfBits = 8;
+    private final static int numberOfBits= 5;
+    //public final static int numberOfBits = 8;
     private final Iterator<Byte> iterator;
 
     public PlantGenome(final List<Gene> genes) {

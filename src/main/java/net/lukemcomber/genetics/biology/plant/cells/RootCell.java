@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 //harvest soil nutrients
 public class RootCell extends PlantCell {
 
+    public static final String TYPE = "root";
+
     public static final String PROPERTY_METACOST = "cell.root.metabolic-rate";
     public static final String PROPERTY_ENERGY = "cell.root.max-energy-production";
     private static final Logger logger = Logger.getLogger(RootCell.class.getName());
@@ -35,7 +37,7 @@ public class RootCell extends PlantCell {
 
     @Override
     public String getCellType() {
-        return "root";
+        return TYPE;
     }
 
     /**

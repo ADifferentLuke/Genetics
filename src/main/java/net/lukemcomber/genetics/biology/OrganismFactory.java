@@ -7,7 +7,6 @@ package net.lukemcomber.genetics.biology;
 
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.biology.fitness.impl.BasicFitnessFunction;
-import net.lukemcomber.genetics.biology.fitness.impl.RandomFitnessFunction;
 import net.lukemcomber.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
@@ -20,8 +19,12 @@ import net.lukemcomber.genetics.store.MetadataStoreGroup;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class OrganismFactory {
+
+    private static final Logger logger = Logger.getLogger(OrganismFactory.class.getName());
+
 
     public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
                                   final TemporalCoordinates temporalCoordinates, final UniverseConstants properties,
@@ -34,6 +37,7 @@ public class OrganismFactory {
             final FitnessFunction fitnessFunction = new BasicFitnessFunction(properties);
 
             retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, fitnessFunction, groupStore);
+            logger.info(String.format("Created %s at %s from OrganismFactory", retVal.getUniqueID(), spatialCoordinates));
 
         } else {
             throw new EvolutionException("Unknown species " + genome.toString());

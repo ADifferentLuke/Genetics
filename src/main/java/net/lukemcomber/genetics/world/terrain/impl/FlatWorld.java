@@ -9,8 +9,6 @@ import net.lukemcomber.genetics.service.GenomeSerDe;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
-import net.lukemcomber.genetics.store.metadata.Genealogy;
-import net.lukemcomber.genetics.store.metadata.Genome;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
@@ -51,6 +49,8 @@ public class FlatWorld implements Terrain {
     private int worldWidth;
     private boolean isInitialized = false;
 
+    private long totalOrganisms;
+
     private ResourceManager resourceManager;
 
     private final MetadataStoreGroup metadataStoreGroup;
@@ -59,6 +59,7 @@ public class FlatWorld implements Terrain {
         this.constants = constants;
         uuid = UUID.randomUUID();
         this.metadataStoreGroup = metadataStoreGroup;
+        totalOrganisms = 0;
     }
 
     public void setTerrainProperty(final SpatialCoordinates spatialCoordinates, final TerrainProperty terrainProperty) {
@@ -236,6 +237,11 @@ public class FlatWorld implements Terrain {
         return uuid;
     }
 
+    @Override
+    public long getTotalOrganismCount() {
+        return totalOrganisms;
+    }
+
     private void checkCoordinates(final int x, final int y) {
         if (x >= worldWidth || y >= worldHeight) {
             throw new ArrayIndexOutOfBoundsException("SpatialCoordinates (" + x + "," + y
@@ -280,31 +286,8 @@ public class FlatWorld implements Terrain {
                     cells.forEach(c -> setCell(c,organism));
                     population.put(organism.getUniqueID(),organism);
                     retVal = true;
+                    totalOrganisms++;
 
-                    try {
-                        /*
-                         * Record genealogy if it is enabled
-                         */
-
-                        final Genealogy metaData = new Genealogy();
-                        metaData.parentName = organism.getParentId();
-                        metaData.childName = organism.getUniqueID();
-                        metaData.birthTickDate = organism.getBirthTick();
-
-                        final MetadataStore<Genealogy> genealogyMetadataMetadataStore =
-                                metadataStoreGroup.get(Genealogy.class);
-                        genealogyMetadataMetadataStore.store(metaData);
-
-                        final Genome geneomData =new Genome();
-                        geneomData.name = organism.getUniqueID();
-                        geneomData.dna = GenomeSerDe.serialize(organism.getGenome());
-
-                        final MetadataStore<Genome> genomeMetadataStore = metadataStoreGroup.get(Genome.class);
-                        genomeMetadataStore.store(geneomData);
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
                 } else {
                     throw new RuntimeException("Failed to create terrain. Organisms physically conflict.");
                 }

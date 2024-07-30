@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.store;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 
 public abstract class MetadataStore<T extends Metadata> {
@@ -23,6 +24,10 @@ public abstract class MetadataStore<T extends Metadata> {
     }
 
     public abstract List<T> retrieve() throws FileNotFoundException;
+
+    public abstract List<T> page(int pageNumber, int countPerPage) throws FileNotFoundException;
+
+    public abstract long count();
 
 }
 

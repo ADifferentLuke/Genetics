@@ -19,9 +19,9 @@ import java.util.logging.Logger;
 import static org.testng.AssertJUnit.*;
 
 @Test
-public class TmpMetaDataStoreTest {
+public class TmpMetadataStoreTest {
 
-    private static final Logger logger = Logger.getLogger(TmpMetaDataStoreTest.class.getName());
+    private static final Logger logger = Logger.getLogger(TmpMetadataStoreTest.class.getName());
 
     public static class TestUniverse extends UniverseConstants {
         public TestUniverse(Map<String, Object> map) {
@@ -35,7 +35,7 @@ public class TmpMetaDataStoreTest {
                 "metadata.TestMetadata.enabled", true,
                 MetadataStore.PROPERTY_DATASTORE_TTL, 1l
         ));
-        final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore("unit-test-2", testUniverse);
+        final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore("tmp-datastore-test-1", testUniverse);
         final MetadataStore<TestMetadata> testMetaStore = group.get(TestMetadata.class);
 
         final TestMetadata testMetadata = new TestMetadata();

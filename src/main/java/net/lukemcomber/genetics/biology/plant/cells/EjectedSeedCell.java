@@ -50,7 +50,7 @@ public class EjectedSeedCell extends SeedCell implements PlantBehavior {
                     terrain.setCell(this, organism);
                     energy = energy - getEnergyCost(properties);
                 } else {
-                    throw new RuntimeException("This shouldn't happen");
+                    //throw new RuntimeException("This shouldn't happen");
                 }
             } else {
                 super.activate();

@@ -17,6 +17,8 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 
 public class SeedCell extends PlantCell {
 
+    public static final String TYPE = "seed";
+
     public static final String PROPERTY_METACOST = "cell.seed.metabolic-rate";
     public static final String PROPERTY_ENERGY = "cell.seed.max-energy-production";
 
@@ -56,7 +58,7 @@ public class SeedCell extends PlantCell {
 
     @Override
     public String getCellType() {
-        return "seed";
+        return TYPE;
     }
 
     public SpatialCoordinates getCoordinates() {

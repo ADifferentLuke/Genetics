@@ -27,14 +27,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
+public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
-    private static final Logger logger = Logger.getLogger(TmpMetaDataStore.class.getName());
+    private static final Logger logger = Logger.getLogger(TmpMetadataStore.class.getName());
 
     public static final String PROPERTY_TYPE_ENABLED = "metadata.%s.enabled";
     public static final String PROPERTY_TYPE_TTL = "metadata.%s.ttl";
 
     private AtomicLong lastAccessed; //longs are not atomic!!!!!
+    private long recordCount;
     private boolean enabled; //RW is atomic
     private boolean forceShutdown; //RW is atomic
     private Thread writeThread;
@@ -48,10 +49,11 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
      * This class represents a logical unit that corresponds to a OS tmp file. The goal is
      * to delete the entire file when it expires.
      */
-    public TmpMetaDataStore(final Class<T> type, final UniverseConstants properties) throws IOException {
+    public TmpMetadataStore(final Class<T> type, final UniverseConstants properties) throws IOException {
 
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
+        recordCount = 0;
         final Long cTtl = properties.get(String.format(PROPERTY_TYPE_TTL, type.getSimpleName()), Long.class, -1l);
         this.type = type;
         if (0 >= cTtl) {
@@ -107,6 +109,7 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
                                          * record types and adding padding, but the juice isn't worth
                                          * the squeeze here
                                          */
+                                        recordCount++;
                                         kryo.writeObject(kyroOutput, metadata);
                                         kyroOutput.flush();
 
@@ -178,6 +181,10 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
         return !enabled;
     }
 
+    public List<T> retrieve() throws FileNotFoundException {
+        return retrieve(-1);
+    }
+
     /**
      * Returns null for an expired or deleted or file, returns
      * empty list for an empty file, otherwise returns results.
@@ -187,19 +194,21 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
      * @return
      * @throws FileNotFoundException
      */
-    public List<T> retrieve() throws FileNotFoundException {
+    private List<T> retrieve(final long count) throws FileNotFoundException {
         final List<T> retVal;
+        long currentCount = 0;
         if (null != tmpFilePath && Files.exists(tmpFilePath)) {
             retVal = new LinkedList<>();
             try (final Input kryoInput = new Input(new FileInputStream(tmpFilePath.toFile()))) {
 
                 final ReentrantReadWriteLock.ReadLock readLock = ioSystemLock.readLock();
 
-                while (!kryoInput.end()) {
+                while (!kryoInput.end() && ( 0 >= count  || currentCount < count)) {
 
                     try {
                         readLock.lock();
                         retVal.add(kryo.readObject(kryoInput, type));
+                        currentCount++;
 
                     } finally {
                         readLock.unlock();
@@ -211,4 +220,22 @@ public class TmpMetaDataStore<T extends Metadata> extends MetadataStore<T> {
         }
         return retVal;
     }
+
+
+    @Override
+    public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
+        // This wasn't really meant for pagination
+        final List<T> retVal = retrieve( pageNumber * countPerPage + countPerPage);
+        int currentPageInRecords = pageNumber * countPerPage;
+        int recordCount = retVal.size() - currentPageInRecords;
+
+        final List<T> result = retVal.subList( currentPageInRecords, currentPageInRecords + recordCount);
+        return result;
+    }
+
+    @Override
+    public long count() {
+        return recordCount;
+    }
+
 }

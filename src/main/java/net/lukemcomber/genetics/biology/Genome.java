@@ -100,4 +100,6 @@ public abstract class Genome {
 
     public abstract PlantBehavior getNextAct();
 
+    public abstract Genome clone();
+
 }

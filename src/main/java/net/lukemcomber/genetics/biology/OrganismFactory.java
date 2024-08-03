@@ -56,15 +56,4 @@ public class OrganismFactory {
         }
         return retVal;
     }
-    public static Genome cloneGenome(final Genome genome){
-        //sure wish java had copy constructor inheritance
-        final Genome retVal;
-        final List<Gene> geneList = new LinkedList<>();
-        for( int i =0; i < genome.getNumberOfGenes(); ++i ) {
-            geneList.add(genome.getGeneNumber(i));
-        }
-        retVal = createGenome(genome.getType(), geneList);
-
-        return retVal;
-    }
 }

@@ -8,6 +8,7 @@ package net.lukemcomber.genetics.store.impl;
 import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.esotericsoftware.kryo.kryo5.io.Input;
 import com.esotericsoftware.kryo.kryo5.io.Output;
+import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
@@ -57,7 +58,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
      * This class represents a logical unit that corresponds to a OS tmp file. The goal is
      * to delete the entire file when it expires.
      */
-    public TmpSearchableMetadataStore(final Class<T> type, final UniverseConstants properties) throws IOException {
+    public TmpSearchableMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
 
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
@@ -91,8 +92,12 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         lastAccessed.set(currentTimeMillis / 1000); //seconds
 
         if (enabled) {
-            tmpFilePath = Files.createTempFile("store-", String.format("-%d-%s", currentTimeMillis, type.getSimpleName()));
-            ioFile = new RandomAccessFile(tmpFilePath.toFile(), "rw");
+            try {
+                tmpFilePath = Files.createTempFile("store-", String.format("-%d-%s", currentTimeMillis, type.getSimpleName()));
+                ioFile = new RandomAccessFile(tmpFilePath.toFile(), "rw");
+            } catch (IOException e) {
+                throw new EvolutionException(e);
+            }
 
             logger.info("Create tmp file " + tmpFilePath);
 
@@ -329,10 +334,14 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
         final List<T> retVal;
 
-        if (indexedFields.containsKey(index)) {
-            retVal = readFromIndex(index, pageNumber, recordsPerPage);
+        if( 0 <= pageNumber && 0 < recordsPerPage ) {
+            if (indexedFields.containsKey(index)) {
+                retVal = readFromIndex(index, pageNumber, recordsPerPage);
+            } else {
+                throw new RuntimeException("Index [" + index + "] not found");
+            }
         } else {
-            throw new RuntimeException("Index [" + index + "] not found");
+            throw new EvolutionException("Invalid page reference.");
         }
         return retVal;
     }

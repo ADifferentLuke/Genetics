@@ -12,8 +12,10 @@ import net.lukemcomber.genetics.biology.plant.behavior.GrowLeaf;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowRoot;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowSeed;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.service.GenomeSerDe;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -51,8 +53,8 @@ public class PlantGenome extends Genome {
     public final static byte EJECT_SEED_FORWARD = 0b10110;
     public final static byte EJECT_SEED_BACK = 0b10111;
 
-    private final static int numberOfBits= 5;
-    //public final static int numberOfBits = 8;
+    //private final static int numberOfBits= 5;
+    public final static int numberOfBits = 8;
     private final Iterator<Byte> iterator;
 
     public PlantGenome(final List<Gene> genes) {
@@ -69,6 +71,7 @@ public class PlantGenome extends Genome {
         final PlantBehavior plantBehavior;
 
         final byte action = iterator.next();
+
         //yuck
         switch (action) {
             case GROW_LEAF_LEFT:
@@ -172,5 +175,14 @@ public class PlantGenome extends Genome {
                 return null;
         }
         return plantBehavior;
+    }
+
+    @Override
+    public Genome clone() {
+        final List<Gene> geneCopy = new LinkedList<>();
+        for( int i =0; i < getNumberOfGenes(); ++i ) {
+            geneCopy.add(new Gene(getGeneNumber(i)));
+        }
+        return new PlantGenome( geneCopy );
     }
 }

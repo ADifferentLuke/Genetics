@@ -53,13 +53,19 @@ public class BasicFitnessFunction implements FitnessFunction {
     @Override
     public Double apply(final Performance performance) {
 
-        //TODO we may need to normalize the data points
-        final double ageValue = ageWeight * performance.age;
-        final double cellsValue = cellsWeight * performance.cells;
-        final double wasteValue = unusedEnergyWeight * performance.deathEnergy;
-        final double energyValue = energyEfficiencyWeight * ( (double) performance.totalEnergyHarvested / performance.totalEnergyMetabolized );
+        // larger is better, but not a huge advantage.
+        final double cellsValue = cellsWeight * Math.log(Math.sqrt(performance.cells));
+
+        // less waste the better
+        final double wasteValue = unusedEnergyWeight * ( 1 / ( 1 + (Math.exp(Math.abs(performance.deathEnergy)))));
+
+        // ratio of 1:1 energy usage is the most efficient
+        final double energyDifferential = performance.totalEnergyHarvested - performance.totalEnergyMetabolized;
+        // Let's not blow up the world, check for divide by zero
+        final double energyValue = (double) 1 / (  0 != energyDifferential ? energyDifferential : 1 );
+
         final double childrenValue = childrenWeight * performance.offspring;
 
-        return (ageValue + cellsValue + wasteValue + energyValue) * Math.log(childrenValue+1);
+        return (cellsValue + wasteValue + energyValue) * Math.log(childrenValue+1);
     }
 }

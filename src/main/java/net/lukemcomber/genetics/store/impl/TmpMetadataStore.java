@@ -8,6 +8,7 @@ package net.lukemcomber.genetics.store.impl;
 import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.esotericsoftware.kryo.kryo5.io.Input;
 import com.esotericsoftware.kryo.kryo5.io.Output;
+import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.Metadata;
 import net.lukemcomber.genetics.store.MetadataStore;
@@ -18,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -49,7 +51,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
      * This class represents a logical unit that corresponds to a OS tmp file. The goal is
      * to delete the entire file when it expires.
      */
-    public TmpMetadataStore(final Class<T> type, final UniverseConstants properties) throws IOException {
+    public TmpMetadataStore(final Class<T> type, final UniverseConstants properties) {
 
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
@@ -82,7 +84,11 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
         lastAccessed.set(currentTimeMillis / 1000); //seconds
 
         if (enabled) {
-            tmpFilePath = Files.createTempFile("store-", String.format("-%d-%s", currentTimeMillis, type.getSimpleName()));
+            try {
+                tmpFilePath = Files.createTempFile("store-", String.format("-%d-%s", currentTimeMillis, type.getSimpleName()));
+            } catch (IOException e) {
+                throw new EvolutionException(e);
+            }
 
             logger.info("Create tmp file " + tmpFilePath);
 
@@ -225,12 +231,22 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
     @Override
     public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
         // This wasn't really meant for pagination
-        final List<T> retVal = retrieve( pageNumber * countPerPage + countPerPage);
-        int currentPageInRecords = pageNumber * countPerPage;
-        int recordCount = retVal.size() - currentPageInRecords;
+        final List<T> retVal;
+        if( 0 <= pageNumber && 0 < countPerPage ) {
+            final List<T> fullRecordList = retrieve(pageNumber * countPerPage + countPerPage);
+            int currentPageInRecords = pageNumber * countPerPage;
+            if (currentPageInRecords < fullRecordList.size()) {
+                int recordCount = fullRecordList.size() - currentPageInRecords;
 
-        final List<T> result = retVal.subList( currentPageInRecords, currentPageInRecords + recordCount);
-        return result;
+                retVal = fullRecordList.subList(currentPageInRecords, currentPageInRecords + recordCount);
+            } else {
+                // requested a page past the number of records
+                retVal = new ArrayList<>(0);
+            }
+        } else {
+            throw new EvolutionException("Invalid page reference.");
+        }
+        return retVal;
     }
 
     @Override

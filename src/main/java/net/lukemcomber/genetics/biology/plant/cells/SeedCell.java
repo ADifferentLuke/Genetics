@@ -21,7 +21,6 @@ public class SeedCell extends PlantCell {
 
     public static final String PROPERTY_METACOST = "cell.seed.metabolic-rate";
     public static final String PROPERTY_ENERGY = "cell.seed.max-energy-production";
-
     private final SpatialCoordinates spatialCoordinates;
     private final Genome genome;
 

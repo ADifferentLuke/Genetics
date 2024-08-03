@@ -16,19 +16,18 @@ import java.util.LinkedList;
 public class IdentityGenomeTranscriber implements GenomeTransciber {
     @Override
     public Genome transcribe(final UniverseConstants properties, final Genome genome) {
-        final LinkedList<Gene> newGenome = new LinkedList<>();
+        final Genome newGenome = genome.clone();
         for( int i = 0; genome.getNumberOfGenes() > i; ++i ){
             final Gene originalGene = genome.getGeneNumber(i);
-            final Gene newGene = new Gene();
+            final Gene newGene = newGenome.getGeneNumber(i);
 
             newGene.nucleotideA = transcribe(originalGene.nucleotideA);
             newGene.nucleotideB = transcribe(originalGene.nucleotideB);
             newGene.nucleotideC = transcribe(originalGene.nucleotideC);
             newGene.nucleotideD = transcribe(originalGene.nucleotideD);
 
-            newGenome.addLast(newGene);
         }
-        return OrganismFactory.createGenome(genome.getType(), newGenome);
+        return newGenome;
     }
     protected byte transcribe(final byte b){
         return b;

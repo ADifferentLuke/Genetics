@@ -152,6 +152,7 @@ public class FlatWorld implements Terrain {
             final MatrixCell mCell = new MatrixCell();
             mCell.cell = cell;
             mCell.organism = organism;
+
             organismMap[cell.getCoordinates().xAxis][cell.getCoordinates().yAxis] = mCell;
             logger.info("Set cell " + cell.getCellType() + " at " + cell.getCoordinates());
         }

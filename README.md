@@ -5,7 +5,7 @@ A library to simulate genetic evolution.
 ## Goal:
 I have several goals that I'm looking to accomplish with this library
 1. Learn about genetic algorithms
-2. Exercise my design skills by trying new designs
+2. Play around with different designs patterns
 	- Seeing what works and what doesn't
 	- Manage dependencies without Spring or DI
 3. Play with language features and interesting patterns
@@ -14,6 +14,10 @@ I have several goals that I'm looking to accomplish with this library
 For an example implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)
 
+Personal notes: [notes/](https://github.com/ADifferentLuke/Genetics/blob/notes/)</br>
+Analysis: [analysis/](https://github.com/ADifferentLuke/Genetics/blob/analysis/)
+
+Fitness:
 
 Sources used:
 * Asexual Versus Sexual Reproduction in Genetic Algorithms1

@@ -70,6 +70,8 @@ public interface Organism {
 
     FitnessFunction getFitnessFunction();
 
+    void kill( final TemporalCoordinates temporalCoordinates, final String reason );
+
     void prettyPrint(final OutputStream out);
 
     private static Logger logger() {

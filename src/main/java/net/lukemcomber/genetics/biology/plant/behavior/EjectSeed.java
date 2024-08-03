@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 public class EjectSeed implements PlantBehavior {
 
-    public final static String PROPERTY_EJECT_LEAF_COST = "action.seed.eject";
+    public final static String PROPERTY_EJECT_SEED_COST = "action.seed.eject";
 
 
     private static final Logger logger = Logger.getLogger(EjectSeed.class.getName());
@@ -85,7 +85,7 @@ public class EjectSeed implements PlantBehavior {
 
     @Override
     public int getEnergyCost(final UniverseConstants properties) {
-        return properties.get(PROPERTY_EJECT_LEAF_COST, Integer.class);
+        return properties.get(PROPERTY_EJECT_SEED_COST, Integer.class);
 
     }
 }

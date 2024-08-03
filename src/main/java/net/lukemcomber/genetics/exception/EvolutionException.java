@@ -7,6 +7,9 @@ package net.lukemcomber.genetics.exception;
 
 public class EvolutionException extends RuntimeException{
 
+    public EvolutionException( final Throwable throwable ){
+        super(throwable);
+    }
     public EvolutionException(final String message){
         super(message);
     }

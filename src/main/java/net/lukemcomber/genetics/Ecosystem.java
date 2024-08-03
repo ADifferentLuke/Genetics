@@ -6,9 +6,11 @@ package net.lukemcomber.genetics;
  */
 
 import net.lukemcomber.genetics.biology.Organism;
+import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.service.GenomeSerDe;
 import net.lukemcomber.genetics.service.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
@@ -29,7 +31,8 @@ public abstract class Ecosystem {
     private Terrain terrain;
     private final int ticksPerDay;
     private final String uuid;
-    private final UniverseConstants properties;
+    protected final UniverseConstants properties;
+    protected final MetadataStoreGroup metadataStoreGroup;
 
     private boolean active;
     private boolean steppable;
@@ -78,12 +81,16 @@ public abstract class Ecosystem {
         properties = PreCannedUniverses.get(type);
         uuid = UUID.randomUUID().toString();
 
-        final MetadataStoreGroup metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid,properties);
+        metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid,properties);
 
         terrain = WorldFactory.createWorld(properties, metadataStoreGroup);
         terrain.initialize( size.xAxis, size.yAxis, size.zAxis);
 
         this.active = true;
+    }
+
+    public UniverseConstants getProperties(){
+        return properties;
     }
 
     public void initialize(){
@@ -125,14 +132,13 @@ public abstract class Ecosystem {
         }
     }
 
-    public abstract boolean advance();
+    public abstract boolean advance() throws EvolutionException;
 
     protected void tickEnvironment(){
         final long currentDay = getTotalDays();
         tick(1);
 
         logger.info("Tick:  " + getTotalTicks());
-
         // We advanced a day
         if (getTotalDays() > currentDay ) {
             refreshResources();
@@ -156,6 +162,7 @@ public abstract class Ecosystem {
             organism.performAction(getTerrain(), temporalCoordinates, ((organism1, cell) -> {
                 final ResourceManager manager = getTerrain().getResourceManager();
                 manager.renewEnvironmentResourceFromCellDeath(organism, cell);
+                logger.info( "Organism " + organism.getUniqueID() + " decayed.");
             }));
             organism.prettyPrint(loggerOutputStream);
 
@@ -164,10 +171,5 @@ public abstract class Ecosystem {
             isActive(false);
         }
     }
-
-
-    public void preTick(){}
-    public void postTIck(){}
-
 
 }

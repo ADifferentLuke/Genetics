@@ -1,8 +1,13 @@
 package net.lukemcomber.genetics;
 
+import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.TemporalCoordinates;
+import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.metadata.Environment;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,17 +75,34 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
         try {
             while (isActive()) {
 
+                final long startTimeMillis = - System.currentTimeMillis();
+
                 logger.info("Ticking world " + getId());
                 tickEnvironment();
                 tickOrganisms();
 
                 //TODO add catastrophies
+                if( getTotalTicks() % 10 == 0 ) {
+
+                    final Environment environmentData = new Environment();
+                    environmentData.tickCount = getTotalTicks();
+                    environmentData.totalOrganisms = (long) getTerrain().getOrganismCount();
+
+                    final MetadataStore<Environment> dataStore = metadataStoreGroup.get(Environment.class);
+                    dataStore.store(environmentData);
+                }
 
                 if (getTotalDays() >= maxDays) {
                     isActive(false);
-                }
+                    killRemainingOrganisms();
+                } else {
 
-                Thread.sleep(tickDelayMs);
+                    final long processingTime = System.currentTimeMillis() + startTimeMillis;
+                    final long sleepTime = tickDelayMs - processingTime;
+                    if( 0 < sleepTime ) {
+                        Thread.sleep(tickDelayMs);
+                    }
+                }
 
 
             }
@@ -90,5 +112,14 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
             isActive(false);
         }
 
+    }
+
+    private void killRemainingOrganisms(){
+        final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(getTotalTicks(), getTotalDays(), getCurrentTick());
+
+        for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
+            final Organism organism = it.next();
+            organism.kill(temporalCoordinates,"Organism " + organism.getUniqueID() + " died from time ending.");
+        }
     }
 }

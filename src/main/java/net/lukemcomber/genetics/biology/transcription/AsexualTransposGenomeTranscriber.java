@@ -33,7 +33,7 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
         final int flankLength = properties.get(GENOME_TRANSPOSE_FLANK_LENGTH, Integer.class, 2);
         final int randomSeed = properties.get(GENOME_TRANSPOSE_SEED, Integer.class, 0);
 
-        final Genome genome = OrganismFactory.cloneGenome(originalGenome);
+        final Genome genome = originalGenome.clone();
 
         if (null == rng) {
             if (0 < randomSeed) {

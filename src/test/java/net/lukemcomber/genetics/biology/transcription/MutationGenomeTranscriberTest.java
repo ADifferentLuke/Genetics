@@ -1,11 +1,23 @@
 package net.lukemcomber.genetics.biology.transcription;
 
 
+import com.google.common.collect.ImmutableMap;
 import net.lukemcomber.genetics.biology.Gene;
 import net.lukemcomber.genetics.biology.Genome;
+import net.lukemcomber.genetics.biology.TestGenome;
 import net.lukemcomber.genetics.biology.plant.PlantBehavior;
+import net.lukemcomber.genetics.biology.plant.PlantGenome;
+import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.service.GenomeSerDe;
+import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.TmpMetadataStoreTest;
+import net.lukemcomber.genetics.world.terrain.Terrain;
+import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import org.testng.annotations.Test;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.testng.AssertJUnit.assertEquals;
@@ -14,15 +26,19 @@ import static org.testng.AssertJUnit.assertEquals;
 public class MutationGenomeTranscriberTest {
     private static final Logger logger = Logger.getLogger(MutationGenomeTranscriber.class.getName());
 
+    public static class TestUniverse extends UniverseConstants {
+        public TestUniverse(Map<String, Object> map) {
+            super(map);
+        }
+    }
+
+
     public void testMutatesGenome() {
+        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
+                MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 1
+        ));
         // Create a mock implementation of Genome for testing
-        Genome genome = new Genome(3, "MockGenome") {
-            @Override
-            public PlantBehavior getNextAct() {
-                // Mock implementation, not needed for this test
-                return null;
-            }
-        };
+        Genome genome = new TestGenome(3);
 
         logger.info("Testing mutation with 100% probability ...... ");
         // Set known initial values for the genes (for easier testing)
@@ -52,9 +68,9 @@ public class MutationGenomeTranscriberTest {
 
         byte newValue = genome.getGeneNumber(0).nucleotideA;
 
-        byte expectedValue = (byte)(1 << ( bitToFlip % 8 ));
+        byte expectedValue = (byte) (1 << (bitToFlip % 8));
 
-        assertEquals(expectedValue,newValue);
+        assertEquals(expectedValue, newValue);
 
 
         logger.info("Testing mutation with 0% probability ...... ");
@@ -72,6 +88,33 @@ public class MutationGenomeTranscriberTest {
         seed = 456;
         transcriber.mutate(genome, 0.0f, seed); // Mutate with 0% probability for testing
         assertEquals(0, getBitValue(genome.getGeneNumber(0), bitToFlip));
+
+        // ensuring we don't modify the original genome
+        for (int i = 0; i < genome.getNumberOfGenes(); i++) {
+            Gene gene = genome.getGeneNumber(i);
+            gene.nucleotideA = 0;
+            gene.nucleotideB = 0;
+            gene.nucleotideC = 0;
+            gene.nucleotideD = 0;
+        }
+
+        final String originalGenome = GenomeSerDe.serialize(genome);
+        logger.info( "Start genome: " + originalGenome);
+        final Genome newGenome = transcriber.transcribe(testUniverse, genome);
+        logger.info("Original genome: " + GenomeSerDe.serialize(genome));
+        logger.info( "End genome: " + GenomeSerDe.serialize(newGenome));
+        boolean theSame = true;
+        for (int i = 0; i < genome.getNumberOfGenes(); i++) {
+            final Gene srcGene = genome.getGeneNumber(i);
+            final Gene destGene = newGenome.getGeneNumber(i);
+
+            if (srcGene.nucleotideA != destGene.nucleotideA || srcGene.nucleotideB != destGene.nucleotideB ||
+                    srcGene.nucleotideC != destGene.nucleotideC || srcGene.nucleotideD != destGene.nucleotideD) {
+                theSame = false;
+                break;
+            }
+        }
+        assertEquals("Mutation modified source genome!", false, theSame);
     }
 
     public void testBitFlip() {
@@ -88,13 +131,7 @@ public class MutationGenomeTranscriberTest {
         logger.info("Testing gene bitFlip logic in mutations ...... ");
         MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber();
 
-        Genome genome = new Genome(3, "MockGenome") {
-            @Override
-            public PlantBehavior getNextAct() {
-                // Mock implementation, not needed for this test
-                return null;
-            }
-        };
+        Genome genome = new TestGenome(3);
         byte TWO = 0b10;
         byte THREE = 0b11;
         byte TEN = 0b1010;

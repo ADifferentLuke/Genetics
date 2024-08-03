@@ -25,7 +25,7 @@ public class MutationGenomeTranscriber implements GenomeTransciber {
     @Override
     public Genome transcribe(final UniverseConstants properties, final Genome originalGenome) {
         float mutationProbability = (float) 1 / properties.get(GENOME_MUTATE_PROBABILITY, Integer.class);
-        final Genome genome = OrganismFactory.cloneGenome(originalGenome);
+        final Genome genome = originalGenome.clone();
         mutate(genome, mutationProbability, null);
 
         return genome;

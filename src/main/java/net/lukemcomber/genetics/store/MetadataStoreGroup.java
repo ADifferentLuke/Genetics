@@ -1,5 +1,6 @@
 package net.lukemcomber.genetics.store;
 
+import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.impl.TmpSearchableMetadataStore;
 import net.lukemcomber.genetics.store.impl.TmpMetadataStore;
@@ -19,7 +20,7 @@ public class MetadataStoreGroup {
     }
 
     public synchronized <T extends Metadata> MetadataStore<T> get(final Class<T> clazz)
-            throws IOException {
+            throws EvolutionException {
 
         MetadataStore<T> metadataStore = (MetadataStore<T>) groupStore.get(clazz.getSimpleName());
         if (null == metadataStore) {

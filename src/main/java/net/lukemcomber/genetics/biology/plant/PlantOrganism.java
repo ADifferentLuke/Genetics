@@ -6,9 +6,9 @@ package net.lukemcomber.genetics.biology.plant;
  */
 
 import net.lukemcomber.genetics.biology.Cell;
+import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
-import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.genetics.exception.EvolutionException;
@@ -20,13 +20,11 @@ import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -37,9 +35,10 @@ public class PlantOrganism implements Organism {
     private static final Logger logger = Logger.getLogger(PlantOrganism.class.getName());
 
     public static final String PROPERTY_STARTING_ENERGY = "initial.plant.energy";
-    public static final String PROPERTY_OLD_AGE_LIMIT = "death.plant.age-limit-days";
-    public static final String PROPERTY_STAGNATION_LIMIT = "death.plant.stagnation-limit-days";
-    public static final String PROPERTY_STARVATION_LIMIT = "death.plant.starvation-limit-energy";
+    public static final String PROPERTY_OLD_AGE_LIMIT = "death.plant.age.limit.days";
+    public static final String PROPERTY_STAGNATION_LIMIT = "death.plant.stagnation.limit.days";
+    public static final String PROPERTY_STARVATION_LIMIT = "death.plant.starvation.limit.energy";
+    public static final String PROPERTY_GERMINATION_LIMIT = "death.plant.germination.limit.ticks";
 
     public static final String TYPE = "PLANT";
     private final Genome genome;
@@ -57,6 +56,8 @@ public class PlantOrganism implements Organism {
     private final TemporalCoordinates birthTime;
     private TemporalCoordinates lastUpdateTime;
     private boolean alive;
+
+    private int germinationCountDown;
     private int totalResourcesGathered;
     private int totalEnergyMetabolized;
 
@@ -66,6 +67,7 @@ public class PlantOrganism implements Organism {
     private final GenomeTransciber transciber;
 
     private final FitnessFunction fitnessFunction;
+
 
     public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates,
                          final UniverseConstants properties, final GenomeTransciber transciber,
@@ -82,6 +84,7 @@ public class PlantOrganism implements Organism {
         this.totalEnergyMetabolized = 0;
 
         this.energy = properties.get(PROPERTY_STARTING_ENERGY, Integer.class);
+        this.germinationCountDown = properties.get(PROPERTY_GERMINATION_LIMIT,Integer.class,10);
         this.activeCells = new LinkedList<>();
         this.activeCells.add(seed);
         this.uuid = UUID.randomUUID().toString();
@@ -105,18 +108,52 @@ public class PlantOrganism implements Organism {
 
     @Override
     public void removeEnergyFromMetabolism(int energy) {
-        totalEnergyMetabolized += energy;
         spendEnergy(energy);
     }
 
     @Override
     public void spendEnergy(int energy) {
+        totalEnergyMetabolized += energy;
         this.energy -= energy;
     }
 
     @Override
     public FitnessFunction getFitnessFunction() {
         return fitnessFunction;
+    }
+
+    @Override
+    public void kill(final TemporalCoordinates temporalCoordinates, final String reason) {
+        alive = false;
+        final Performance performance = new Performance();
+        performance.name = this.uuid;
+        performance.parentId = this.parentUuid;
+        performance.dna = GenomeSerDe.serialize(getGenome());
+        performance.offspring = seedCount;
+        performance.birthTick = this.birthTime.totalTicks();
+        performance.deathEnergy = this.energy;
+        performance.deathTick = temporalCoordinates.totalTicks();
+        performance.causeOfDeath = reason;
+        performance.age = performance.deathTick - performance.birthTick;
+        performance.totalEnergyHarvested = totalResourcesGathered;
+        performance.totalEnergyMetabolized = totalEnergyMetabolized;
+
+        performance.cells = childCount + 1; // Added 1 for current cell that's not a child
+
+        if (null != fitnessFunction) {
+            performance.fitness = fitnessFunction.apply(performance);
+        } else {
+            performance.fitness = 0d;
+        }
+
+        try {
+            final MetadataStore<Performance> performanceStore = metadataStoreGroup.get(Performance.class);
+            performanceStore.store(performance);
+        } catch (EvolutionException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        logger.info(reason);
     }
 
     @Override
@@ -153,13 +190,6 @@ public class PlantOrganism implements Organism {
     public boolean isAlive() {
         return alive;
     }
-
-    /*
-    public void modifyEnergy(int delta) {
-        this.energy += delta;
-    }
-
-     */
 
     @Override
     public long getBirthTick() {
@@ -198,7 +228,7 @@ public class PlantOrganism implements Organism {
                     logger.info(String.format("Created %s at %s from Seed", plantOrganism.getUniqueID(), seed.getCoordinates()));
 
 
-                    logger.info("New Organism born: " + plantOrganism.getUniqueID());
+                    logger.info("New Organism born: " + plantOrganism.getUniqueID() );
 
                     terrain.addOrganism(plantOrganism);
                 } else {
@@ -216,7 +246,7 @@ public class PlantOrganism implements Organism {
             }
         } else {
             performActionOnAllCells((PlantCell) getCells(), cell -> {
-                logger.info("Actioning cell " + cell);
+                logger.info("Actioning cell " + cell );
                 final PlantBehavior plantBehavior = genome.getNextAct();
                 if (null != plantBehavior) {
 
@@ -256,56 +286,17 @@ public class PlantOrganism implements Organism {
 
             String deathLogStr = "";
             if (0 <= starvationLimit && starvationLimit >= energy) {
-                //too exhausted to live
-                deathLogStr = ("Organism " + uuid + " died from exhaustion.");
-                alive = false;
+                kill( temporalCoordinates,"Organism " + uuid + " died from exhaustion.");
             }
             if (0 <= stagnationLimit && stagnationLimit < mark - lastUpdateTime.totalDays()) {
-                deathLogStr = ("Organism " + uuid + " died from stagnation.");
-                //stagnant
-                alive = false;
+                kill(temporalCoordinates,"Organism " + uuid + " died from stagnation.");
             }
             if (0 <= ageLimit && ageLimit < temporalCoordinates.totalDays() - birthTime.totalDays()) {
-                deathLogStr = ("Organism " + uuid + " died from old age.");
-                alive = false;
+                kill(temporalCoordinates,"Organism " + uuid + " died from old age.");
             }
-
-            if (!alive) {
-                //Time to collection some information!
-
-                final Performance performance = new Performance();
-                performance.name = this.uuid;
-                performance.parentId = this.parentUuid;
-                performance.dna = GenomeSerDe.serialize(getGenome());
-                performance.offspring = seedCount;
-                performance.birthTick = this.birthTime.totalTicks();
-                performance.deathEnergy = this.energy;
-                performance.deathTick = temporalCoordinates.totalTicks();
-                performance.causeOfDeath = deathLogStr;
-                performance.age = performance.deathTick - performance.birthTick;
-                performance.totalEnergyHarvested = totalResourcesGathered;
-                performance.totalEnergyMetabolized = totalEnergyMetabolized;
-
-                performance.cells = childCount + 1; // Added 1 for current cell that's not a child
-
-                if (null != fitnessFunction) {
-                    performance.fitness = fitnessFunction.apply(performance);
-                } else {
-                    performance.fitness = 0d;
-                }
-
-                try {
-                    final MetadataStore<Performance> performanceStore = metadataStoreGroup.get(Performance.class);
-                    performanceStore.store(performance);
-                } catch (IOException e) {
-                    logger.log(Level.WARNING, e.getMessage(), e);
-                }
-
-                logger.info("Fitness " + performance.fitness + ", Children: " + performance.offspring + ", DNA:" + GenomeSerDe.serialize(genome));
-                logger.info(deathLogStr);
-
+            if( 1 == activeCells.size() && 0 >= germinationCountDown-- ){
+                kill(temporalCoordinates,"Organism " + uuid + " failed to germinate.");
             }
-
         }
 
         return null;

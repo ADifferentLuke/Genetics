@@ -11,12 +11,10 @@ import java.util.List;
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 @Test
-public class GenomeTest {
+public class GenomeStructureTest {
 
 
     // Helper method to generate a random chromosome for testing
-
-
 
     public void genomeByteArrayTest(){
         // Sample Gene objects and their byte arrays
@@ -61,12 +59,7 @@ public class GenomeTest {
             geneList.addLast(gene);
         }
 
-        final Genome genome = new Genome(geneList, "test") {
-            @Override
-            public PlantBehavior getNextAct() {
-                return null;
-            }
-        };
+        final Genome genome = new TestGenome(geneList);
 
 
         Gene gene = genome.getGeneNumber(13);
@@ -87,4 +80,5 @@ public class GenomeTest {
         Gene gene14 = genome.getGeneNumber( 14 );
         assert( 14 == gene14.nucleotideA);
     }
+
 }

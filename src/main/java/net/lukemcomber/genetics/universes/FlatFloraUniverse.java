@@ -19,6 +19,7 @@ import net.lukemcomber.genetics.biology.transcription.AsexualTransposGenomeTrans
 import net.lukemcomber.genetics.biology.transcription.MutationGenomeTranscriber;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.metadata.Environment;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
@@ -44,6 +45,7 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(PlantOrganism.PROPERTY_OLD_AGE_LIMIT, 100)
                 .put(PlantOrganism.PROPERTY_STARVATION_LIMIT, 0)
                 .put(PlantOrganism.PROPERTY_STAGNATION_LIMIT, 10)
+                .put(PlantOrganism.PROPERTY_GERMINATION_LIMIT,10)
                 /* Cell Properties */
                 .put(LeafCell.PROPERTY_ENERGY, 3)
                 .put(LeafCell.PROPERTY_METACOST, 1)
@@ -56,14 +58,15 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 /* Action Costs */
                 .put(GrowLeaf.PROPERTY_GROW_LEAF_COST, 1)
                 .put(GrowRoot.PROPERTY_GROW_ROOT_COST, 2)
-                .put(GrowSeed.PROPERTY_GROW_SEED_COST, 10)
-                .put(EjectSeed.PROPERTY_EJECT_LEAF_COST, 1)
+                .put(GrowSeed.PROPERTY_GROW_SEED_COST, 7)
+                .put(EjectSeed.PROPERTY_EJECT_SEED_COST, 8)
                 /* Genome Modification / Reproduction */
                 .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY, 5)
                 .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 5)
                 /* Metadata Store */
                 .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400l) // One day in seconds
                 .put(Performance.PROPERTY_PERFORMANCE_ENABLE, true)
+                .put(Environment.PROPERTY_PERFORMANCE_ENABLE, true)
                 .build();
     }
 

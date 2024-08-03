@@ -2,9 +2,13 @@ package net.lukemcomber.genetics;
 
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
+import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.service.LoggerOutputStream;
+import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.MetadataStoreGroup;
+import net.lukemcomber.genetics.store.metadata.Environment;
 import net.lukemcomber.genetics.world.ResourceManager;
 
 import java.io.IOException;
@@ -29,12 +33,20 @@ public class SteppableEcosystem extends Ecosystem{
         return ticksPerTurn;
     }
 
-    public boolean advance() {
+    public boolean advance() throws EvolutionException {
         if (isActive()) {
             for (int i = 0; i < getTicksPerTurn(); ++i) {
                 tickEnvironment();
                 tickOrganisms();
             }
+
+            final Environment environmentData = new Environment();
+            environmentData.tickCount = getTotalTicks();
+            environmentData.totalOrganisms = (long) getTerrain().getOrganismCount();
+
+           final MetadataStore<Environment> dataStore = metadataStoreGroup.get(Environment.class);
+           dataStore.store(environmentData);
+
         }
         return isActive();
     }

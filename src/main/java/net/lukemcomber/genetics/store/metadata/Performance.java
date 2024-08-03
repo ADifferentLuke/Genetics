@@ -2,7 +2,9 @@ package net.lukemcomber.genetics.store.metadata;
 
 import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
+import net.lukemcomber.genetics.store.Searchable;
 
+@Searchable
 public class Performance implements Metadata {
 
     public static final String PROPERTY_PERFORMANCE_ENABLE = "metadata.Performance.enabled";

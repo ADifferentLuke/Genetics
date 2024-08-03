@@ -7,9 +7,11 @@ package net.lukemcomber.genetics.model;
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public abstract class UniverseConstants {
 
@@ -29,6 +31,13 @@ public abstract class UniverseConstants {
             output.append("\n");
         });
         logger.info(output.toString());
+    }
+
+    public Map<String,String> toMap(){
+        return constantMap.keySet()
+                .stream()
+                .collect(
+                        Collectors.toMap( key -> key, key -> constantMap.get(key ).toString()));
     }
 
     public <T> T get(final String key, final Class<T> type ){

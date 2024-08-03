@@ -12,7 +12,8 @@ I have several goals that I'm looking to accomplish with this library
 3. For fun and curiosity!
 
 Fitness:
-$$f(x)= (W_{1}log(\sqrt{C_{1}}) + W_{2}\frac{1}{1 + e^{|D_{1}|}} + W_{3}\frac{1}{H_{1} - M_{1}})log(W_{4}O_{1})
+![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/mis/BasicFitnessFunction.png?raw=true)
+
 
 For an example implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)

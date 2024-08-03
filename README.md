@@ -12,7 +12,7 @@ I have several goals that I'm looking to accomplish with this library
 3. For fun and curiosity!
 
 Fitness:
-![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/mis/BasicFitnessFunction.png?raw=true)
+![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/misc/BasicFitnessFunction.png?raw=true)
 
 
 For an example implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>

@@ -56,8 +56,8 @@ public interface Organism {
         int newEnergy = cells.stream().mapToInt(cell -> cell.generateEnergy(terrain)).sum();
         int metaCost = getMetabolismCost();
 
-        logger().info( "Gathered: " + newEnergy );
-        logger().info( "Cost: " + (-metaCost));
+        //logger().info( "Gathered: " + newEnergy );
+       // logger().info( "Cost: " + (-metaCost));
 
         addEnergyFromEcosystem(newEnergy);
         removeEnergyFromMetabolism(metaCost);
@@ -74,13 +74,16 @@ public interface Organism {
 
     void prettyPrint(final OutputStream out);
 
+    /*
     private static Logger logger() {
         final class LogHolder {
             //Lazy load
             private static final Logger LOGGER = getLogger(Organism.class.getName());
         }
         return LogHolder.LOGGER;
+
     }
+     */
 
 
 }

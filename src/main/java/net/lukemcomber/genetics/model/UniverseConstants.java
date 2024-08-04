@@ -44,6 +44,7 @@ public abstract class UniverseConstants {
         return get(key,type,null);
     }
     public <T> T get(final String key, final Class<T> type, final T defaultVal){
+        logger.info("This is a test");
         T retVal = defaultVal;
         if(StringUtils.isNotEmpty(key) && null != type ){
             if( constantMap.containsKey(key)){

@@ -130,7 +130,7 @@ public class FlatWorld implements Terrain {
                 environmentMap[i][j] = new HashMap<>();
             }
         }
-        System.out.println(String.format("World %s initialized to (%d,%d,%d).", ID, x, y, z));
+        logger.info(String.format("World %s initialized to (%d,%d,%d).", ID, x, y, z));
 
         isInitialized = true;
         resourceManager = new FlatWorldResourceManager(this, constants);

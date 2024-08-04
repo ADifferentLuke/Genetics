@@ -20,7 +20,6 @@ public class WorldFactory {
         switch (worldType) {
             case FlatWorld.ID:
                 world = new FlatWorld(properties, metadataStoreGroup);
-                System.out.println("Allocated a new " + FlatWorld.ID);
                 break;
             default:
                 throw new EvolutionException("World type [" + worldType + "] not recognized.");

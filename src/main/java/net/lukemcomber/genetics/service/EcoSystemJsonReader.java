@@ -53,7 +53,6 @@ public class EcoSystemJsonReader extends LGPReader {
             final double cataclysmProbability = rootNode.path("cataclysmProbability").asDouble(0);
             final double cataclysmSurvivalRate = rootNode.path("cataclysmSurvivalRate").asDouble(0);
 
-//TODO race condition the ecosystem can start before the organism
             ecosystem = new AutomaticEcosystem(ticksPerDay, gridSize, worldType,maxDays, tickDelay, cataclysmProbability, cataclysmSurvivalRate);
         }
         final Terrain terrain = ecosystem.getTerrain();

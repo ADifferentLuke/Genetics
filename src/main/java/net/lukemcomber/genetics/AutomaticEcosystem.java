@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(AutomaticEcosystem.class.getName());
+    private final Logger logger = Logger.getLogger(AutomaticEcosystem.class.getName());
 
 
     private final long maxDays;

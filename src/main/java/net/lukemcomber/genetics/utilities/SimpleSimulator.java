@@ -15,8 +15,10 @@ import net.lukemcomber.genetics.store.SearchableMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 import net.lukemcomber.genetics.utilities.model.SimpleSimulation;
+import net.lukemcomber.genetics.utilities.model.SimulationSessions;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.*;
@@ -29,18 +31,21 @@ public class SimpleSimulator {
 
     private final Logger logger = Logger.getLogger(SimpleSimulator.class.getName());
 
-
     private final SimpleSimulation simulation;
     private final Set<String> organismFilter;
     private final BufferedWriter bufferedWriter;
+    private final SimulationSessions sessions;
 
     public SimpleSimulator(final SimpleSimulation simulation, final File filterFile) throws IOException {
         this.simulation = simulation;
         organismFilter = new HashSet<>();
 
         bufferedWriter = new BufferedWriter(new FileWriter(filterFile, true));
+        sessions = new SimulationSessions();
+    }
 
-
+    public SimulationSessions getSessions(){
+        return sessions;
     }
 
     private void addToFilter(final Set<String> organisms) throws IOException {
@@ -73,10 +78,17 @@ public class SimpleSimulator {
 
             final Map<SpatialCoordinates, String> fauna = genomeCreator.generateRandomLocations(simulation.width, simulation.height, startingPopulation);
 
+            final String name;
+            if(StringUtils.isNotEmpty(simulation.name)){
+                name = simulation.name + "-Epoch-" + epoch;
+            } else {
+                name = null;
+            }
+
 
             final SpatialCoordinates spatialCoordinates = new SpatialCoordinates(simulation.width, simulation.height, 0);
             final AutomaticEcosystem ecosystem = new AutomaticEcosystem(simulation.ticksPerDay, spatialCoordinates, FlatFloraUniverse.ID,
-                    simulation.maxDays, 1, 0, 0);
+                    simulation.maxDays, 1, name);
 
             final Terrain terrain = ecosystem.getTerrain();
             final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0, 0, 0);
@@ -91,9 +103,10 @@ public class SimpleSimulator {
                 } catch (DecoderException e) {
                     throw new RuntimeException(e);
                 }
-                terrain.addOrganism(organism);
+                ecosystem.addOrganismToInitialPopulation(organism);
             }));
             logger.info("Epoch started.");
+            sessions.add(ecosystem.getId(), ecosystem);
             ecosystem.initialize();
 
             startingPopulation.removeAll(reincarnates);

@@ -8,6 +8,7 @@ package net.lukemcomber.genetics.store.impl;
 import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.esotericsoftware.kryo.kryo5.io.Input;
 import com.esotericsoftware.kryo.kryo5.io.Output;
+import com.esotericsoftware.kryo.kryo5.util.Pool;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.Metadata;
@@ -45,7 +46,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
     private final ReentrantReadWriteLock ioSystemLock;
     private final Path tmpFilePath;
     private final Class<T> type;
-    private final Kryo kryo;
+    private final Pool<Kryo> kryoPool;
 
     /*
      * This class represents a logical unit that corresponds to a OS tmp file. The goal is
@@ -64,9 +65,14 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
         } else {
             ttl = cTtl;
         }
-        kryo = new Kryo();
 
-        kryo.register(type);
+        kryoPool = new Pool<>(true, false, 8) {
+            protected Kryo create () {
+                Kryo kryo = new Kryo();
+                kryo.register(type);
+                return kryo;
+            }
+        };
 
         final String propertyName = String.format(PROPERTY_TYPE_ENABLED, type.getSimpleName());
 
@@ -116,8 +122,10 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
                                          * the squeeze here
                                          */
                                         recordCount++;
+                                        final Kryo kryo = kryoPool.obtain();
                                         kryo.writeObject(kyroOutput, metadata);
                                         kyroOutput.flush();
+                                        kryoPool.free(kryo);
 
                                     } finally {
                                         writeLock.unlock();
@@ -213,7 +221,9 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
                     try {
                         readLock.lock();
+                        final Kryo kryo = kryoPool.obtain();
                         retVal.add(kryo.readObject(kryoInput, type));
+                        kryoPool.free(kryo);
                         currentCount++;
 
                     } finally {

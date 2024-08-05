@@ -30,6 +30,7 @@ public class EcoSystemJsonReader extends LGPReader {
     public Ecosystem read(final JsonNode rootNode) throws IOException {
 
         final String worldType = rootNode.path("world").asText("flat");
+        final String name = rootNode.path("name").asText(null);
         final int xMax = rootNode.path("width").asInt(90);
         final int yMax = rootNode.path("height").asInt(90);
         final int zMax = rootNode.path("depth").asInt(90);
@@ -43,7 +44,7 @@ public class EcoSystemJsonReader extends LGPReader {
         if( ! ticksPerTurnNode.isMissingNode() ) {
             final int ticksPerTurn = ticksPerTurnNode.asInt();
             if( 0 < ticksPerTurn ){
-                ecosystem = new SteppableEcosystem(ticksPerTurn, ticksPerDay, gridSize, worldType);
+                ecosystem = new SteppableEcosystem(ticksPerTurn, ticksPerDay, gridSize, worldType, name);
             } else {
                 throw new RuntimeException("False not acceptable as steppable parameter. Weird right?");
             }
@@ -53,7 +54,7 @@ public class EcoSystemJsonReader extends LGPReader {
             final double cataclysmProbability = rootNode.path("cataclysmProbability").asDouble(0);
             final double cataclysmSurvivalRate = rootNode.path("cataclysmSurvivalRate").asDouble(0);
 
-            ecosystem = new AutomaticEcosystem(ticksPerDay, gridSize, worldType,maxDays, tickDelay, cataclysmProbability, cataclysmSurvivalRate);
+            ecosystem = new AutomaticEcosystem(ticksPerDay, gridSize, worldType,maxDays, tickDelay, name);
         }
         final Terrain terrain = ecosystem.getTerrain();
         final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(ecosystem.getId(),terrain.getProperties());
@@ -74,7 +75,7 @@ public class EcoSystemJsonReader extends LGPReader {
                                 final Organism organism = OrganismFactory.create( DEFAULT_PARENT_ID,
                                         GenomeSerDe.deserialize(currentOrganismType, rvi.value), spatialCoordinates,temporalCoordinates,
                                         terrain.getProperties(),groupStore );
-                                terrain.addOrganism(organism);
+                                ecosystem.addOrganismToInitialPopulation(organism);
                             } catch (DecoderException e) {
                                 throw new RuntimeException(e);
                             }

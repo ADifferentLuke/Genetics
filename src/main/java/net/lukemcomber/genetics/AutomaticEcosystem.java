@@ -18,20 +18,20 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
     private final long maxDays;
     private final long tickDelayMs;
-    private final double catastrophicProbability;
-    private final double catastrophicSurvivalRate;
-
     private final Thread ecosystemThread;
 
     public AutomaticEcosystem(final int ticksPerDay, final SpatialCoordinates size, final String type,
-                              final long maxDays, final long delayMs, final double catastrophicProbability,
-                              final double catastrophicSurvivalRate) throws IOException {
-        super(ticksPerDay, size, type);
+                              final long maxDays, final long delayMs) throws IOException {
+        this(ticksPerDay,size,type,maxDays,delayMs,null);
+
+    }
+
+    public AutomaticEcosystem(final int ticksPerDay, final SpatialCoordinates size, final String type,
+                              final long maxDays, final long delayMs, final String name) throws IOException {
+        super(ticksPerDay, size, type, name);
 
         this.maxDays = maxDays;
         this.tickDelayMs = delayMs;
-        this.catastrophicProbability = catastrophicProbability;
-        this.catastrophicSurvivalRate = catastrophicSurvivalRate;
 
         isActive(true);
 
@@ -41,19 +41,11 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
     }
 
-    public double getCatastrophicProbability(){
-        return catastrophicProbability;
-    }
-
-    public double getCatastrophicSurvivalRate(){
-        return catastrophicSurvivalRate;
-    }
-
-    public long getMaxDays(){
+    public long getMaxDays() {
         return maxDays;
     }
 
-    public long getTickDelayMs(){
+    public long getTickDelayMs() {
         return tickDelayMs;
     }
 
@@ -75,14 +67,14 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
         try {
             while (isActive()) {
 
-                final long startTimeMillis = - System.currentTimeMillis();
+                final long startTimeMillis = -System.currentTimeMillis();
 
                 logger.info("Ticking world " + getId());
                 tickEnvironment();
                 tickOrganisms();
 
                 //TODO add catastrophies
-                if( getTotalTicks() % 10 == 0 ) {
+                if (getTotalTicks() % 10 == 0) {
 
                     final Environment environmentData = new Environment();
                     environmentData.tickCount = getTotalTicks();
@@ -99,7 +91,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
                     final long processingTime = System.currentTimeMillis() + startTimeMillis;
                     final long sleepTime = tickDelayMs - processingTime;
-                    if( 0 < sleepTime ) {
+                    if (0 < sleepTime) {
                         Thread.sleep(tickDelayMs);
                     }
                 }
@@ -114,12 +106,12 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
     }
 
-    private void killRemainingOrganisms(){
+    private void killRemainingOrganisms() {
         final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(getTotalTicks(), getTotalDays(), getCurrentTick());
 
         for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
             final Organism organism = it.next();
-            organism.kill(temporalCoordinates,"Organism " + organism.getUniqueID() + " died from time ending.");
+            organism.kill(temporalCoordinates, "Organism " + organism.getUniqueID() + " died from time ending.");
         }
     }
 }

@@ -7,6 +7,8 @@ import java.util.List;
 
 public class SimpleSimulation {
 
+    @JsonProperty("name")
+    public String name;
     @JsonProperty("epochs")
     public int epochs;
     @JsonProperty("height")

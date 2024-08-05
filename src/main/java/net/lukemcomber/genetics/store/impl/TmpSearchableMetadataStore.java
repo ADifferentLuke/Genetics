@@ -8,6 +8,7 @@ package net.lukemcomber.genetics.store.impl;
 import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.esotericsoftware.kryo.kryo5.io.Input;
 import com.esotericsoftware.kryo.kryo5.io.Output;
+import com.esotericsoftware.kryo.kryo5.util.Pool;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.Indexed;
@@ -52,7 +53,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
     private long cursor;
     private final Class<T> type;
-    private final Kryo kryo;
+    private final Pool<Kryo> kryoPool;
 
     /*
      * This class represents a logical unit that corresponds to a OS tmp file. The goal is
@@ -72,9 +73,16 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         } else {
             ttl = cTtl;
         }
-        kryo = new Kryo();
 
-        kryo.register(type);
+        kryoPool = new Pool<>(true, false, 8) {
+            protected Kryo create () {
+                Kryo kryo = new Kryo();
+                kryo.register(type);
+                return kryo;
+            }
+        };
+
+
 
         final String propertyName = String.format(PROPERTY_TYPE_ENABLED, type.getSimpleName());
 
@@ -224,11 +232,14 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
 
         final Output binaryKyroOutput = new Output(binaryStream);
+        final Kryo kryo = kryoPool.obtain();
         kryo.writeObject(binaryKyroOutput, metadata);
         binaryKyroOutput.flush();
         binaryKyroOutput.close();
 
         final byte[] data = binaryStream.toByteArray();
+        kryoPool.free(kryo);
+
 
         file.seek(currentPosition);
         file.write(data);
@@ -322,7 +333,9 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
         if (0 < readCount) {
             final Input input = new Input(data);
+            final Kryo kryo = kryoPool.obtain();
             retVal = kryo.readObject(input, type);
+            kryoPool.free(kryo);
         } else {
             retVal = null;
         }

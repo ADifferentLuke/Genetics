@@ -13,10 +13,12 @@ import net.lukemcomber.genetics.world.ResourceManager;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SteppableEcosystem extends Ecosystem{
+public class SteppableEcosystem extends Ecosystem {
 
     private static final Logger logger = Logger.getLogger(SteppableEcosystem.class.getName());
 
@@ -29,7 +31,13 @@ public class SteppableEcosystem extends Ecosystem{
         this.ticksPerTurn = ticksPerTurn;
     }
 
-    public long getTicksPerTurn(){
+    public SteppableEcosystem(int ticksPerTurn, int ticksPerDay, SpatialCoordinates size, String type, String name) throws IOException {
+
+        super(ticksPerDay, size, type, name);
+        this.ticksPerTurn = ticksPerTurn;
+    }
+
+    public long getTicksPerTurn() {
         return ticksPerTurn;
     }
 
@@ -44,8 +52,8 @@ public class SteppableEcosystem extends Ecosystem{
             environmentData.tickCount = getTotalTicks();
             environmentData.totalOrganisms = (long) getTerrain().getOrganismCount();
 
-           final MetadataStore<Environment> dataStore = metadataStoreGroup.get(Environment.class);
-           dataStore.store(environmentData);
+            final MetadataStore<Environment> dataStore = metadataStoreGroup.get(Environment.class);
+            dataStore.store(environmentData);
 
         }
         return isActive();

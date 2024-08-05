@@ -17,9 +17,12 @@ import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.universes.PreCannedUniverses;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,10 +36,10 @@ public abstract class Ecosystem {
     private final String uuid;
     protected final UniverseConstants properties;
     protected final MetadataStoreGroup metadataStoreGroup;
+    private final List<String> initialPopulation;
 
     private boolean active;
-    private boolean steppable;
-
+    private boolean initalized;
 
     public long getTotalTicks() {
         return totalTicks;
@@ -70,9 +73,17 @@ public abstract class Ecosystem {
     private long totalDays;
     private int currentTick;
 
-    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type ) throws IOException {
+    private final String name;
+
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type) throws IOException {
+        this(ticksPerDay,size,type,null);
+    }
+
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type, final String name) throws IOException {
+
 
         this.ticksPerDay = ticksPerDay;
+        this.initialPopulation = new LinkedList<>();
 
         totalDays = 0;
         totalTicks = 0;
@@ -80,26 +91,37 @@ public abstract class Ecosystem {
 
         properties = PreCannedUniverses.get(type);
         uuid = UUID.randomUUID().toString();
+        if(StringUtils.isNotEmpty(name)){
+            this.name = name;
+        } else {
+            this.name = uuid;
+        }
 
-        metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid,properties);
+        metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid, properties);
 
         terrain = WorldFactory.createWorld(properties, metadataStoreGroup);
-        terrain.initialize( size.xAxis, size.yAxis, size.zAxis);
+        terrain.initialize(size.xAxis, size.yAxis, size.zAxis);
 
-        this.active = true;
+        this.active = true; //TODO should move to initialized?
+        this.initalized = false;
     }
 
-    public UniverseConstants getProperties(){
+    public String getName() {
+        return name;
+    }
+
+    public UniverseConstants getProperties() {
         return properties;
     }
 
-    public void initialize(){
+    public void initialize() {
         if (null != terrain.getResourceManager()) {
             terrain.getResourceManager().initializeAllTerrainResources();
         }
+        initalized = true;
     }
 
-    public String getId(){
+    public String getId() {
         return uuid;
     }
 
@@ -108,21 +130,34 @@ public abstract class Ecosystem {
     }
 
     void refreshResources() {
-        if( active ) {
+        if (active) {
             final ResourceManager manager = getTerrain().getResourceManager();
             manager.renewDailyEnvironmentResource();
         }
     }
 
-    public boolean isActive(){
+    public void addOrganismToInitialPopulation(final Organism organism) {
+        if (!initalized) {
+            initialPopulation.add(GenomeSerDe.serialize(organism.getGenome()));
+            terrain.addOrganism(organism);
+        } else {
+            throw new EvolutionException("Cannot add organism to already started simulation");
+        }
+    }
+
+    public List<String> getInitialPopulation() {
+        return initialPopulation;
+    }
+
+    public boolean isActive() {
         return active;
     }
 
-    void isActive(final boolean active){
+    void isActive(final boolean active) {
         this.active = active;
     }
 
-    private void tick(final int steps){
+    private void tick(final int steps) {
         this.totalTicks += steps;
         this.currentTick += steps;
 
@@ -134,17 +169,18 @@ public abstract class Ecosystem {
 
     public abstract boolean advance() throws EvolutionException;
 
-    protected void tickEnvironment(){
+    protected void tickEnvironment() {
         final long currentDay = getTotalDays();
         tick(1);
 
         logger.info("Tick:  " + getTotalTicks());
         // We advanced a day
-        if (getTotalDays() > currentDay ) {
+        if (getTotalDays() > currentDay) {
             refreshResources();
         }
     }
-    protected void tickOrganisms(){
+
+    protected void tickOrganisms() {
         final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(getTotalTicks(), getTotalDays(), getCurrentTick());
         logger.info("Organism count " + getTerrain().getOrganismCount());
 
@@ -162,12 +198,12 @@ public abstract class Ecosystem {
             organism.performAction(getTerrain(), temporalCoordinates, ((organism1, cell) -> {
                 final ResourceManager manager = getTerrain().getResourceManager();
                 manager.renewEnvironmentResourceFromCellDeath(organism, cell);
-                logger.info( "Organism " + organism.getUniqueID() + " decayed.");
+                logger.info("Organism " + organism.getUniqueID() + " decayed.");
             }));
             organism.prettyPrint(loggerOutputStream);
 
         }
-        if( 0 == getTerrain().getOrganismCount()){
+        if (0 == getTerrain().getOrganismCount()) {
             isActive(false);
         }
     }

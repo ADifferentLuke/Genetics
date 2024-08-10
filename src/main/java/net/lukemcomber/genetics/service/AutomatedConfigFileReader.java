@@ -5,7 +5,7 @@ package net.lukemcomber.genetics.service;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
-import net.lukemcomber.genetics.model.AutomatedConfig;
+import net.lukemcomber.genetics.model.config.AutomatedConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class AutomatedConfigFileReader extends LGPStreamLineReader<AutomatedConfig,AutomatedConfig> {

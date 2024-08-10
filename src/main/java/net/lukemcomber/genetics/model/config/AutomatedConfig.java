@@ -1,4 +1,4 @@
-package net.lukemcomber.genetics.model;
+package net.lukemcomber.genetics.model.config;
 
 /*
  * (c) 2023 Luke McOmber

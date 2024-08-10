@@ -1,13 +1,11 @@
 package net.lukemcomber.genetics.utilities;
 
 
+import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RandomGenomeCreator {
@@ -40,12 +38,27 @@ public class RandomGenomeCreator {
         return retVal;
     }
 
-    public Map<SpatialCoordinates,String> generateRandomLocations(final int width, final int height, final Set<String> genomes) {
+    public Map<SpatialCoordinates, String> generateRandomLocations(final int width, final int height, final Set<String> genomes,
+                                                                   final Map<SpatialCoordinates, String> preexisting) {
 
         final HashSet<String> simpleCollisionDetection = new HashSet<>();
         Random r = new Random();
+        final Map<SpatialCoordinates, String> result = new HashMap<>();
 
-        return genomes.stream().collect(Collectors.toMap( genome -> {
+        if (null != preexisting) {
+            preexisting.forEach((coord, genome) -> {
+                final String scdKey = String.format("%d-%d", coord.xAxis, coord.yAxis);
+                if (simpleCollisionDetection.contains(scdKey)) {
+                    throw new EvolutionException("Collision detected at " + coord);
+                }
+
+                simpleCollisionDetection.add(scdKey);
+                result.put(coord,genome);
+
+            });
+        }
+
+        result.putAll(genomes.stream().collect(Collectors.toMap(genome -> {
             int x, y = 0;
             do {
                 x = r.nextInt(width);
@@ -54,9 +67,9 @@ public class RandomGenomeCreator {
             simpleCollisionDetection.add(String.format("%d-%d", x, y));
 
             return new SpatialCoordinates(x, y, 0);
-        }, genome -> genome));
+        }, genome -> genome)));
 
-
+        return result;
     }
 
 
@@ -95,7 +108,7 @@ public class RandomGenomeCreator {
         final File file = new File(genomeFilePath);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
 
-            creator.generateRandomLocations(width,height,creator.generateRandomGenomes(count)).forEach( (key,value) -> {
+            creator.generateRandomLocations(width, height, creator.generateRandomGenomes(count),null).forEach((key, value) -> {
 
                 try {
                     writer.write(String.format("(%03d,%03d,0),%s", key.xAxis, key.yAxis, value));

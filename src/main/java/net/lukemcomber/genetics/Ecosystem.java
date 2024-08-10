@@ -10,12 +10,14 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
+import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
 import net.lukemcomber.genetics.service.GenomeSerDe;
 import net.lukemcomber.genetics.service.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.universes.PreCannedUniverses;
 import net.lukemcomber.genetics.world.ResourceManager;
+import net.lukemcomber.genetics.world.WorldFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,44 +39,14 @@ public abstract class Ecosystem {
     protected final UniverseConstants properties;
     protected final MetadataStoreGroup metadataStoreGroup;
     private final List<String> initialPopulation;
-
-    private boolean active;
-    private boolean initalized;
-
-    public long getTotalTicks() {
-        return totalTicks;
-    }
-
-    public void setTotalTicks(final long totalTicks) {
-        this.totalTicks = totalTicks;
-    }
-
-    public long getTotalDays() {
-        return totalDays;
-    }
-
-    public void setTotalDays(final long totalDays) {
-        this.totalDays = totalDays;
-    }
-
-    public Terrain getTerrain() {
-        return terrain;
-    }
-
-    public int getCurrentTick() {
-        return currentTick;
-    }
-
-    public void setCurrentTick(final int currentTick) {
-        this.currentTick = currentTick;
-    }
-
     private long totalTicks;
     private long totalDays;
     private int currentTick;
 
     private final String name;
 
+    private boolean active;
+    private boolean initalized;
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type) throws IOException {
         this(ticksPerDay,size,type,null);
     }
@@ -104,6 +76,34 @@ public abstract class Ecosystem {
 
         this.active = true; //TODO should move to initialized?
         this.initalized = false;
+    }
+
+    public long getTotalTicks() {
+        return totalTicks;
+    }
+
+    public void setTotalTicks(final long totalTicks) {
+        this.totalTicks = totalTicks;
+    }
+
+    public long getTotalDays() {
+        return totalDays;
+    }
+
+    public void setTotalDays(final long totalDays) {
+        this.totalDays = totalDays;
+    }
+
+    public Terrain getTerrain() {
+        return terrain;
+    }
+
+    public int getCurrentTick() {
+        return currentTick;
+    }
+
+    public void setCurrentTick(final int currentTick) {
+        this.currentTick = currentTick;
     }
 
     public String getName() {
@@ -168,6 +168,7 @@ public abstract class Ecosystem {
     }
 
     public abstract boolean advance() throws EvolutionException;
+    public abstract EcosystemConfiguration getSetupConfiguration();
 
     protected void tickEnvironment() {
         final long currentDay = getTotalDays();

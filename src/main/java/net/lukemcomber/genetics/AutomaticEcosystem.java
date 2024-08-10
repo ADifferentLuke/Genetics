@@ -3,11 +3,15 @@ package net.lukemcomber.genetics;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
+import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.impl.AutomatedEcosystemConfiguration;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.metadata.Environment;
+import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +57,34 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
     public boolean advance() {
         // You can not advance an automatic ecosystem.
         return false;
+    }
+
+    @Override
+    public EcosystemConfiguration getSetupConfiguration() {
+        final AutomatedEcosystemConfiguration setupConfiguration = new AutomatedEcosystemConfiguration();
+
+        final Terrain terrain = getTerrain();
+        if(Objects.nonNull(terrain)){
+            setupConfiguration.width = getTerrain().getSizeOfXAxis();
+            setupConfiguration.height = getTerrain().getSizeOfYAxis();
+            setupConfiguration.depth = getTerrain().getSizeOfZAxis();
+        }
+        setupConfiguration.interactive = false;
+        setupConfiguration.active = isActive();
+        setupConfiguration.name = getName();
+        setupConfiguration.id = getId();
+        setupConfiguration.totalDays = getTotalDays();
+        setupConfiguration.currentTick = getCurrentTick();
+        setupConfiguration.totalTicks = getTotalTicks();
+        setupConfiguration.currentOrganismCount = getTerrain().getOrganismCount();
+        setupConfiguration.totalOrganismCount = getTerrain().getTotalOrganismCount();
+        setupConfiguration.properties = getProperties().toMap();
+        setupConfiguration.initialPopulation = getInitialPopulation();
+        setupConfiguration.maxDays = getMaxDays();
+        setupConfiguration.tickDelay = getTickDelayMs();
+
+
+        return setupConfiguration;
     }
 
     @Override

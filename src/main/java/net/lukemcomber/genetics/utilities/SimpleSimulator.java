@@ -63,9 +63,13 @@ public class SimpleSimulator {
 
     }
 
-    public void run() throws IOException, InterruptedException {
+    public void run(final Map<SpatialCoordinates,String> startingPopulation ) throws IOException, InterruptedException {
 
-        List<String> reincarnates = new LinkedList();
+        Map<SpatialCoordinates,String> reincarnates = new HashMap<>();
+        if( null != startingPopulation ) {
+           reincarnates.putAll(startingPopulation);
+           addToFilter(new HashSet<>(startingPopulation.values()));
+        }
         for (int epoch = 0; epoch < simulation.epochs; epoch++) {
 
             logger.info("Beginning epoch " + epoch);
@@ -73,10 +77,9 @@ public class SimpleSimulator {
             final int randomOrganismCount = simulation.initialPopulation - reincarnates.size();
 
             final RandomGenomeCreator genomeCreator = new RandomGenomeCreator(organismFilter);
-            final Set<String> startingPopulation = genomeCreator.generateRandomGenomes(0 >= randomOrganismCount ? simulation.initialPopulation : randomOrganismCount);
-            startingPopulation.addAll(reincarnates);
+            final Set<String> initialPopulation = genomeCreator.generateRandomGenomes(0 >= randomOrganismCount ? simulation.initialPopulation : randomOrganismCount);
 
-            final Map<SpatialCoordinates, String> fauna = genomeCreator.generateRandomLocations(simulation.width, simulation.height, startingPopulation);
+            final Map<SpatialCoordinates, String> fauna = genomeCreator.generateRandomLocations(simulation.width, simulation.height, initialPopulation, reincarnates);
 
             final String name;
             if(StringUtils.isNotEmpty(simulation.name)){
@@ -109,14 +112,15 @@ public class SimpleSimulator {
             sessions.add(ecosystem.getId(), ecosystem);
             ecosystem.initialize();
 
-            startingPopulation.removeAll(reincarnates);
-            addToFilter(startingPopulation);
-            reincarnates = monitorSimulation(ecosystem, simulation.reusePopulation);
+            initialPopulation.removeAll(reincarnates.values());
+            addToFilter(initialPopulation);
+            final Set<String> bestOfSim = monitorSimulation(ecosystem, simulation.reusePopulation);
+            reincarnates = genomeCreator.generateRandomLocations(simulation.width, simulation.height, bestOfSim, null);
 
         }
     }
 
-    public List<String> monitorSimulation(final AutomaticEcosystem ecosystem, final int reuseCount) throws InterruptedException, IOException {
+    public Set<String> monitorSimulation(final AutomaticEcosystem ecosystem, final int reuseCount) throws InterruptedException, IOException {
 
         logger.info("Beginning monitor of " + ecosystem.getId());
         do {
@@ -128,7 +132,7 @@ public class SimpleSimulator {
         final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(ecosystem.getId(), ecosystem.getProperties());
 
         final MetadataStore<Performance> metadataStore = groupStore.get(Performance.class);
-        final List<String> reincarnate = new LinkedList<>();
+        final Set<String> reincarnate = new HashSet<>();
         if (metadataStore instanceof SearchableMetadataStore<Performance>) {
             final List<Performance> bestOrganisms = ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, 2);
             bestOrganisms.forEach(organism -> {
@@ -162,7 +166,7 @@ public class SimpleSimulator {
             final SimpleSimulation simpleSimulation = objectMapper.readValue(inputStream, SimpleSimulation.class);
             final SimpleSimulator simulation = new SimpleSimulator(simpleSimulation, filterFile);
 
-            simulation.run();
+            simulation.run(null);
         } else {
             System.err.println("File [" + args[0] + "] does not exist.");
         }

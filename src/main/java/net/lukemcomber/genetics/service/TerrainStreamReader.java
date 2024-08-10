@@ -13,7 +13,7 @@ import net.lukemcomber.genetics.universes.PreCannedUniverses;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.genetics.world.terrain.TerrainPropertyFactory;
-import net.lukemcomber.genetics.WorldFactory;
+import net.lukemcomber.genetics.world.WorldFactory;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;

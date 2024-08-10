@@ -1,4 +1,4 @@
-package net.lukemcomber.genetics;
+package net.lukemcomber.genetics.world;
 
 /*
  * (c) 2023 Luke McOmber

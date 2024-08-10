@@ -294,7 +294,7 @@ public class PlantOrganism implements Organism {
             if (0 <= ageLimit && ageLimit < temporalCoordinates.totalDays() - birthTime.totalDays()) {
                 kill(temporalCoordinates,"Organism " + uuid + " died from old age.");
             }
-            if( 1 == activeCells.size() && 0 >= germinationCountDown-- ){
+            if( 1 == cell.getChildren().size() && 0 >= germinationCountDown-- ){
                 kill(temporalCoordinates,"Organism " + uuid + " failed to germinate.");
             }
         }

@@ -58,8 +58,8 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 /* Action Costs */
                 .put(GrowLeaf.PROPERTY_GROW_LEAF_COST, 1)
                 .put(GrowRoot.PROPERTY_GROW_ROOT_COST, 2)
-                .put(GrowSeed.PROPERTY_GROW_SEED_COST, 7)
-                .put(EjectSeed.PROPERTY_EJECT_SEED_COST, 8)
+                .put(GrowSeed.PROPERTY_GROW_SEED_COST, 15)
+                .put(EjectSeed.PROPERTY_EJECT_SEED_COST, 20)
                 /* Genome Modification / Reproduction */
                 .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY, 5)
                 .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 5)

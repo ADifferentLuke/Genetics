@@ -1,9 +1,11 @@
 package net.lukemcomber.genetics.utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class SimpleSimulation {
 
@@ -23,4 +25,7 @@ public class SimpleSimulation {
     public int initialPopulation;
     @JsonProperty("reusePopulation")
     public int reusePopulation;
+
+    @JsonProperty("startOrganisms")
+    public Map<SpatialCoordinates,String> startOrganisms;
 }

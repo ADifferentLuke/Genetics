@@ -12,177 +12,151 @@ import net.lukemcomber.genetics.biology.plant.behavior.GrowLeaf;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowRoot;
 import net.lukemcomber.genetics.biology.plant.behavior.GrowSeed;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
-import net.lukemcomber.genetics.service.GenomeSerDe;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
+/**
+ * Provides genome interpretation and expression. This class binds the gene bit values
+ * to actionable behavior. It will loop iterate over 0>N<9 bits over the genome.
+ */
 public class PlantGenome extends Genome {
 
     private static final Logger logger = Logger.getLogger(PlantGenome.class.getName());
 
-    //perhaps change to array
-    public static final int GENE_COUNT = 20;
+    /**
+     * The enum that binds the raw binary values to gene expressions for cells
+     */
+    public enum GeneExpression {
+        GROW_LEAF_LEFT((byte)  /*   */ 0b00000, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
+        GROW_LEAF_RIGHT((byte) /*   */ 0b00001, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
+        GROW_LEAF_UP((byte) /*      */ 0b00010, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
+        GROW_LEAF_DOWN((byte) /*    */ 0b00011, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
+        GROW_LEAF_FORWARD((byte) /* */ 0b00100, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
+        GROW_LEAF_BACK((byte) /*    */ 0b00101, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1)),
+        GROW_ROOT_LEFT((byte) /*    */ 0b00110, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
+        GROW_ROOT_RIGHT((byte) /*   */ 0b00111, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
+        GROW_ROOT_UP((byte)    /*   */ 0b01000, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
+        GROW_ROOT_DOWN((byte)  /*   */ 0b01001, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
+        GROW_ROOT_FORWARD((byte) /* */ 0b01010, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
+        GROW_ROOT_BACK((byte) /*    */ 0b01011, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1)),
+        GROW_SEED_LEFT((byte) /*    */ 0b01100, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
+        GROW_SEED_RIGHT((byte) /*   */ 0b01101, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
+        GROW_SEED_UP((byte) /*      */ 0b01110, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
+        GROW_SEED_DOWN((byte) /*    */ 0b01111, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
+        GROW_SEED_FORWARD((byte) /* */ 0b10000, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
+        GROW_SEED_BACK((byte) /*    */ 0b10001, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1)),
+        EJECT_SEED_LEFT((byte) /*   */ 0b10010, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
+        EJECT_SEED_RIGHT((byte) /*  */ 0b10011, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
+        EJECT_SEED_UP((byte) /*     */ 0b10100, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
+        EJECT_SEED_DOWN((byte) /*   */ 0b10101, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
+        EJECT_SEED_FORWARD((byte) /**/ 0b10110, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
+        EJECT_SEED_BACK((byte) /*   */ 0b10111, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
 
-    public final static byte GROW_LEAF_LEFT = 0b00000;
-    public final static byte GROW_LEAF_RIGHT = 0b00001;
-    public final static byte GROW_LEAF_UP = 0b00010;
-    public final static byte GROW_LEAF_DOWN = 0b00011;
-    public final static byte GROW_LEAF_FORWARD = 0b00100;
-    public final static byte GROW_LEAF_BACK = 0b00101;
+        private final Function<SpatialCoordinates, SpatialCoordinates> spatialConversionFunction;
+        private final byte value;
+        private final Class<? extends PlantBehavior> klass;
 
-    public final static byte GROW_ROOT_LEFT = 0b00110;
-    public final static byte GROW_ROOT_RIGHT = 0b00111;
-    public final static byte GROW_ROOT_UP = 0b01000;
-    public final static byte GROW_ROOT_DOWN = 0b01001;
-    public final static byte GROW_ROOT_FORWARD = 0b01010;
-    public final static byte GROW_ROOT_BACK = 0b01011;
+        GeneExpression(final byte value, final Class<? extends PlantBehavior> klass,
+                       final Function<SpatialCoordinates, SpatialCoordinates> spatialConversionFunction) {
+            this.spatialConversionFunction = spatialConversionFunction;
+            this.value = value;
+            this.klass = klass;
+        }
 
-    public final static byte GROW_SEED_LEFT = 0b01100;
-    public final static byte GROW_SEED_RIGHT = 0b01101;
-    public final static byte GROW_SEED_UP = 0b01110;
-    public final static byte GROW_SEED_DOWN = 0b01111;
-    public final static byte GROW_SEED_FORWARD = 0b10000;
-    public final static byte GROW_SEED_BACK = 0b10001;
-    public final static byte EJECT_SEED_LEFT = 0b10010;
-    public final static byte EJECT_SEED_RIGHT = 0b10011;
-    public final static byte EJECT_SEED_UP = 0b10100;
-    public final static byte EJECT_SEED_DOWN = 0b10101;
-    public final static byte EJECT_SEED_FORWARD = 0b10110;
-    public final static byte EJECT_SEED_BACK = 0b10111;
+        private PlantBehavior behavior() {
 
-    //private final static int numberOfBits= 5;
+            final Constructor<? extends PlantBehavior> constructor;
+            try {
+                constructor = klass
+                        .getDeclaredConstructor(spatialConversionFunction.getClass());
+                return constructor.newInstance(spatialConversionFunction);
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                     InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        /**
+         * Returns the raw binary value of this gene expression
+         *
+         * @return a byte with bits set for gene
+         */
+        public byte value() {
+            return value;
+        }
+
+        /**
+         * Generates a new actionable behavior given the raw binary value
+         *
+         * @param b raw binary value of gene
+         * @return an actionable behavior object or null if there's no mapping
+         */
+        public static PlantBehavior express(final byte b) {
+            if (b < lookupTable.length) {
+
+                /*
+                 * We are lucky. Our genome is a contiguous value beginning with 0. As a result,
+                 *   we can use it as an array index.
+                 */
+                final GeneExpression geneExpression = lookupTable[b];
+                if (b != geneExpression.value) {
+                    throw new RuntimeException("HOW????");
+                } else {
+                    return geneExpression.behavior();
+                }
+            } else {
+                logger.info("Junk DNA: " + b);
+            }
+            return null;
+        }
+
+        private static final GeneExpression[] lookupTable = GeneExpression.values();
+    }
+
     public final static int numberOfBits = 8;
     private final Iterator<Byte> iterator;
 
+    /**
+     * Builds a new genome for expression from the list of given genes
+     *
+     * @param genes genes to use
+     */
     public PlantGenome(final List<Gene> genes) {
         super(genes, PlantOrganism.TYPE);
         iterator = iterator(numberOfBits);
     }
 
     /**
-     * @return
+     * Build and return an actionable behavior from the next gene in the genome
+     *
+     * @return a behavior object or null
      */
     @Override
     public PlantBehavior getNextAct() {
 
-        final PlantBehavior plantBehavior;
 
         final byte action = iterator.next();
-
-        //yuck
-        switch (action) {
-            case GROW_LEAF_LEFT:
-                logger.info("GROW_LEAF_LEFT");
-                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
-                break;
-            case GROW_LEAF_RIGHT:
-                logger.info("GROW_LEAF_RIGHT");
-                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
-                break;
-            case GROW_LEAF_UP:
-                logger.info("GROW_LEAF_UP");
-                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
-                break;
-            case GROW_LEAF_DOWN:
-                logger.info("GROW_LEAF_DOWN");
-                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
-                break;
-            case GROW_LEAF_FORWARD:
-                logger.info("GROW_LEAF_FORWARD");
-                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
-                break;
-            case GROW_LEAF_BACK:
-                logger.info("GROW_LEAF_BACK");
-                plantBehavior = new GrowLeaf(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
-                break;
-            case GROW_ROOT_LEFT:
-                logger.info("GROW_ROOT_LEFT");
-                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
-                break;
-            case GROW_ROOT_RIGHT:
-                logger.info("GROW_ROOT_RIGHT");
-                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
-                break;
-            case GROW_ROOT_UP:
-                logger.info("GROW_ROOT_UP");
-                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
-                break;
-            case GROW_ROOT_DOWN:
-                logger.info("GROW_ROOT_DOWN");
-                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
-                break;
-            case GROW_ROOT_FORWARD:
-                logger.info("GROW_ROOT_FORWARD");
-                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
-                break;
-            case GROW_ROOT_BACK:
-                logger.info("GROW_ROOT_BACK");
-                plantBehavior = new GrowRoot(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
-                break;
-            case GROW_SEED_LEFT:
-                logger.info("GROW_SEED_LEFT");
-                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
-                break;
-            case GROW_SEED_RIGHT:
-                logger.info("GROW_SEED_RIGHT");
-                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
-                break;
-            case GROW_SEED_UP:
-                logger.info("GROW_SEED_UP");
-                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
-                break;
-            case GROW_SEED_DOWN:
-                logger.info("GROW_SEED_DOWN");
-                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
-                break;
-            case GROW_SEED_FORWARD:
-                logger.info("GROW_SEED_FORWARD");
-                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
-                break;
-            case GROW_SEED_BACK:
-                logger.info("GROW_SEED_BACK");
-                plantBehavior = new GrowSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
-                break;
-            case EJECT_SEED_LEFT:
-                logger.info("EJECT_SEED_LEFT");
-                plantBehavior = new EjectSeed(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis));
-                break;
-            case EJECT_SEED_RIGHT:
-                logger.info("EJECT_SEED_RIGHT");
-                plantBehavior = new EjectSeed(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis));
-                break;
-            case EJECT_SEED_UP:
-                logger.info("EJECT_SEED_UP");
-                plantBehavior = new EjectSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis));
-                break;
-            case EJECT_SEED_DOWN:
-                logger.info("EJECT_SEED_UP");
-                plantBehavior = new EjectSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis));
-                break;
-            case EJECT_SEED_FORWARD:
-                logger.info("EJECT_SEED_FORWARD");
-                plantBehavior = new EjectSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1));
-                break;
-            case EJECT_SEED_BACK:
-                logger.info("EJECT_SEED_BACK");
-                plantBehavior = new EjectSeed(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
-                break;
-            default:
-                logger.info("Junk DNA: " + action);
-                return null;
-        }
+        final PlantBehavior plantBehavior = GeneExpression.express(action);
         return plantBehavior;
     }
 
+    /**
+     * Provide a deep clone of the current genome
+     *
+     * @return genome clone
+     */
     @Override
     public Genome clone() {
         final List<Gene> geneCopy = new LinkedList<>();
-        for( int i =0; i < getNumberOfGenes(); ++i ) {
+        for (int i = 0; i < getNumberOfGenes(); ++i) {
             geneCopy.add(new Gene(getGeneNumber(i)));
         }
-        return new PlantGenome( geneCopy );
+        return new PlantGenome(geneCopy);
     }
 }

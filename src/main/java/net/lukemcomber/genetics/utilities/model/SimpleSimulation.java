@@ -23,6 +23,8 @@ public class SimpleSimulation {
     public long maxDays;
     @JsonProperty("initialPopulation")
     public int initialPopulation;
+    @JsonProperty("tickDelayMs")
+    public int tickDelayMs;
     @JsonProperty("reusePopulation")
     public int reusePopulation;
 

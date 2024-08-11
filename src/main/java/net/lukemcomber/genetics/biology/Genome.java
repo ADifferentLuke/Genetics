@@ -98,8 +98,16 @@ public abstract class Genome {
         return new GenomeIterator(genes, bits);
     }
 
+    /**
+     * Build and return an actionable behavior from the next gene in the genome
+     * @return a behavior object or null
+     */
     public abstract PlantBehavior getNextAct();
 
+    /**
+     * Provide a deep clone of the current genome
+     * @return genome clone
+     */
     public abstract Genome clone();
 
 }

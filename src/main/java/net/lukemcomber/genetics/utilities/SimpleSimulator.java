@@ -91,7 +91,7 @@ public class SimpleSimulator {
 
             final SpatialCoordinates spatialCoordinates = new SpatialCoordinates(simulation.width, simulation.height, 0);
             final AutomaticEcosystem ecosystem = new AutomaticEcosystem(simulation.ticksPerDay, spatialCoordinates, FlatFloraUniverse.ID,
-                    simulation.maxDays, 1, name);
+                    simulation.maxDays, simulation.tickDelayMs, name);
 
             final Terrain terrain = ecosystem.getTerrain();
             final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0, 0, 0);

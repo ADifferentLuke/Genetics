@@ -16,11 +16,11 @@ Fitness:
 ![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/misc/BasicFitnessFunction.png?raw=true)
 
 <h4>Simulations:</h4> 
-[Simulation 3 : Grass](https://github.com/ADifferentLuke/Genetics/blob/main/notes/simulation_3_800x400) <br/>
 ![Simulation_Grass](https://github.com/ADifferentLuke/Genetics/blob/main/misc/Grass.gif?raw=true)
 
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)
 
+[Simulation 3 : Grass](https://github.com/ADifferentLuke/Genetics/blob/main/notes/simulation_3_800x400) <br/>
 
 
 Sources used:

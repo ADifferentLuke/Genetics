@@ -11,17 +11,16 @@ I have several goals that I'm looking to accomplish with this library
 3. Play with language features and interesting patterns
 3. For fun and curiosity!
 
+Personal [notes](https://github.com/ADifferentLuke/Genetics/tree/main/notes). <br /><br />
 Fitness:
 ![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/misc/BasicFitnessFunction.png?raw=true)
 
-Simulations:
-![Simulation 3 : Grass](https://github.com/ADifferentLuke/Genetics/blob/main/misc/Grass.gif?raw=true)
+<h4>Simulations:</h4> 
+[Simulation 3 : Grass (zoomed)](https://github.com/ADifferentLuke/Genetics/blob/main/notes/simulation_3_800x400) <br/>
+![Simulation_Grass](https://github.com/ADifferentLuke/Genetics/blob/main/misc/Grass.gif?raw=true)
 
-For an example implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)
 
-Personal notes: [notes/](https://github.com/ADifferentLuke/Genetics/tree/main/notes)
-Analysis: [analysis/]()
 
 
 Sources used:
@@ -31,6 +30,9 @@ Sources used:
   * https://www.aanda.org/articles/aa/full_html/2009/27/aa11740-09/aa11740-09.html
 * Using Genetic Algorithms with Asexual Transposition
   * https://dl.acm.org/doi/pdf/10.5555/2933718.2933761
+
+For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
+For an example CLI implementation, see [Oracle](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/utilities/SimpleSimulator.java) <br />
 
 @author: Luke McOmber  
 @License: MIT License (see LICENSE)

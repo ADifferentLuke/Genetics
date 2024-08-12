@@ -14,6 +14,8 @@ I have several goals that I'm looking to accomplish with this library
 Fitness:
 ![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/misc/BasicFitnessFunction.png?raw=true)
 
+Simulations:
+![Simulation 3 : Grass](https://github.com/ADifferentLuke/Genetics/blob/main/misc/Grass.gif?raw=true)
 
 For an example implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)

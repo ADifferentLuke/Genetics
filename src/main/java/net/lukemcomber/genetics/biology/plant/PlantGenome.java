@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import static net.lukemcomber.genetics.biology.Genome.SpatialTransformation.*;
+
 /**
  * Provides genome interpretation and expression. This class binds the gene bit values
  * to actionable behavior. It will loop iterate over 0>N<9 bits over the genome.
@@ -33,38 +35,38 @@ public class PlantGenome extends Genome {
      * The enum that binds the raw binary values to gene expressions for cells
      */
     public enum GeneExpression {
-        GROW_LEAF_LEFT((byte)  /*   */ 0b00000, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
-        GROW_LEAF_RIGHT((byte) /*   */ 0b00001, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
-        GROW_LEAF_UP((byte) /*      */ 0b00010, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
-        GROW_LEAF_DOWN((byte) /*    */ 0b00011, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
-        GROW_LEAF_FORWARD((byte) /* */ 0b00100, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
-        GROW_LEAF_BACK((byte) /*    */ 0b00101, GrowLeaf.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1)),
-        GROW_ROOT_LEFT((byte) /*    */ 0b00110, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
-        GROW_ROOT_RIGHT((byte) /*   */ 0b00111, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
-        GROW_ROOT_UP((byte)    /*   */ 0b01000, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
-        GROW_ROOT_DOWN((byte)  /*   */ 0b01001, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
-        GROW_ROOT_FORWARD((byte) /* */ 0b01010, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
-        GROW_ROOT_BACK((byte) /*    */ 0b01011, GrowRoot.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1)),
-        GROW_SEED_LEFT((byte) /*    */ 0b01100, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
-        GROW_SEED_RIGHT((byte) /*   */ 0b01101, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
-        GROW_SEED_UP((byte) /*      */ 0b01110, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
-        GROW_SEED_DOWN((byte) /*    */ 0b01111, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
-        GROW_SEED_FORWARD((byte) /* */ 0b10000, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
-        GROW_SEED_BACK((byte) /*    */ 0b10001, GrowSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1)),
-        EJECT_SEED_LEFT((byte) /*   */ 0b10010, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
-        EJECT_SEED_RIGHT((byte) /*  */ 0b10011, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
-        EJECT_SEED_UP((byte) /*     */ 0b10100, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
-        EJECT_SEED_DOWN((byte) /*   */ 0b10101, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
-        EJECT_SEED_FORWARD((byte) /**/ 0b10110, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
-        EJECT_SEED_BACK((byte) /*   */ 0b10111, EjectSeed.class, c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
+        GROW_LEAF_LEFT((byte)  /*   */ 0b00000, GrowLeaf.class, LEFT),
+        GROW_LEAF_RIGHT((byte) /*   */ 0b00001, GrowLeaf.class, RIGHT),
+        GROW_LEAF_UP((byte) /*      */ 0b00010, GrowLeaf.class, UP),
+        GROW_LEAF_DOWN((byte) /*    */ 0b00011, GrowLeaf.class, DOWN),
+        GROW_LEAF_FORWARD((byte) /* */ 0b00100, GrowLeaf.class, FORWARD),
+        GROW_LEAF_BACK((byte) /*    */ 0b00101, GrowLeaf.class, BACK),
+        GROW_ROOT_LEFT((byte) /*    */ 0b00110, GrowRoot.class, LEFT),
+        GROW_ROOT_RIGHT((byte) /*   */ 0b00111, GrowRoot.class, RIGHT),
+        GROW_ROOT_UP((byte)    /*   */ 0b01000, GrowRoot.class, UP),
+        GROW_ROOT_DOWN((byte)  /*   */ 0b01001, GrowRoot.class, DOWN),
+        GROW_ROOT_FORWARD((byte) /* */ 0b01010, GrowRoot.class, FORWARD),
+        GROW_ROOT_BACK((byte) /*    */ 0b01011, GrowRoot.class, BACK),
+        GROW_SEED_LEFT((byte) /*    */ 0b01100, GrowSeed.class, LEFT),
+        GROW_SEED_RIGHT((byte) /*   */ 0b01101, GrowSeed.class, RIGHT),
+        GROW_SEED_UP((byte) /*      */ 0b01110, GrowSeed.class, UP),
+        GROW_SEED_DOWN((byte) /*    */ 0b01111, GrowSeed.class, DOWN),
+        GROW_SEED_FORWARD((byte) /* */ 0b10000, GrowSeed.class, FORWARD),
+        GROW_SEED_BACK((byte) /*    */ 0b10001, GrowSeed.class, BACK),
+        EJECT_SEED_LEFT((byte) /*   */ 0b10010, EjectSeed.class, LEFT),
+        EJECT_SEED_RIGHT((byte) /*  */ 0b10011, EjectSeed.class, RIGHT),
+        EJECT_SEED_UP((byte) /*     */ 0b10100, EjectSeed.class, UP),
+        EJECT_SEED_DOWN((byte) /*   */ 0b10101, EjectSeed.class, DOWN),
+        EJECT_SEED_FORWARD((byte) /**/ 0b10110, EjectSeed.class, FORWARD),
+        EJECT_SEED_BACK((byte) /*   */ 0b10111, EjectSeed.class, BACK);
 
         private final Function<SpatialCoordinates, SpatialCoordinates> spatialConversionFunction;
         private final byte value;
         private final Class<? extends PlantBehavior> klass;
 
         GeneExpression(final byte value, final Class<? extends PlantBehavior> klass,
-                       final Function<SpatialCoordinates, SpatialCoordinates> spatialConversionFunction) {
-            this.spatialConversionFunction = spatialConversionFunction;
+                       final Genome.SpatialTransformation transformation) {
+            this.spatialConversionFunction = transformation.value();
             this.value = value;
             this.klass = klass;
         }
@@ -74,7 +76,7 @@ public class PlantGenome extends Genome {
             final Constructor<? extends PlantBehavior> constructor;
             try {
                 constructor = klass
-                        .getDeclaredConstructor(spatialConversionFunction.getClass());
+                        .getDeclaredConstructor(Function.class );
                 return constructor.newInstance(spatialConversionFunction);
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
                      InvocationTargetException e) {
@@ -98,14 +100,15 @@ public class PlantGenome extends Genome {
          * @return an actionable behavior object or null if there's no mapping
          */
         public static PlantBehavior express(final byte b) {
-            if (b < lookupTable.length) {
+            final int expressionIndex = b & 0xFF; // we're unsigned
+            if (expressionIndex < lookupTable.length) {
 
                 /*
                  * We are lucky. Our genome is a contiguous value beginning with 0. As a result,
                  *   we can use it as an array index.
                  */
-                final GeneExpression geneExpression = lookupTable[b];
-                if (b != geneExpression.value) {
+                final GeneExpression geneExpression = lookupTable[expressionIndex];
+                if (expressionIndex != geneExpression.value) {
                     throw new RuntimeException("HOW????");
                 } else {
                     return geneExpression.behavior();

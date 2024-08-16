@@ -21,6 +21,7 @@ public class TestBasicFitnessFunction {
         performance.deathEnergy = 161943;
         performance.totalEnergyHarvested = 831448;
         performance.totalEnergyMetabolized = 482016;
+        performance.causeOfDeath = 1;
 
         final BasicFitnessFunction fitnessFunction = new BasicFitnessFunction();
         performance.fitness = fitnessFunction.apply(performance);

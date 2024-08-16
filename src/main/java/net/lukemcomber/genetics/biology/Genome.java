@@ -6,14 +6,37 @@ package net.lukemcomber.genetics.biology;
  */
 
 import net.lukemcomber.genetics.biology.plant.PlantBehavior;
+import net.lukemcomber.genetics.biology.plant.behavior.GrowLeaf;
 import net.lukemcomber.genetics.exception.EvolutionException;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * This is a common interface for genomes interfacing with the world
  */
 public abstract class Genome {
+
+    public enum SpatialTransformation {
+        LEFT(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
+        RIGHT(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
+        UP(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
+        DOWN(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
+        FORWARD(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
+        BACK(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
+
+        private final Function<SpatialCoordinates, SpatialCoordinates> spatialTransformation;
+
+        SpatialTransformation(final Function<SpatialCoordinates, SpatialCoordinates> spatialConversionFunction) {
+            this.spatialTransformation = spatialConversionFunction;
+        }
+
+        public Function<SpatialCoordinates, SpatialCoordinates> value() {
+            return spatialTransformation;
+        }
+
+    }
 
     private final int numOfGenes;
     private final LinkedList<Gene> genes;
@@ -44,7 +67,7 @@ public abstract class Genome {
     public static byte[] toBytes(final List<Gene> geneList) {
         return geneList.stream()
                 .map(Gene::toBytes)
-                .reduce(new byte[0], (a,b) -> {
+                .reduce(new byte[0], (a, b) -> {
                     byte[] result = new byte[a.length + b.length];
                     System.arraycopy(a, 0, result, 0, a.length);
                     System.arraycopy(b, 0, result, a.length, b.length);
@@ -100,12 +123,14 @@ public abstract class Genome {
 
     /**
      * Build and return an actionable behavior from the next gene in the genome
+     *
      * @return a behavior object or null
      */
     public abstract PlantBehavior getNextAct();
 
     /**
      * Provide a deep clone of the current genome
+     *
      * @return genome clone
      */
     public abstract Genome clone();

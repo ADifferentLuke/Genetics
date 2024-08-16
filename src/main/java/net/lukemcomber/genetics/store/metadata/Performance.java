@@ -1,5 +1,6 @@
 package net.lukemcomber.genetics.store.metadata;
 
+import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
 import net.lukemcomber.genetics.store.Searchable;
@@ -18,6 +19,8 @@ public class Performance implements Metadata {
     @Indexed(name = "genome")
     public String dna = "";
 
+    public Integer causeOfDeath;
+
     public Long age;
     public Long birthTick;
     public Integer offspring; //Number of seeds
@@ -27,7 +30,7 @@ public class Performance implements Metadata {
     public Integer totalEnergyMetabolized;
 
     //Must be called at death?
-    public String causeOfDeath;
+    public String causeOfDeathStr;
     public Integer deathEnergy;
     public Long deathTick;
 

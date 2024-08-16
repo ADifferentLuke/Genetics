@@ -143,7 +143,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
         for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
             final Organism organism = it.next();
-            organism.kill(temporalCoordinates, "Organism " + organism.getUniqueID() + " died from time ending.");
+            organism.kill(temporalCoordinates, Organism.CauseOfDeath.Unknown,"Organism " + organism.getUniqueID() + " died from time ending.");
         }
     }
 }

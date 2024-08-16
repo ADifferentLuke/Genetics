@@ -20,6 +20,14 @@ import static java.util.logging.Logger.getLogger;
 
 //TODO clean up this interface. It's NASTY!
 public interface Organism {
+    enum CauseOfDeath {
+        Unknown,
+        Stagnation,
+        Exhaustion,
+        OldAge;
+
+        public final static int count = CauseOfDeath.values().length;
+    }
 
     GenomeTransciber getTranscriber();
 
@@ -70,7 +78,7 @@ public interface Organism {
 
     FitnessFunction getFitnessFunction();
 
-    void kill( final TemporalCoordinates temporalCoordinates, final String reason );
+    void kill( final TemporalCoordinates temporalCoordinates, CauseOfDeath causeOfDeath, final String reason );
 
     void prettyPrint(final OutputStream out);
 

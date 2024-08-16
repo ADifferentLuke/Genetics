@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 
 public class PlantOrganism implements Organism {
 
+
+
     private static final Logger logger = Logger.getLogger(PlantOrganism.class.getName());
 
     public static final String PROPERTY_STARTING_ENERGY = "initial.plant.energy";
@@ -123,7 +125,7 @@ public class PlantOrganism implements Organism {
     }
 
     @Override
-    public void kill(final TemporalCoordinates temporalCoordinates, final String reason) {
+    public void kill(final TemporalCoordinates temporalCoordinates, final CauseOfDeath causeOfDeath, final String reason) {
         alive = false;
         final Performance performance = new Performance();
         performance.name = this.uuid;
@@ -133,7 +135,8 @@ public class PlantOrganism implements Organism {
         performance.birthTick = this.birthTime.totalTicks();
         performance.deathEnergy = this.energy;
         performance.deathTick = temporalCoordinates.totalTicks();
-        performance.causeOfDeath = reason;
+        performance.causeOfDeathStr = reason;
+        performance.causeOfDeath = causeOfDeath.ordinal();
         performance.age = performance.deathTick - performance.birthTick;
         performance.totalEnergyHarvested = totalResourcesGathered;
         performance.totalEnergyMetabolized = totalEnergyMetabolized;
@@ -286,16 +289,16 @@ public class PlantOrganism implements Organism {
 
             String deathLogStr = "";
             if (0 <= starvationLimit && starvationLimit >= energy) {
-                kill( temporalCoordinates,"Organism " + uuid + " died from exhaustion.");
+                kill( temporalCoordinates,CauseOfDeath.Exhaustion,"Organism " + uuid + " died from exhaustion.");
             }
             if (0 <= stagnationLimit && stagnationLimit < mark - lastUpdateTime.totalDays()) {
-                kill(temporalCoordinates,"Organism " + uuid + " died from stagnation.");
+                kill(temporalCoordinates,CauseOfDeath.Stagnation,"Organism " + uuid + " died from stagnation.");
             }
             if (0 <= ageLimit && ageLimit < temporalCoordinates.totalDays() - birthTime.totalDays()) {
-                kill(temporalCoordinates,"Organism " + uuid + " died from old age.");
+                kill(temporalCoordinates,CauseOfDeath.OldAge,"Organism " + uuid + " died from old age.");
             }
             if( 1 == cell.getChildren().size() && 0 >= germinationCountDown-- ){
-                kill(temporalCoordinates,"Organism " + uuid + " failed to germinate.");
+                kill(temporalCoordinates,CauseOfDeath.Stagnation,"Organism " + uuid + " failed to germinate.");
             }
         }
 

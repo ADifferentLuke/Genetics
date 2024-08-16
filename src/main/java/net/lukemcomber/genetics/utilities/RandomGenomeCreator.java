@@ -47,7 +47,7 @@ public class RandomGenomeCreator {
 
         if (null != preexisting) {
             preexisting.forEach((coord, genome) -> {
-                final String scdKey = String.format("%d-%d", coord.xAxis, coord.yAxis);
+                final String scdKey = String.format("%d-%d", coord.xAxis(), coord.yAxis());
                 if (simpleCollisionDetection.contains(scdKey)) {
                     throw new EvolutionException("Collision detected at " + coord);
                 }
@@ -111,7 +111,7 @@ public class RandomGenomeCreator {
             creator.generateRandomLocations(width, height, creator.generateRandomGenomes(count),null).forEach((key, value) -> {
 
                 try {
-                    writer.write(String.format("(%03d,%03d,0),%s", key.xAxis, key.yAxis, value));
+                    writer.write(String.format("(%03d,%03d,0),%s", key.xAxis(), key.yAxis(), value));
                     writer.newLine();
                 } catch (IOException e) {
                     throw new RuntimeException(e);

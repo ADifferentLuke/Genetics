@@ -5,12 +5,30 @@ package net.lukemcomber.genetics.exception;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
-public class EvolutionException extends RuntimeException{
+/**
+ * This class is a wrapper around {@link RuntimeException} that has
+ * a human-readable and displayable error message.
+ * <p>
+ * It provides a way for lower level classes to bubble up errors exceptions while
+ * the higher level callers can determine whether to show the exception message to the user
+ */
+public class EvolutionException extends RuntimeException {
 
-    public EvolutionException( final Throwable throwable ){
+    /**
+     * Creates a new instance from a Throwable
+     *
+     * @param throwable
+     */
+    public EvolutionException(final Throwable throwable) {
         super(throwable);
     }
-    public EvolutionException(final String message){
+
+    /**
+     * Creates a new instance with the exception message set
+     *
+     * @param message message to set
+     */
+    public EvolutionException(final String message) {
         super(message);
     }
 }

@@ -46,12 +46,12 @@ public interface Terrain {
     void deleteTerrainProperty(final SpatialCoordinates spatialCoordinates, final String id);
 
     default boolean isOutOfBounds(final SpatialCoordinates spatialCoordinates) {
-        return !(getSizeOfXAxis() > spatialCoordinates.xAxis
-                && getSizeOfYAxis() > spatialCoordinates.yAxis
-                && getSizeOfZAxis() > spatialCoordinates.zAxis
-                && 0 <= spatialCoordinates.xAxis
-                && 0 <= spatialCoordinates.yAxis
-                && 0 <= spatialCoordinates.zAxis);
+        return !(getSizeOfXAxis() > spatialCoordinates.xAxis()
+                && getSizeOfYAxis() > spatialCoordinates.yAxis()
+                && getSizeOfZAxis() > spatialCoordinates.zAxis()
+                && 0 <= spatialCoordinates.xAxis()
+                && 0 <= spatialCoordinates.yAxis()
+                && 0 <= spatialCoordinates.zAxis());
     }
 
     /**

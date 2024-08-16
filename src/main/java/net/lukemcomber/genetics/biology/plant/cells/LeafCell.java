@@ -60,7 +60,7 @@ public class LeafCell extends PlantCell {
             final SolarEnergyTerrainProperty solar = (SolarEnergyTerrainProperty) property;
             int val = solar.getValue();;
             logger.info( String.format("LeafNode - Current Solar %d at (%d,%d)", val,
-                    spatialCoordinates.xAxis, spatialCoordinates.yAxis));
+                    spatialCoordinates.xAxis(), spatialCoordinates.yAxis()));
             /*
              * DEV NOTE: Since the daily cost is 1, we need to gather at least 2 per tick
              */

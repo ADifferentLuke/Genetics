@@ -45,9 +45,9 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
     public GenomeStreamReader(final SpatialCoordinates dimensions, final UniverseConstants properties,
                               final MetadataStoreGroup metadataStoreGroup ) {
         super();
-        this.sizeOfXAxis = dimensions.xAxis;
-        this.sizeOfYAxis = dimensions.yAxis;
-        this.sizeOfZAxis = dimensions.zAxis;
+        this.sizeOfXAxis = dimensions.xAxis();
+        this.sizeOfYAxis = dimensions.yAxis();
+        this.sizeOfZAxis = dimensions.zAxis();
         this.metadataStoreGroup = metadataStoreGroup;
         this.properties = properties;
     }

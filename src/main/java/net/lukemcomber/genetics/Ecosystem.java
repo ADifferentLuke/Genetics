@@ -72,7 +72,7 @@ public abstract class Ecosystem {
         metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid, properties);
 
         terrain = WorldFactory.createWorld(properties, metadataStoreGroup);
-        terrain.initialize(size.xAxis, size.yAxis, size.zAxis);
+        terrain.initialize(size.xAxis(), size.yAxis(), size.zAxis());
 
         this.active = true; //TODO should move to initialized?
         this.initalized = false;

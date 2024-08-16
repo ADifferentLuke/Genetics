@@ -68,23 +68,23 @@ public class SteppableEcosystem extends Ecosystem {
         final SteppableEcosystemConfiguration setupConfiguration = new SteppableEcosystemConfiguration();
 
         final Terrain terrain = getTerrain();
-        if(Objects.nonNull(terrain)){
-            setupConfiguration.width = getTerrain().getSizeOfXAxis();
-            setupConfiguration.height = getTerrain().getSizeOfYAxis();
-            setupConfiguration.depth = getTerrain().getSizeOfZAxis();
+        if (Objects.nonNull(terrain)) {
+            setupConfiguration.setWidth(getTerrain().getSizeOfXAxis());
+            setupConfiguration.setHeight(getTerrain().getSizeOfYAxis());
+            setupConfiguration.setDepth(getTerrain().getSizeOfZAxis());
         }
-        setupConfiguration.turnsPerTick = ticksPerTurn;
-        setupConfiguration.interactive = true;
-        setupConfiguration.active = isActive();
-        setupConfiguration.name = getName();
-        setupConfiguration.id = getId();
-        setupConfiguration.totalDays = getTotalDays();
-        setupConfiguration.currentTick = getCurrentTick();
-        setupConfiguration.totalTicks = getTotalTicks();
-        setupConfiguration.currentOrganismCount = getTerrain().getOrganismCount();
-        setupConfiguration.totalOrganismCount = getTerrain().getTotalOrganismCount();
-        setupConfiguration.properties = getProperties().toMap();
-        setupConfiguration.initialPopulation = getInitialPopulation();
+        setupConfiguration.setTurnsPerTick(ticksPerTurn);
+        setupConfiguration.setInteractive(true);
+        setupConfiguration.setActive(isActive());
+        setupConfiguration.setName(getName());
+        setupConfiguration.setId(getId());
+        setupConfiguration.setTotalDays(getTotalDays());
+        setupConfiguration.setCurrentTick(getCurrentTick());
+        setupConfiguration.setTotalTicks(getTotalTicks());
+        setupConfiguration.setCurrentOrganismCount(getTerrain().getOrganismCount());
+        setupConfiguration.setTotalOrganismCount(getTerrain().getTotalOrganismCount());
+        setupConfiguration.setProperties(getProperties().toMap());
+        setupConfiguration.setInitialPopulation(getInitialPopulation());
 
         return setupConfiguration;
     }

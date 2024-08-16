@@ -19,12 +19,12 @@ import java.util.function.Function;
 public abstract class Genome {
 
     public enum SpatialTransformation {
-        LEFT(c -> new SpatialCoordinates(c.xAxis - 1, c.yAxis, c.zAxis)),
-        RIGHT(c -> new SpatialCoordinates(c.xAxis + 1, c.yAxis, c.zAxis)),
-        UP(c -> new SpatialCoordinates(c.xAxis, c.yAxis + 1, c.zAxis)),
-        DOWN(c -> new SpatialCoordinates(c.xAxis, c.yAxis - 1, c.zAxis)),
-        FORWARD(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis + 1)),
-        BACK(c -> new SpatialCoordinates(c.xAxis, c.yAxis, c.zAxis - 1));
+        LEFT(c -> new SpatialCoordinates(c.xAxis() - 1, c.yAxis(), c.zAxis())),
+        RIGHT(c -> new SpatialCoordinates(c.xAxis() + 1, c.yAxis(), c.zAxis())),
+        UP(c -> new SpatialCoordinates(c.xAxis(), c.yAxis() + 1, c.zAxis())),
+        DOWN(c -> new SpatialCoordinates(c.xAxis(), c.yAxis() - 1, c.zAxis())),
+        FORWARD(c -> new SpatialCoordinates(c.xAxis(), c.yAxis(), c.zAxis() + 1)),
+        BACK(c -> new SpatialCoordinates(c.xAxis(), c.yAxis(), c.zAxis() - 1));
 
         private final Function<SpatialCoordinates, SpatialCoordinates> spatialTransformation;
 

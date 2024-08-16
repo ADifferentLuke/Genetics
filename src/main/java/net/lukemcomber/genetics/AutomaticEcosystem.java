@@ -65,23 +65,24 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
         final Terrain terrain = getTerrain();
         if(Objects.nonNull(terrain)){
-            setupConfiguration.width = getTerrain().getSizeOfXAxis();
-            setupConfiguration.height = getTerrain().getSizeOfYAxis();
-            setupConfiguration.depth = getTerrain().getSizeOfZAxis();
+            setupConfiguration.setWidth(getTerrain().getSizeOfXAxis());
+            setupConfiguration.setHeight(getTerrain().getSizeOfYAxis());
+            setupConfiguration.setDepth(getTerrain().getSizeOfZAxis());
         }
-        setupConfiguration.interactive = false;
-        setupConfiguration.active = isActive();
-        setupConfiguration.name = getName();
-        setupConfiguration.id = getId();
-        setupConfiguration.totalDays = getTotalDays();
-        setupConfiguration.currentTick = getCurrentTick();
-        setupConfiguration.totalTicks = getTotalTicks();
-        setupConfiguration.currentOrganismCount = getTerrain().getOrganismCount();
-        setupConfiguration.totalOrganismCount = getTerrain().getTotalOrganismCount();
-        setupConfiguration.properties = getProperties().toMap();
-        setupConfiguration.initialPopulation = getInitialPopulation();
-        setupConfiguration.maxDays = getMaxDays();
-        setupConfiguration.tickDelay = getTickDelayMs();
+        setupConfiguration.setInteractive(false);
+        setupConfiguration.setActive(isActive());
+        setupConfiguration.setName(getName());
+        setupConfiguration.setId(getId());
+        setupConfiguration.setTotalDays(getTotalDays());
+        setupConfiguration.setCurrentTick(getCurrentTick());
+        setupConfiguration.setTotalTicks(getTotalTicks());
+        setupConfiguration.setCurrentOrganismCount(getTerrain().getOrganismCount());
+        setupConfiguration.setTotalOrganismCount(getTerrain().getTotalOrganismCount());
+        setupConfiguration.setProperties(getProperties().toMap());
+        setupConfiguration.setInitialPopulation(getInitialPopulation());
+
+        setupConfiguration.setMaxDays(getMaxDays());
+        setupConfiguration.setTickDelay(getTickDelayMs());
 
 
         return setupConfiguration;

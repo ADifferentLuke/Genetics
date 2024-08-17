@@ -7,18 +7,24 @@ package net.lukemcomber.genetics.model;
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * An abstract class to hold simulation wide constants such as configuration.
+ */
 public abstract class UniverseConstants {
 
     private final Logger logger = Logger.getLogger(UniverseConstants.class.getName());
 
     private final Map<String,Object> constantMap;
 
+    /**
+     *
+     * @param map
+     */
     public UniverseConstants(final Map<String,Object> map){
         constantMap = map;
 

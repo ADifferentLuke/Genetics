@@ -1,5 +1,9 @@
 package net.lukemcomber.genetics.utilities;
 
+/*
+ * (c) 2023 Luke McOmber
+ * This code is licensed under MIT license (see LICENSE.txt for details)
+ */
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
@@ -8,6 +12,9 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A utility class to generate random genomes.
+ */
 public class RandomGenomeCreator {
 
     private static final String dataDir = "tmp";
@@ -16,10 +23,19 @@ public class RandomGenomeCreator {
 
     private Set<String> filter;
 
+    /**
+     * Create a new instance with a genome filter
+     * @param filter set of genomes to avoid
+     */
     public RandomGenomeCreator(final Set<String> filter) {
         this.filter = filter;
     }
 
+    /**
+     * Generates random genomes without repeating
+     * @param count number of genomes to create
+     * @return set of genome strings
+     */
     public Set<String> generateRandomGenomes(final int count) {
 
         final Set<String> retVal = new HashSet<>();
@@ -38,11 +54,20 @@ public class RandomGenomeCreator {
         return retVal;
     }
 
+    /**
+     * Generates random coordinates for a set of genomes.
+     *
+     * @param width width of simulation
+     * @param height height of simulation
+     * @param genomes set of genomes to generate locations for
+     * @param preexisting any pre-existing genomes and coordinates
+     * @return map of coordinates and genomes
+     */
     public Map<SpatialCoordinates, String> generateRandomLocations(final int width, final int height, final Set<String> genomes,
                                                                    final Map<SpatialCoordinates, String> preexisting) {
 
         final HashSet<String> simpleCollisionDetection = new HashSet<>();
-        Random r = new Random();
+        final Random r = new Random();
         final Map<SpatialCoordinates, String> result = new HashMap<>();
 
         if (null != preexisting) {
@@ -73,6 +98,16 @@ public class RandomGenomeCreator {
     }
 
 
+    /**
+     * Generates random genomes and write to ./tmp/genomes.txt.
+     *
+     * A filter file at ./tmp/genomes.filter is used to avoid repeats across invokations
+     *
+     * Usage: RandomGenomeCreator &lt;width&gt; &lt;height&gt; &lt;count&gt;
+     *
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
 
         if (args.length != 3) {

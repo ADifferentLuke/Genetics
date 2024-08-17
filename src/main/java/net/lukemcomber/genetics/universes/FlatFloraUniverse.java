@@ -27,6 +27,9 @@ import net.lukemcomber.genetics.world.terrain.impl.FlatWorldResourceManager;
 
 import java.util.Map;
 
+/**
+ * A 2-dimensional universe for plant life
+ */
 public final class FlatFloraUniverse extends UniverseConstants {
 
     public static final String ID = "flat-floral-universe";

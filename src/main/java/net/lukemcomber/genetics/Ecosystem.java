@@ -15,7 +15,7 @@ import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.io.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
-import net.lukemcomber.genetics.universes.PreCannedUniverses;
+import net.lukemcomber.genetics.universes.UniverseFactory;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.WorldFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
@@ -61,7 +61,7 @@ public abstract class Ecosystem {
         totalTicks = 0;
         currentTick = 0;
 
-        properties = PreCannedUniverses.get(type);
+        properties = UniverseFactory.get(type);
         uuid = UUID.randomUUID().toString();
         if(StringUtils.isNotEmpty(name)){
             this.name = name;

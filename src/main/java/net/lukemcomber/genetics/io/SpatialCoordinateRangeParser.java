@@ -14,11 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.function.BiFunction;
 
 /**
- * An abstract class for adding support for parsing coordinate ranges.
- * Format:
- * (RANGE,RANGE,RANGE)
- * RANGE := SUBRANGE | INTEGER | WILDCARD
- * SUBRANGE := [INTEGER-INTEGER]
+ * An abstract class for adding support for parsing coordinate ranges. <br/>
+ * Format: <br/>
+ * (RANGE,RANGE,RANGE) <br/>
+ * RANGE := SUBRANGE | INTEGER | WILDCARD <br/>
+ * SUBRANGE := [INTEGER-INTEGER] <br/>
  * WILDCARD := *
  */
 public abstract class SpatialCoordinateRangeParser {

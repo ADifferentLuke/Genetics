@@ -25,7 +25,7 @@ import static net.lukemcomber.genetics.biology.Genome.SpatialTransformation.*;
 
 /**
  * Provides genome interpretation and expression. This class binds the gene bit values
- * to actionable behavior. It will loop iterate over 0>N<9 bits over the genome.
+ * to actionable behavior. It will loop iterate over 0&gt;N&lt;9 bits over the genome.
  */
 public class PlantGenome extends Genome {
 

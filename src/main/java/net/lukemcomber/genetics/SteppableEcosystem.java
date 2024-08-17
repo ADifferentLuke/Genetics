@@ -1,23 +1,15 @@
 package net.lukemcomber.genetics;
 
-import net.lukemcomber.genetics.biology.Organism;
-import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
-import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
 import net.lukemcomber.genetics.model.ecosystem.impl.SteppableEcosystemConfiguration;
-import net.lukemcomber.genetics.service.LoggerOutputStream;
+import net.lukemcomber.genetics.io.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStore;
-import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.metadata.Environment;
-import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;

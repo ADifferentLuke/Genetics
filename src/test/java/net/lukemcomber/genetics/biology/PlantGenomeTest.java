@@ -1,7 +1,7 @@
 package net.lukemcomber.genetics.biology;
 
 import net.lukemcomber.genetics.biology.plant.PlantGenome;
-import net.lukemcomber.genetics.service.GenomeStdOutWriter;
+import net.lukemcomber.genetics.io.GenomeStreamWriter;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class PlantGenomeTest {
 
         System.out.println( "Ejecting genome:");
         PlantGenome genome = new PlantGenome(genes);
-        GenomeStdOutWriter.hexPrintGenomeToStdOut(genome);
+        GenomeStreamWriter.hexPrintGenomeToStream(genome,System.out);
 
 
 
@@ -62,7 +62,7 @@ public class PlantGenomeTest {
         assert(PlantGenome.GeneExpression.GROW_LEAF_UP.value() == gene.nucleotideA);
 
         System.out.println( "Created: ");
-        GenomeStdOutWriter.hexPrintGenomeToStdOut(genome);
+        GenomeStreamWriter.hexPrintGenomeToStream(genome, System.out);
 
         final ArrayList<Gene> genome2 = new ArrayList<>(GENE_COUNT);
 
@@ -80,7 +80,7 @@ public class PlantGenomeTest {
 
         System.out.println( );
         final PlantGenome plantGenome = new PlantGenome(genome2);
-        GenomeStdOutWriter.hexPrintGenomeToStdOut(plantGenome);
+        GenomeStreamWriter.hexPrintGenomeToStream(plantGenome, System.out);
 
 
     }

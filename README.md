@@ -32,6 +32,13 @@ Sources used:
 For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
 For an example CLI implementation, see [SimpleSimulator](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/utilities/SimpleSimulator.java) <br />
 
+Outstanding Items:
+* Change metabolism to gradual spend
+* Make coordinates optional in EcosystemJsonReader
+* Resource tracking
+* Morbid resource generation
+
+
 @author: Luke McOmber  
 @License: MIT License (see LICENSE)
 

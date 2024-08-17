@@ -4,17 +4,13 @@ import net.lukemcomber.genetics.biology.Cell;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
-import net.lukemcomber.genetics.service.CellHelper;
-import net.lukemcomber.genetics.service.GenomeSerDe;
-import net.lukemcomber.genetics.store.MetadataStore;
-import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.io.CellHelper;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.genetics.exception.EvolutionException;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;

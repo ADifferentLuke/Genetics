@@ -1,4 +1,4 @@
-package net.lukemcomber.genetics.service;
+package net.lukemcomber.genetics.io;
 
 import java.io.OutputStream;
 import java.util.logging.Level;

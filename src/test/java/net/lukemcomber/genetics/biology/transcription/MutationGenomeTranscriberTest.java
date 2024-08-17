@@ -5,18 +5,10 @@ import com.google.common.collect.ImmutableMap;
 import net.lukemcomber.genetics.biology.Gene;
 import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.TestGenome;
-import net.lukemcomber.genetics.biology.plant.PlantBehavior;
-import net.lukemcomber.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.genetics.model.UniverseConstants;
-import net.lukemcomber.genetics.service.GenomeSerDe;
-import net.lukemcomber.genetics.store.MetadataStore;
-import net.lukemcomber.genetics.store.TmpMetadataStoreTest;
-import net.lukemcomber.genetics.world.terrain.Terrain;
-import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
+import net.lukemcomber.genetics.io.GenomeSerDe;
 import org.testng.annotations.Test;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 

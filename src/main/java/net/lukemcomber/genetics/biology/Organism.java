@@ -7,19 +7,19 @@ package net.lukemcomber.genetics.biology;
 
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
-import net.lukemcomber.genetics.service.CellHelper;
-import net.lukemcomber.genetics.store.MetadataStoreFactory;
+import net.lukemcomber.genetics.io.CellHelper;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.OutputStream;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.logging.Logger;
 
 import static java.util.logging.Logger.getLogger;
 
 //TODO clean up this interface. It's NASTY!
 public interface Organism {
+
+    String DEFAULT_PARENT = "GOD";
     enum CauseOfDeath {
         Unknown,
         Stagnation,

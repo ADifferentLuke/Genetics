@@ -8,7 +8,6 @@ package net.lukemcomber.genetics.biology.transcription;
 import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.model.UniverseConstants;
-import net.lukemcomber.genetics.service.GenomeSerDe;
 
 public class AsexualTransposeAndMutateGeneTranscriber implements GenomeTransciber {
 

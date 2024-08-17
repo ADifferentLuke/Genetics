@@ -1,4 +1,4 @@
-package net.lukemcomber.genetics.service;
+package net.lukemcomber.genetics.io;
 
 import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.Organism;
@@ -38,12 +38,12 @@ public class GenomeStreamReaderTest {
 
 
     public void testGenomeSerDe() throws DecoderException {
-        final String genomeString = "78386f1f1d027e2a177d7b3d65543d3a57660773335270726f6b6e58667b5010586557150d2b33741e402e0f26082b740f403515";
-        final Genome genome = GenomeSerDe.deserialize("PLANT", genomeString);
+        final String genomeString = "PLANT:78386f1f1d027e2a177d7b3d65543d3a57660773335270726f6b6e58667b5010586557150d2b33741e402e0f26082b740f403515";
+        final Genome genome = GenomeSerDe.deserialize(genomeString);
 
         final String newGenomeString = GenomeSerDe.serialize(genome);
         assert (newGenomeString.equals(genomeString));
-        final Genome newGenome = GenomeSerDe.deserialize("PLANT", genomeString);
+        final Genome newGenome = GenomeSerDe.deserialize( genomeString);
         assert (newGenome.getGeneNumber(3).nucleotideA == genome.getGeneNumber(3).nucleotideA);
     }
 

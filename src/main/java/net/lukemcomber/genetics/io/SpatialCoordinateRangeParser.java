@@ -1,4 +1,4 @@
-package net.lukemcomber.genetics.service;
+package net.lukemcomber.genetics.io;
 
 /*
  * (c) 2023 Luke McOmber
@@ -6,23 +6,43 @@ package net.lukemcomber.genetics.service;
  */
 
 import net.lukemcomber.genetics.exception.EvolutionException;
-import net.lukemcomber.genetics.model.QuadFunction;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.SpatialRangeCoordinates;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class LGPReader {
+import java.util.function.BiFunction;
+
+/**
+ * An abstract class for adding support for parsing coordinate ranges.
+ * Format:
+ * (RANGE,RANGE,RANGE)
+ * RANGE := SUBRANGE | INTEGER | WILDCARD
+ * SUBRANGE := [INTEGER-INTEGER]
+ * WILDCARD := *
+ */
+public abstract class SpatialCoordinateRangeParser {
 
     class RangeValueItem {
         public Range<Integer> xCoordinates;
         public Range<Integer> yCoordinates;
         public Range<Integer> zCoordinates;
+        public SpatialRangeCoordinates rangeCoordinates;
 
         public String value;
     }
+
     private static final int MINIMUM_COORDINATE_LENGTH = "(x,y,z),k".length();
 
-    RangeValueItem parseItem(final String line, final int xMax, final int yMax, final int zMax) {
-        RangeValueItem item = new RangeValueItem();
+    /**
+     * Parses the input line and return
+     *
+     * @param line the line to parse
+     * @param size the maximum size of the simulation space
+     * @return object containing left over string and parsed ranges
+     */
+    RangeValueItem parseItem(final String line, final SpatialCoordinates size) {
+        final RangeValueItem item = new RangeValueItem();
         if (StringUtils.isNotEmpty(line)) {
             if ('(' == line.charAt(0)) {
                 //We have some coords
@@ -38,9 +58,11 @@ public abstract class LGPReader {
                          * Field [3]: value
                          */
                         item.value = fields[3];
-                        item.xCoordinates = parseRange(fields[0], xMax);
-                        item.yCoordinates = parseRange(fields[1], yMax);
-                        item.zCoordinates = parseRange(fields[2].substring(0,fields[2].length()-1), zMax);
+                        item.rangeCoordinates = new SpatialRangeCoordinates(
+                                parseRange(fields[0], size.xAxis()),
+                                parseRange(fields[1], size.yAxis()),
+                                parseRange(fields[2].substring(0, fields[2].length() - 1), size.zAxis())
+                        );
 
                     } else {
                         throw new EvolutionException(String.format("Unable to parse '%s'.", line));
@@ -57,20 +79,28 @@ public abstract class LGPReader {
         return item;
     }
 
+    /**
+     * Parses a range across one axis using the max size as a boundary. If the range
+     * extends beyond the maximum size, an {@link EvolutionException} is thrown.
+     *
+     * @param possibleRange string of the possible range
+     * @param maxSize       maximum size
+     * @return Range object
+     */
     /* Visible for testing */
-    protected Range<Integer> parseRange(final String field, final int maxSize) {
+    protected Range<Integer> parseRange(final String possibleRange, final int maxSize) {
         final Range<Integer> retVal;
-        if (StringUtils.isBlank(field)) {
+        if (StringUtils.isBlank(possibleRange)) {
             //The entire axis inclusive
             retVal = Range.between(0, maxSize - 1);
         } else {
-            switch (field.charAt(0)) {
+            switch (possibleRange.charAt(0)) {
                 case '*':
                     retVal = Range.between(0, maxSize - 1);
                     break;
                 case '[':
-                    if (']' == field.charAt(field.length() - 1)) {
-                        final String newField = field.substring(1, field.length() - 1);
+                    if (']' == possibleRange.charAt(possibleRange.length() - 1)) {
+                        final String newField = possibleRange.substring(1, possibleRange.length() - 1);
                         final String[] parsedRange = StringUtils.split(newField, '-');
                         if (2 == parsedRange.length) {
 
@@ -87,11 +117,11 @@ public abstract class LGPReader {
                         }
                     } else {
                         throw new EvolutionException(String.format(
-                                "Unclosed range found '%s'.", field));
+                                "Unclosed range found '%s'.", possibleRange));
                     }
                     break;
                 default: {
-                    int coord = Integer.parseInt(field);
+                    final int coord = Integer.parseInt(possibleRange);
                     retVal = Range.between(coord, coord);
                 }
             }
@@ -99,22 +129,29 @@ public abstract class LGPReader {
         return retVal;
     }
 
-    protected void iterateRangeValue (final RangeValueItem item, final int sizeOfXAxis, final int sizeofYAxis, final int sizeofZAxis,
-                            final QuadFunction<Integer,Integer,Integer,String,Boolean> func ){
+    /**
+     * Utility method of executing a function over a range of coordinates
+     * @param item Range and Item mappings
+     * @param spatialMaxAxis size of simulation
+     * @param func function to call on each spatial coordinate
+     */
+    protected void iterateRangeValue(final RangeValueItem item, final SpatialCoordinates spatialMaxAxis,
+                                     final BiFunction<SpatialCoordinates, String, Boolean> func) {
         if (null != item) {
-            final int xUpperBound = null != item.xCoordinates ? item.xCoordinates.getMaximum() : sizeOfXAxis - 1;
+            final int xUpperBound = null != item.xCoordinates ? item.xCoordinates.getMaximum() : spatialMaxAxis.xAxis() - 1;
             final int xLowerBound = null != item.xCoordinates ? item.xCoordinates.getMinimum() : 0;
 
-            final int yUpperBound = null != item.yCoordinates ? item.yCoordinates.getMaximum() : sizeofYAxis - 1;
+            final int yUpperBound = null != item.yCoordinates ? item.yCoordinates.getMaximum() : spatialMaxAxis.yAxis() - 1;
             final int yLowerBound = null != item.yCoordinates ? item.yCoordinates.getMinimum() : 0;
 
-            final int zUpperBound = null != item.zCoordinates ? item.zCoordinates.getMaximum() : sizeofZAxis - 1;
+            final int zUpperBound = null != item.zCoordinates ? item.zCoordinates.getMaximum() : spatialMaxAxis.zAxis() - 1;
             final int zLowerBound = null != item.zCoordinates ? item.zCoordinates.getMinimum() : 0;
 
             for (int i = xLowerBound; xUpperBound >= i; ++i) {
                 for (int j = yLowerBound; yUpperBound >= j; ++j) {
                     for (int k = zLowerBound; zUpperBound >= k; ++k) {
-                        func.apply(i,j,k,item.value);
+
+                        func.apply(new SpatialCoordinates(i, j, k), item.value);
                     }
                 }
             }

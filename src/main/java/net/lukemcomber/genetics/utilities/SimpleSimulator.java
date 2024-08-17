@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.lukemcomber.genetics.AutomaticEcosystem;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.OrganismFactory;
-import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
-import net.lukemcomber.genetics.service.GenomeSerDe;
+import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
@@ -25,7 +24,7 @@ import java.util.*;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static net.lukemcomber.genetics.service.GenomeStreamReader.DEFAULT_PARENT_ID;
+import static net.lukemcomber.genetics.io.GenomeStreamReader.DEFAULT_PARENT_ID;
 
 public class SimpleSimulator {
 
@@ -101,9 +100,9 @@ public class SimpleSimulator {
                 final Organism organism;
                 try {
                     organism = OrganismFactory.create(DEFAULT_PARENT_ID,
-                            GenomeSerDe.deserialize(PlantOrganism.TYPE, genome), coordinates, temporalCoordinates,
+                            GenomeSerDe.deserialize(genome), coordinates, temporalCoordinates,
                             terrain.getProperties(), groupStore);
-                } catch (DecoderException e) {
+                } catch (final DecoderException e) {
                     throw new RuntimeException(e);
                 }
                 ecosystem.addOrganismToInitialPopulation(organism);

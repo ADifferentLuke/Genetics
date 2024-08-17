@@ -13,20 +13,20 @@ public class TestBasicFitnessFunction {
 
 
     @Test
-    public void doFitnessCalculation(){
+    public void doFitnessCalculation() {
         final Performance performance = new Performance();
-        performance.age = 1010l;
-        performance.offspring = 9;
-        performance.cells = 1072;
-        performance.deathEnergy = 161943;
-        performance.totalEnergyHarvested = 831448;
-        performance.totalEnergyMetabolized = 482016;
-        performance.causeOfDeath = 1;
+        performance.setAge(1010l);
+        performance.setOffspring(9);
+        performance.setCells(1072);
+        performance.setDeathEnergy(161943);
+        performance.setTotalEnergyHarvested(831448);
+        performance.setTotalEnergyMetabolized(482016);
+        performance.setCauseOfDeath(1);
 
         final BasicFitnessFunction fitnessFunction = new BasicFitnessFunction();
-        performance.fitness = fitnessFunction.apply(performance);
+        performance.setFitness(fitnessFunction.apply(performance));
 
-        logger.info("Fitness: " + performance.fitness);
+        logger.info("Fitness: " + performance.getFitness());
 
     }
 }

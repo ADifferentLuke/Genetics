@@ -26,7 +26,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
     public AutomaticEcosystem(final int ticksPerDay, final SpatialCoordinates size, final String type,
                               final long maxDays, final long delayMs) throws IOException {
-        this(ticksPerDay,size,type,maxDays,delayMs,null);
+        this(ticksPerDay, size, type, maxDays, delayMs, null);
 
     }
 
@@ -64,7 +64,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
         final AutomatedEcosystemConfiguration setupConfiguration = new AutomatedEcosystemConfiguration();
 
         final Terrain terrain = getTerrain();
-        if(Objects.nonNull(terrain)){
+        if (Objects.nonNull(terrain)) {
             setupConfiguration.setWidth(getTerrain().getSizeOfXAxis());
             setupConfiguration.setHeight(getTerrain().getSizeOfYAxis());
             setupConfiguration.setDepth(getTerrain().getSizeOfZAxis());
@@ -110,8 +110,8 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
                 if (getTotalTicks() % 10 == 0) {
 
                     final Environment environmentData = new Environment();
-                    environmentData.tickCount = getTotalTicks();
-                    environmentData.totalOrganisms = (long) getTerrain().getOrganismCount();
+                    environmentData.setTickCount(getTotalTicks());
+                    environmentData.setTotalOrganisms((long) getTerrain().getOrganismCount());
 
                     final MetadataStore<Environment> dataStore = metadataStoreGroup.get(Environment.class);
                     dataStore.store(environmentData);
@@ -144,7 +144,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
         for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
             final Organism organism = it.next();
-            organism.kill(temporalCoordinates, Organism.CauseOfDeath.Unknown,"Organism " + organism.getUniqueID() + " died from time ending.");
+            organism.kill(temporalCoordinates, Organism.CauseOfDeath.Unknown, "Organism " + organism.getUniqueID() + " died from time ending.");
         }
     }
 }

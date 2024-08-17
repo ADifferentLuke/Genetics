@@ -13,6 +13,7 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
+import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.SearchableMetadataStore;
 
 import java.io.*;
@@ -27,6 +28,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
+/**
+ * A searchable {@link MetadataStore} backed by a tmp file
+ *
+ * @param <T> type of data to store
+ */
 public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMetadataStore<T> {
 
     private static final Logger logger = Logger.getLogger(TmpSearchableMetadataStore.class.getName());
@@ -55,9 +61,11 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
     private final Class<T> type;
     private final Pool<Kryo> kryoPool;
 
-    /*
-     * This class represents a logical unit that corresponds to a OS tmp file. The goal is
-     * to delete the entire file when it expires.
+    /**
+     * Create new {@link SearchableMetadataStore} of the specified type.
+     *
+     * @param type       type of data to store
+     * @param properties config properties
      */
     public TmpSearchableMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
 
@@ -75,13 +83,12 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         }
 
         kryoPool = new Pool<>(true, false, 8) {
-            protected Kryo create () {
+            protected Kryo create() {
                 Kryo kryo = new Kryo();
                 kryo.register(type);
                 return kryo;
             }
         };
-
 
 
         final String propertyName = String.format(PROPERTY_TYPE_ENABLED, type.getSimpleName());
@@ -173,6 +180,11 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
     }
 
+    /**
+     * Store data in the metadata store
+     *
+     * @param data data to store
+     */
     @Override
     public void store(final T data) {
         if (outputQueue.offer(data)) {
@@ -180,6 +192,144 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         }
     }
 
+
+    /**
+     * Returns a list of all data stored in the datastore. May block.
+     *
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    public List<T> retrieve() throws FileNotFoundException {
+        return page(0, (int) count());
+    }
+
+    /**
+     * Returns a list of all data stored in the datastore. May block.
+     *
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    @Override
+    public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
+
+        List<T> retVal = new LinkedList<>();
+
+        if (null != indexedFields) {
+
+            final String key = indexedFields.keySet().stream().findFirst().orElse("default");
+            retVal = readFromIndex(key, pageNumber, countPerPage);
+
+        }
+        return retVal;
+    }
+
+    /**
+     * Returns a count of records in the data store
+     *
+     * @return number of stored records
+     */
+    @Override
+    public long count() {
+        return recordCount;
+    }
+
+    /**
+     * Returns a page of data stored in the datastore
+     *
+     * @param pageNumber     page number to return
+     * @param recordsPerPage number of records per page
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    @Override
+    public List<T> page(final String index, final int pageNumber, final int recordsPerPage) {
+
+        final List<T> retVal;
+
+        if (0 <= pageNumber && 0 < recordsPerPage) {
+            if (indexedFields.containsKey(index)) {
+                retVal = readFromIndex(index, pageNumber, recordsPerPage);
+            } else {
+                throw new RuntimeException("Index [" + index + "] not found");
+            }
+        } else {
+            throw new EvolutionException("Invalid page reference.");
+        }
+        return retVal;
+    }
+
+    /**
+     * Search the {@link MetadataStore} at the provided index for the specified value.
+     *
+     * @param index index to search
+     * @param value key value to search for
+     * @param limit maximum number of results
+     * @return a list of matching records
+     * @throws IOException
+     */
+    @Override
+    public List<T> find(final String index, final Object value, final int limit) throws IOException {
+        final List<T> retVal = new LinkedList<>();
+        if (indexedFields.containsKey(index)) {
+            final TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
+            /*
+             * There is no guarantee that our lookup value is the same type as the Map.
+             *   so peek the first entry and compage types
+             */
+            if (!indexes.isEmpty()) {
+                final Object indexKey = indexes.firstKey();
+
+                if (indexKey.getClass() == value.getClass()) {
+                    if (indexes.containsKey(value)) {
+                        final List<CachePosition> positions = indexes.get(value);
+                        for (int i = 0; i < positions.size() && i < limit; i++) {
+                            retVal.add(readDataFromFile(positions.get(i), ioFile));
+                        }
+                    }
+                } else {
+                    logger.info("Invalid lookup type [" + value.getClass() + "] != [" + indexKey.getClass() + "] for index " + index);
+                }
+            }
+        }
+        return retVal;
+    }
+
+    /**
+     * Search all indexes for the provided value. This tends to be significantly more expensive than
+     * {@link SearchableMetadataStore#find(String, Object, int)}
+     *
+     * @param value value to search for
+     * @param limit maximum number of results
+     * @return a list of matching records
+     * @throws IOException
+     */
+    @Override
+    public List<T> find(final Object value, final int limit) throws IOException {
+        final List<T> retVal = new LinkedList<>();
+        final Iterator<String> indexIterator = indexedFields.keySet().iterator();
+        long results = 0;
+        while (indexIterator.hasNext() && results < limit) {
+            final String indexName = indexIterator.next();
+            final List<T> resultList = find(indexName, value, limit);
+            if (resultList.size() > limit) {
+                retVal.addAll(resultList.subList(0, limit));
+            } else {
+                retVal.addAll(resultList);
+            }
+        }
+        return retVal;
+    }
+
+    /**
+     * Attempt to expire the data store. If the force flag is set, then force an expiration.
+     * <p>
+     * If the force flag is used, false will be returned while the system cleans up resources.
+     * Once resources are freed, will return false
+     *
+     * @param force flag to force expiration
+     * @return true if expired
+     * @throws IOException
+     */
     @Override
     public boolean expire(final boolean force) throws IOException {
         if (enabled) {
@@ -201,29 +351,6 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
              */
         }
         return !enabled;
-    }
-
-    public List<T> retrieve() throws FileNotFoundException {
-        return page(0, (int) count());
-    }
-
-    @Override
-    public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
-
-        List<T> retVal = new LinkedList<>();
-
-        if (null != indexedFields) {
-
-            final String key = indexedFields.keySet().stream().findFirst().orElse("default");
-            retVal = readFromIndex(key, pageNumber, countPerPage);
-
-        }
-        return retVal;
-    }
-
-    @Override
-    public long count() {
-        return recordCount;
     }
 
     private long writeAndCacheMetadata(final T metadata, final long currentPosition, final RandomAccessFile file) throws IOException, IllegalAccessException {
@@ -322,7 +449,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         try {
 
             readLock.lock();
-            if( file.getChannel().isOpen()) {
+            if (file.getChannel().isOpen()) {
                 file.seek(startPosition);
                 readCount = file.read(data);
             }
@@ -342,65 +469,5 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         return retVal;
     }
 
-    @Override
-    public List<T> page(String index, int pageNumber, int recordsPerPage) {
-
-        final List<T> retVal;
-
-        if( 0 <= pageNumber && 0 < recordsPerPage ) {
-            if (indexedFields.containsKey(index)) {
-                retVal = readFromIndex(index, pageNumber, recordsPerPage);
-            } else {
-                throw new RuntimeException("Index [" + index + "] not found");
-            }
-        } else {
-            throw new EvolutionException("Invalid page reference.");
-        }
-        return retVal;
-    }
-
-    @Override
-    public List<T> find(String index, Object value, int limit) throws IOException {
-        final List<T> retVal = new LinkedList<>();
-        if (indexedFields.containsKey(index)) {
-            final TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
-            /*
-             * There is no guarantee that our lookup value is the same type as the Map.
-             *   so peek the first entry and compage types
-             */
-            if( ! indexes.isEmpty() ) {
-                final Object indexKey = indexes.firstKey();
-
-                if( indexKey.getClass() == value.getClass() ) {
-                    if (indexes.containsKey(value)) {
-                        final List<CachePosition> positions = indexes.get(value);
-                        for (int i = 0; i < positions.size() && i < limit; i++) {
-                            retVal.add(readDataFromFile(positions.get(i), ioFile));
-                        }
-                    }
-                } else {
-                    logger.info( "Invalid lookup type [" + value.getClass() + "] != [" + indexKey.getClass() + "] for index " + index);
-                }
-            }
-        }
-        return retVal;
-    }
-
-    @Override
-    public List<T> find(Object value, int limit) throws IOException {
-        final List<T> retVal = new LinkedList<>();
-        final Iterator<String> indexIterator = indexedFields.keySet().iterator();
-        long results = 0;
-        while (indexIterator.hasNext() && results < limit) {
-            final String indexName = indexIterator.next();
-            final List<T> resultList = find(indexName, value, limit);
-            if (resultList.size() > limit) {
-                retVal.addAll(resultList.subList(0, limit));
-            } else {
-                retVal.addAll(resultList);
-            }
-        }
-        return retVal;
-    }
 
 }

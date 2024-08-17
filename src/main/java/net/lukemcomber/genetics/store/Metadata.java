@@ -5,8 +5,8 @@ package net.lukemcomber.genetics.store;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
-/*
- * This only exists to force type conformity in the metadata cache system
+/**
+ * Interface to force type conformity in the metadata system.
  */
 public interface Metadata {
 

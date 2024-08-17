@@ -55,18 +55,18 @@ public class BasicFitnessFunction implements FitnessFunction {
     public Double apply(final Performance performance) {
 
         // larger is better, but not a huge advantage.
-        final double cellsValue = cellsWeight * Math.log(Math.sqrt(performance.cells));
+        final double cellsValue = cellsWeight * Math.log(Math.sqrt(performance.getCells()));
 
         // less waste the better
-        final double wasteValue = unusedEnergyWeight * ( 1 / ( 1 + (Math.exp(Math.abs(performance.deathEnergy)))));
+        final double wasteValue = unusedEnergyWeight * ( 1 / ( 1 + (Math.exp(Math.abs(performance.getDeathEnergy())))));
 
         // ratio of 1:1 energy usage is the most efficient
-        final double energyDifferential = performance.totalEnergyHarvested - performance.totalEnergyMetabolized;
+        final double energyDifferential = performance.getTotalEnergyHarvested() - performance.getTotalEnergyMetabolized();
         // Let's not blow up the world, check for divide by zero
         final double energyValue = energyEfficiencyWeight * (1 / (  0 != energyDifferential ? energyDifferential : 1 ));
 
-        final double childrenValue = childrenWeight * performance.offspring;
-        final double deathValue = (double) performance.causeOfDeath / Organism.CauseOfDeath.count;
+        final double childrenValue = childrenWeight * performance.getOffspring();
+        final double deathValue = (double) performance.getCauseOfDeath() / Organism.CauseOfDeath.count;
 
         return deathValue * (cellsValue + wasteValue + energyValue) * Math.log(childrenValue+1);
     }

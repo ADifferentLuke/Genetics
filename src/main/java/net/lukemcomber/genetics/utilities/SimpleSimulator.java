@@ -135,10 +135,10 @@ public class SimpleSimulator {
         if (metadataStore instanceof SearchableMetadataStore<Performance>) {
             final List<Performance> bestOrganisms = ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, 2);
             bestOrganisms.forEach(organism -> {
-                logger.info("Organism " + organism.dna + " - fitness " + organism.fitness);
+                logger.info("Organism " + organism.getDna() + " - fitness " + organism.getFitness());
             });
             ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, reuseCount).forEach(performance -> {
-                reincarnate.add(performance.dna);
+                reincarnate.add(performance.getDna());
             });
         }
         return reincarnate;

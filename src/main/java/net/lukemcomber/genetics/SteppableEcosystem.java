@@ -45,8 +45,8 @@ public class SteppableEcosystem extends Ecosystem {
             }
 
             final Environment environmentData = new Environment();
-            environmentData.tickCount = getTotalTicks();
-            environmentData.totalOrganisms = (long) getTerrain().getOrganismCount();
+            environmentData.setTickCount(getTotalTicks());
+            environmentData.setTotalOrganisms((long) getTerrain().getOrganismCount());
 
             final MetadataStore<Environment> dataStore = metadataStoreGroup.get(Environment.class);
             dataStore.store(environmentData);

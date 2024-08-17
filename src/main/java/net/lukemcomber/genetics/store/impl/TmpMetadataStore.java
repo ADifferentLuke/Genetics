@@ -30,6 +30,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
+/**
+ * A {@link MetadataStore} backed by a tmp file
+ *
+ * @param <T> type of data to store
+ */
 public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
     private static final Logger logger = Logger.getLogger(TmpMetadataStore.class.getName());
@@ -48,9 +53,11 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
     private final Class<T> type;
     private final Pool<Kryo> kryoPool;
 
-    /*
-     * This class represents a logical unit that corresponds to a OS tmp file. The goal is
-     * to delete the entire file when it expires.
+    /**
+     * Create new {@link TmpMetadataStore} of the specified type.
+     *
+     * @param type       type of data to store
+     * @param properties config properties
      */
     public TmpMetadataStore(final Class<T> type, final UniverseConstants properties) {
 
@@ -67,7 +74,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
         }
 
         kryoPool = new Pool<>(true, false, 8) {
-            protected Kryo create () {
+            protected Kryo create() {
                 Kryo kryo = new Kryo();
                 kryo.register(type);
                 return kryo;
@@ -152,7 +159,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
                     }
-                    logger.info( writeThread.getName() + " shutting down.");
+                    logger.info(writeThread.getName() + " shutting down.");
                 }
 
             };
@@ -165,6 +172,21 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
     }
 
+    /**
+     * Returns a list of all data stored in the datastore. May block.
+     *
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    public List<T> retrieve() throws FileNotFoundException {
+        return retrieve(-1);
+    }
+
+    /**
+     * Store data in the metadata store
+     *
+     * @param data data to store
+     */
     @Override
     public void store(final T data) {
         if (outputQueue.offer(data)) {
@@ -172,11 +194,61 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
         }
     }
 
+
+    /**
+     * Returns a page of data stored in the datastore
+     *
+     * @param pageNumber   page number to return
+     * @param countPerPage number of records per page
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    @Override
+    public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
+        // This wasn't really meant for pagination
+        final List<T> retVal;
+        if (0 <= pageNumber && 0 < countPerPage) {
+            final List<T> fullRecordList = retrieve(pageNumber * countPerPage + countPerPage);
+            int currentPageInRecords = pageNumber * countPerPage;
+            if (currentPageInRecords < fullRecordList.size()) {
+                int recordCount = fullRecordList.size() - currentPageInRecords;
+
+                retVal = fullRecordList.subList(currentPageInRecords, currentPageInRecords + recordCount);
+            } else {
+                // requested a page past the number of records
+                retVal = new ArrayList<>(0);
+            }
+        } else {
+            throw new EvolutionException("Invalid page reference.");
+        }
+        return retVal;
+    }
+
+    /**
+     * Returns a count of records in the data store
+     *
+     * @return number of stored records
+     */
+    @Override
+    public long count() {
+        return recordCount;
+    }
+
+    /**
+     * Attempt to expire the data store. If the force flag is set, then force an expiration.
+     * <p>
+     * If the force flag is used, false will be returned while the system cleans up resources.
+     * Once resources are freed, will return false
+     *
+     * @param force flag to force expiration
+     * @return true if expired
+     * @throws IOException
+     */
     @Override
     public boolean expire(final boolean force) throws IOException {
         if (enabled) {
             this.forceShutdown = force; //boolean assignment is atomic
-            if( force ) {
+            if (force) {
                 writeThread.interrupt();
             }
 
@@ -195,19 +267,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
         return !enabled;
     }
 
-    public List<T> retrieve() throws FileNotFoundException {
-        return retrieve(-1);
-    }
 
-    /**
-     * Returns null for an expired or deleted or file, returns
-     * empty list for an empty file, otherwise returns results.
-     *
-     * May block
-     *
-     * @return
-     * @throws FileNotFoundException
-     */
     private List<T> retrieve(final long count) throws FileNotFoundException {
         final List<T> retVal;
         long currentCount = 0;
@@ -217,7 +277,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
                 final ReentrantReadWriteLock.ReadLock readLock = ioSystemLock.readLock();
 
-                while (!kryoInput.end() && ( 0 >= count  || currentCount < count)) {
+                while (!kryoInput.end() && (0 >= count || currentCount < count)) {
 
                     try {
                         readLock.lock();
@@ -235,33 +295,6 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
             retVal = null;
         }
         return retVal;
-    }
-
-
-    @Override
-    public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
-        // This wasn't really meant for pagination
-        final List<T> retVal;
-        if( 0 <= pageNumber && 0 < countPerPage ) {
-            final List<T> fullRecordList = retrieve(pageNumber * countPerPage + countPerPage);
-            int currentPageInRecords = pageNumber * countPerPage;
-            if (currentPageInRecords < fullRecordList.size()) {
-                int recordCount = fullRecordList.size() - currentPageInRecords;
-
-                retVal = fullRecordList.subList(currentPageInRecords, currentPageInRecords + recordCount);
-            } else {
-                // requested a page past the number of records
-                retVal = new ArrayList<>(0);
-            }
-        } else {
-            throw new EvolutionException("Invalid page reference.");
-        }
-        return retVal;
-    }
-
-    @Override
-    public long count() {
-        return recordCount;
     }
 
 }

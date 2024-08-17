@@ -128,25 +128,25 @@ public class PlantOrganism implements Organism {
     public void kill(final TemporalCoordinates temporalCoordinates, final CauseOfDeath causeOfDeath, final String reason) {
         alive = false;
         final Performance performance = new Performance();
-        performance.name = this.uuid;
-        performance.parentId = this.parentUuid;
-        performance.dna = GenomeSerDe.serialize(getGenome());
-        performance.offspring = seedCount;
-        performance.birthTick = this.birthTime.totalTicks();
-        performance.deathEnergy = this.energy;
-        performance.deathTick = temporalCoordinates.totalTicks();
-        performance.causeOfDeathStr = reason;
-        performance.causeOfDeath = causeOfDeath.ordinal();
-        performance.age = performance.deathTick - performance.birthTick;
-        performance.totalEnergyHarvested = totalResourcesGathered;
-        performance.totalEnergyMetabolized = totalEnergyMetabolized;
+        performance.setName( this.uuid);
+        performance.setParentId(this.parentUuid);
+        performance.setDna(GenomeSerDe.serialize(getGenome()));
+        performance.setOffspring(seedCount);
+        performance.setBirthTick(this.birthTime.totalTicks());
+        performance.setDeathEnergy(this.energy);
+        performance.setDeathTick(temporalCoordinates.totalTicks());
+        performance.setCauseOfDeathStr(reason);
+        performance.setCauseOfDeath(causeOfDeath.ordinal());
+        performance.setAge(performance.getDeathTick() - performance.getBirthTick());
+        performance.setTotalEnergyHarvested(totalResourcesGathered);
+        performance.setTotalEnergyMetabolized(totalEnergyMetabolized);
 
-        performance.cells = childCount + 1; // Added 1 for current cell that's not a child
+        performance.setCells(childCount + 1); // Added 1 for current cell that's not a child
 
         if (null != fitnessFunction) {
-            performance.fitness = fitnessFunction.apply(performance);
+            performance.setFitness(fitnessFunction.apply(performance));
         } else {
-            performance.fitness = 0d;
+            performance.setFitness(0d);
         }
 
         try {

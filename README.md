@@ -47,6 +47,8 @@ For an example CLI implementation, see [SimpleSimulator](https://github.com/ADif
 * Make coordinates optional in EcosystemJsonReader
 * Resource tracking
 * Morbid resource generation
+* Metadata Store Persistence
+* Simplify Metadata Store
 
 
 @author: Luke McOmber  

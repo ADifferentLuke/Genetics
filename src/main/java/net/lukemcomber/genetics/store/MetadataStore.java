@@ -10,23 +10,65 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
+/**
+ * Provides methods for accessing the tracked metadata
+ *
+ * @param <T> type of the metadata
+ */
 public abstract class MetadataStore<T extends Metadata> {
 
     public static final String PROPERTY_DATASTORE_TTL = "metadata.ttl";
 
+    /**
+     * Store data in the metadata store
+     *
+     * @param data data to store
+     */
     public abstract void store(final T data);
 
-    //Returns true if the store is expired
+    /**
+     * Returns a list of all data stored in the datastore
+     *
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    public abstract List<T> retrieve() throws FileNotFoundException;
+
+    /**
+     * Returns a page of data stored in the datastore
+     *
+     * @param pageNumber   page number to return
+     * @param countPerPage number of records per page
+     * @return list of records
+     * @throws FileNotFoundException
+     */
+    public abstract List<T> page(int pageNumber, int countPerPage) throws FileNotFoundException;
+
+    /**
+     * Attempt to expire the data store. If the force flag is set, then force an expiration
+     *
+     * @param force flag to force expiration
+     * @return true if expired
+     * @throws IOException
+     */
     public abstract boolean expire(boolean force) throws IOException;
 
+
+    /**
+     * Attempts to expire the datastore
+     *
+     * @return true if expired
+     * @throws IOException
+     */
     public boolean expire() throws IOException {
         return expire(false);
     }
 
-    public abstract List<T> retrieve() throws FileNotFoundException;
-
-    public abstract List<T> page(int pageNumber, int countPerPage) throws FileNotFoundException;
-
+    /**
+     * Returns a count of records in the data store
+     *
+     * @return number of stored records
+     */
     public abstract long count();
 
 }

@@ -8,11 +8,42 @@ package net.lukemcomber.genetics.store;
 import java.io.IOException;
 import java.util.List;
 
-public abstract class SearchableMetadataStore<T extends Metadata> extends MetadataStore<T>{
+/**
+ * Provides interface for a searchable {@link MetadataStore}
+ *
+ * @param <T> Type to store
+ */
+public abstract class SearchableMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
+    /**
+     * Returns the requested page as a list of records
+     *
+     * @param index          name of the index to use
+     * @param pageNumber     the page number to return
+     * @param recordsPerPage the number of records in each page
+     * @return list of records
+     */
     public abstract List<T> page(final String index, final int pageNumber, final int recordsPerPage);
 
+    /**
+     * Search the {@link MetadataStore} at the provided index for the specified value.
+     *
+     * @param index index to search
+     * @param value key value to search for
+     * @param limit maximum number of results
+     * @return a list of matching records
+     * @throws IOException
+     */
     public abstract List<T> find(final String index, final Object value, final int limit) throws IOException;
 
+    /**
+     * Search all indexes for the provided value. This tends to be significantly more expensive than
+     * {@link SearchableMetadataStore#find(String, Object, int)}
+     *
+     * @param value value to search for
+     * @param limit maximum number of results
+     * @return a list of matching records
+     * @throws IOException
+     */
     public abstract List<T> find(final Object value, final int limit) throws IOException;
 }

@@ -9,19 +9,31 @@ I have several goals that I'm looking to accomplish with this library
 	- Seeing what works and what doesn't
 	- Manage dependencies without Spring or DI
 3. Play with language features and interesting patterns
-3. For fun and curiosity!
+4. For fun and curiosity!
 
 Personal [notes](https://github.com/ADifferentLuke/Genetics/tree/main/notes). <br /><br />
-Fitness:
+
+#### Fitness:
 ![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/misc/BasicFitnessFunction.png?raw=true)
 
-Simulations: <br />
+#### Simulations:
 [Simulation 3 : Grass (4x zoom)](https://github.com/ADifferentLuke/Genetics/blob/main/notes/simulation_3_800x400) <br/>
 ![Simulation Grass](https://github.com/ADifferentLuke/Genetics/blob/main/misc/Grass.gif?raw=true)
 
+#### Examples
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)
 
-Sources used:
+For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
+For an example CLI implementation, see [SimpleSimulator](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/utilities/SimpleSimulator.java) <br />
+
+#### Maven
+    <dependency>
+        <groupId>net.lukemcomber</groupId>
+        <artifactId>genetics</artifactId>
+        <version>v0.2.1</version>
+    </dependency>
+
+#### Sources used:
 * Asexual Versus Sexual Reproduction in Genetic Algorithms1
   * https://carleton.ca/cognitivescience/wp-content/uploads/2006-09.pdf
 * A simple algorithm for optimization and model fitting
@@ -29,10 +41,8 @@ Sources used:
 * Using Genetic Algorithms with Asexual Transposition
   * https://dl.acm.org/doi/pdf/10.5555/2933718.2933761
 
-For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
-For an example CLI implementation, see [SimpleSimulator](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/utilities/SimpleSimulator.java) <br />
 
-Outstanding Items:
+#### Outstanding Items:
 * Change metabolism to gradual spend
 * Make coordinates optional in EcosystemJsonReader
 * Resource tracking

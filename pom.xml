@@ -70,7 +70,7 @@
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
-                                <phase>verify</phase>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>jar-no-fork</goal>
                                 </goals>
@@ -84,6 +84,7 @@
                         <executions>
                             <execution>
                                 <id>attach-javadoc</id>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
@@ -131,6 +132,7 @@
                     <goals>
                         <goal>shade</goal>
                     </goals>
+                    <phase>package</phase>
                     <configuration>
                         <shadedArtifactAttached>true</shadedArtifactAttached>
                         <transformers>

@@ -22,8 +22,8 @@ public abstract class UniverseConstants {
     private final Map<String,Object> constantMap;
 
     /**
-     *
-     * @param map
+     * Creates a new instance the properties set
+     * @param map map of key value pairs to set
      */
     public UniverseConstants(final Map<String,Object> map){
         constantMap = map;
@@ -39,6 +39,10 @@ public abstract class UniverseConstants {
         logger.info(output.toString());
     }
 
+    /**
+     * Returns a map of the properties serialized into {@link String}
+     * @return map of name value strings
+     */
     public Map<String,String> toMap(){
         return constantMap.keySet()
                 .stream()

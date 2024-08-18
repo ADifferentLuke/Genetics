@@ -31,7 +31,6 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
     private final long maxDays;
     private final long tickDelayMs;
-    private final AtomicBoolean isStarted;
     private final Thread ecosystemThread;
 
     /**
@@ -67,7 +66,6 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
         this.maxDays = maxDays;
         this.tickDelayMs = delayMs;
-        this.isStarted = new AtomicBoolean(false);
 
         isActive(true);
 
@@ -146,10 +144,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
     @Override
     public synchronized void initialize() {
         super.initialize();
-        if (!isStarted.get()) {
-            ecosystemThread.start();
-            isStarted.set(true);
-        }
+        ecosystemThread.start();
     }
 
     /**
@@ -163,8 +158,6 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
         try {
             if (null == getTerrain().getResourceManager()) {
                 throw new EvolutionException("Ecosystem must be initialized before running.");
-            } else if (isStarted.get()) {
-                throw new EvolutionException("Ecosystem already started.");
             }
             while (isActive()) {
 

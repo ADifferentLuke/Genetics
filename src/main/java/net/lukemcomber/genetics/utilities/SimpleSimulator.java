@@ -3,6 +3,7 @@ package net.lukemcomber.genetics.utilities;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.lukemcomber.genetics.AutomaticEcosystem;
 import net.lukemcomber.genetics.Ecosystem;
+import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.OrganismFactory;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
@@ -86,7 +87,7 @@ public class SimpleSimulator {
             final int randomOrganismCount = simulation.getInitialPopulation() - reincarnates.size();
 
             final RandomGenomeCreator genomeCreator = new RandomGenomeCreator(organismFilter);
-            final Set<String> initialPopulation = genomeCreator.generateRandomGenomes(0 >= randomOrganismCount ? simulation.getInitialPopulation() : randomOrganismCount);
+            final Set<String> initialPopulation = genomeCreator.generateRandomGenomes("PLANT", 0 >= randomOrganismCount ? simulation.getInitialPopulation() : randomOrganismCount);
 
             final Map<SpatialCoordinates, String> fauna = genomeCreator.generateRandomLocations(simulation.getWidth(), simulation.getHeight(), initialPopulation, reincarnates);
 
@@ -109,6 +110,7 @@ public class SimpleSimulator {
             fauna.forEach(((coordinates, genome) -> {
                 final Organism organism;
                 try {
+                    final Genome genome1 = GenomeSerDe.deserialize(genome);
                     organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
                             GenomeSerDe.deserialize(genome), coordinates, temporalCoordinates,
                             terrain.getProperties(), groupStore);
@@ -133,7 +135,7 @@ public class SimpleSimulator {
     /**
      * Run the {@link SimpleSimulator} from the configuration supplied and using the provided
      * filter file.
-     *
+     * <p>
      * Usage: SimpleSimulator &lt;file&gt; &lt;filter&gt;
      *
      * @param args
@@ -180,6 +182,7 @@ public class SimpleSimulator {
         bufferedWriter.flush();
 
     }
+
     private Set<String> monitorSimulation(final AutomaticEcosystem ecosystem, final int reuseCount) throws InterruptedException, IOException {
 
         logger.info("Beginning monitor of " + ecosystem.getId());
@@ -194,12 +197,10 @@ public class SimpleSimulator {
         final MetadataStore<Performance> metadataStore = groupStore.get(Performance.class);
         final Set<String> reincarnate = new HashSet<>();
         if (metadataStore instanceof SearchableMetadataStore<Performance>) {
-            if (logger.getLevel().intValue() <= Level.INFO.intValue()) {
-                final List<Performance> bestOrganisms = ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, 2);
-                bestOrganisms.forEach(organism -> {
-                    logger.info("Organism " + organism.getDna() + " - fitness " + organism.getFitness());
-                });
-            }
+            final List<Performance> bestOrganisms = ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, 2);
+            bestOrganisms.forEach(organism -> {
+                logger.info("Organism " + organism.getDna() + " - fitness " + organism.getFitness());
+            });
             ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, reuseCount).forEach(performance -> {
                 reincarnate.add(performance.getDna());
             });

@@ -33,10 +33,11 @@ public class RandomGenomeCreator {
 
     /**
      * Generates random genomes without repeating
+     * @param type type of genome
      * @param count number of genomes to create
      * @return set of genome strings
      */
-    public Set<String> generateRandomGenomes(final int count) {
+    public Set<String> generateRandomGenomes(final String type, final int count) {
 
         final Set<String> retVal = new HashSet<>();
         for (int i = 0; i < count; ++i) {
@@ -44,7 +45,7 @@ public class RandomGenomeCreator {
             do {
                 dna = getRandomHexString(160);
             } while (filter.contains(dna));
-            retVal.add(dna);
+            retVal.add(String.format("%s:%s", type, dna));
         }
 
         if (count != retVal.size()) {
@@ -143,7 +144,7 @@ public class RandomGenomeCreator {
         final File file = new File(genomeFilePath);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
 
-            creator.generateRandomLocations(width, height, creator.generateRandomGenomes(count),null).forEach((key, value) -> {
+            creator.generateRandomLocations(width, height, creator.generateRandomGenomes("PLANT",count),null).forEach((key, value) -> {
 
                 try {
                     writer.write(String.format("(%03d,%03d,0),%s", key.xAxis(), key.yAxis(), value));

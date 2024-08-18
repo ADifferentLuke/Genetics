@@ -18,30 +18,41 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.util.function.Function;
 
+/**
+ * Grows a root cell
+ */
 public class GrowRoot implements PlantBehavior {
 
     public final static String PROPERTY_GROW_ROOT_COST = "action.root.grow";
 
     private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
+    /**
+     * Create a new instance with a callback to updated cell location
+     *
+     * @param func
+     */
     public GrowRoot(final Function<SpatialCoordinates, SpatialCoordinates> func) {
         this.function = func;
     }
 
     /**
-     * @param terrain
-     * @param rootCell
-     * @param temporalCoordinates
-     * @param metadataStoreGroup
-     * @return
+     * Attempts to grow a new root cell
+     *
+     * @param terrain             the terrain
+     * @param rootCell            cell performing the action
+     * @param temporalCoordinates time
+     * @param metadataStoreGroup  metadata cache
+     * @return a root cell
      */
     @Override
-    public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism, final Cell rootCell, TemporalCoordinates temporalCoordinates, MetadataStoreGroup metadataStoreGroup) {
+    public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism, final Cell rootCell,
+                              final TemporalCoordinates temporalCoordinates, final MetadataStoreGroup metadataStoreGroup) {
         Cell retVal = null;
         final SpatialCoordinates newSpatialCoordinates = function.apply(rootCell.getCoordinates());
         if (!(terrain.isOutOfBounds(newSpatialCoordinates) || terrain.hasCell(newSpatialCoordinates))) {
             final RootCell newCell = new RootCell(rootCell, newSpatialCoordinates, terrain.getProperties());
-            terrain.setCell(newCell,organism);
+            terrain.setCell(newCell, organism);
             rootCell.addChild(newCell);
             retVal = newCell;
         } else {
@@ -53,7 +64,10 @@ public class GrowRoot implements PlantBehavior {
     }
 
     /**
-     * @return
+     * Get the cost in energy units to perform this behavior
+     *
+     * @param properties configuration properties
+     * @return cost
      */
     @Override
     public int getEnergyCost(final UniverseConstants properties) {

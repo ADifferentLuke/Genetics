@@ -20,6 +20,9 @@ import net.lukemcomber.genetics.biology.GenomeTransciber;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+/**
+ * Grows a seed on the organism
+ */
 public class GrowSeed implements PlantBehavior {
 
 
@@ -27,22 +30,29 @@ public class GrowSeed implements PlantBehavior {
 
     private Logger logger = Logger.getLogger(GrowSeed.class.toString());
 
-
     private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
+    /**
+     * Create a new instance with a callback to updated cell location
+     *
+     * @param func
+     */
     public GrowSeed(final Function<SpatialCoordinates, SpatialCoordinates> func) {
         this.function = func;
     }
 
     /**
-     * @param terrain
-     * @param cell
-     * @param temporalCoordinates
-     * @param metadataStoreGroup
-     * @return
+     * Attempts to grow a new seed cell
+     *
+     * @param terrain             the terrain
+     * @param cell                cell performing the action
+     * @param temporalCoordinates time
+     * @param metadataStoreGroup  metadata cache
+     * @return a seed cell
      */
     @Override
-    public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism, final Cell cell, TemporalCoordinates temporalCoordinates, MetadataStoreGroup metadataStoreGroup) {
+    public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism, final Cell cell,
+                              final TemporalCoordinates temporalCoordinates, final MetadataStoreGroup metadataStoreGroup) {
         final long cur = System.currentTimeMillis();
         Cell retVal = null;
 
@@ -64,7 +74,7 @@ public class GrowSeed implements PlantBehavior {
                         organism.getGenome()), newSpatialCoordinates, terrain.getProperties());
                 logger.info("Created new seed: " + organism.getUniqueID() + " at " + newSpatialCoordinates);
                 cell.addChild(newCell);
-                terrain.setCell(newCell,organism);
+                terrain.setCell(newCell, organism);
                 retVal = newCell;
             } else {
                 throw new RuntimeException("Organism is null!");
@@ -79,7 +89,10 @@ public class GrowSeed implements PlantBehavior {
 
 
     /**
-     * @return
+     * Get the cost in energy units to perform this behavior
+     *
+     * @param properties configuration properties
+     * @return cost
      */
     @Override
     public int getEnergyCost(final UniverseConstants properties) {

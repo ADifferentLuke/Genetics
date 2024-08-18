@@ -18,6 +18,9 @@ import java.util.function.Function;
  */
 public abstract class Genome {
 
+    /**
+     * Enum of lambdas that provide travel across SpatialCoordinates
+     */
     public enum SpatialTransformation {
         LEFT(c -> new SpatialCoordinates(c.xAxis() - 1, c.yAxis(), c.zAxis())),
         RIGHT(c -> new SpatialCoordinates(c.xAxis() + 1, c.yAxis(), c.zAxis())),
@@ -43,7 +46,13 @@ public abstract class Genome {
 
     private final String type;
 
-    public Genome(int numOfGenes, String type) {
+    /**
+     * Create a new empty instance
+     *
+     * @param numOfGenes number of genes
+     * @param type       type of genome
+     */
+    public Genome(final int numOfGenes, final String type) {
         this.numOfGenes = numOfGenes;
         genes = new LinkedList<>();
         for (int i = 0; this.numOfGenes > i; ++i) {
@@ -57,6 +66,12 @@ public abstract class Genome {
         this.type = type;
     }
 
+    /**
+     * Create a new instance
+     *
+     * @param genes genes in the genome
+     * @param type  type of genome
+     */
     public Genome(final List<Gene> genes, final String type) {
         numOfGenes = genes.size();
         this.genes = new LinkedList<>(genes);
@@ -64,6 +79,12 @@ public abstract class Genome {
 
     }
 
+    /**
+     * A utility method to convert a list of genes to a byte array
+     *
+     * @param geneList
+     * @return list of genes as byte array
+     */
     public static byte[] toBytes(final List<Gene> geneList) {
         return geneList.stream()
                 .map(Gene::toBytes)
@@ -75,6 +96,11 @@ public abstract class Genome {
                 });
     }
 
+    /**
+     * Get the genomes type
+     *
+     * @return type
+     */
     public String getType() {
         return type;
     }
@@ -117,6 +143,12 @@ public abstract class Genome {
         }
     }
 
+    /**
+     * Get an iterator to iterate
+     *
+     * @param bits
+     * @return a new iterator
+     */
     protected Iterator<Byte> iterator(final int bits) {
         return new GenomeIterator(genes, bits);
     }

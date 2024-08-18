@@ -21,8 +21,6 @@ import java.util.List;
  */
 public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.ContextData, List<Organism>> {
 
-    public static final String DEFAULT_PARENT_ID = "GOD";
-
     class ContextData {
         List<Organism> organisms;
         SpatialCoordinateRangeParser.RangeValueItem item = null;
@@ -89,7 +87,7 @@ public class GenomeStreamReader extends LGPStreamLineReader<GenomeStreamReader.C
                     //only support 1 organism per pixel. In the future, ranges should support large organisms?
                     try {
                         final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0, 0, 0);
-                        final Organism organism = OrganismFactory.create(DEFAULT_PARENT_ID,
+                        final Organism organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
                                 GenomeSerDe.deserialize(v), spatialCoordinates, temporalCoordinates,
                                 properties, metadataStoreGroup);
                         contextData.organisms.add(organism);

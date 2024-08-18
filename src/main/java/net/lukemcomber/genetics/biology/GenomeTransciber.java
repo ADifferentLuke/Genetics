@@ -7,7 +7,17 @@ package net.lukemcomber.genetics.biology;
 
 import net.lukemcomber.genetics.model.UniverseConstants;
 
+/**
+ * An interface for genome transcription
+ */
 public interface GenomeTransciber {
 
-    Genome transcribe(final UniverseConstants properties, final Genome genome );
+    /**
+     * Transcribe one genome into another.
+     *
+     * @param properties configuration properties
+     * @param genome     source genome
+     * @return destination genome
+     */
+    Genome transcribe(final UniverseConstants properties, final Genome genome);
 }

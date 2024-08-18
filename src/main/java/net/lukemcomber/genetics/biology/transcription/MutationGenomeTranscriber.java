@@ -15,13 +15,23 @@ import net.lukemcomber.genetics.model.UniverseConstants;
 import java.util.Random;
 import java.util.logging.Logger;
 
+/**
+ * Transcribe genome using {@link MutationGenomeTranscriber#GENOME_MUTATE_PROBABILITY} to determine
+ * when to flip a bit
+ */
 public class MutationGenomeTranscriber implements GenomeTransciber {
 
     private static final Logger logger = Logger.getLogger(MutationGenomeTranscriber.class.getName());
-
     public static final String GENOME_MUTATE_PROBABILITY = "genome.mutate.probability";
 
 
+    /**
+     * Transcribe genome while randomly flipping bit
+     *
+     * @param properties     configuration properties
+     * @param originalGenome source genome
+     * @return modified genome
+     */
     @Override
     public Genome transcribe(final UniverseConstants properties, final Genome originalGenome) {
         float mutationProbability = (float) 1 / properties.get(GENOME_MUTATE_PROBABILITY, Integer.class);
@@ -46,7 +56,7 @@ public class MutationGenomeTranscriber implements GenomeTransciber {
             if (random.nextFloat() < probability) {
                 // If the random number is less than the mutation probability, perform mutation
                 int bitToFlip = random.nextInt(32); // Assuming each nucleotide is a byte (8 bits)
-                logger.info( "Mutating gene " + gene + " position " + bitToFlip);
+                logger.info("Mutating gene " + gene + " position " + bitToFlip);
                 flipBit(gene, bitToFlip);
             }
         }

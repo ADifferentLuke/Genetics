@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static net.lukemcomber.genetics.io.GenomeStreamReader.DEFAULT_PARENT_ID;
 
 /**
  * A utility class for running multiple simulations in serial
@@ -110,7 +109,7 @@ public class SimpleSimulator {
             fauna.forEach(((coordinates, genome) -> {
                 final Organism organism;
                 try {
-                    organism = OrganismFactory.create(DEFAULT_PARENT_ID,
+                    organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
                             GenomeSerDe.deserialize(genome), coordinates, temporalCoordinates,
                             terrain.getProperties(), groupStore);
                 } catch (final DecoderException e) {

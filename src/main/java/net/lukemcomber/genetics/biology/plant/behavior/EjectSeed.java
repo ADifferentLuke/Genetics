@@ -1,5 +1,10 @@
 package net.lukemcomber.genetics.biology.plant.behavior;
 
+/*
+ * (c) 2023 Luke McOmber
+ * This code is licensed under MIT license (see LICENSE.txt for details)
+ */
+
 import net.lukemcomber.genetics.biology.Cell;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
@@ -17,18 +22,33 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+/**
+ * Creates a new seed that can be ejected from the plant
+ */
 public class EjectSeed implements PlantBehavior {
 
     public final static String PROPERTY_EJECT_SEED_COST = "action.seed.eject";
-
-
     private static final Logger logger = Logger.getLogger(EjectSeed.class.getName());
     private final Function<SpatialCoordinates, SpatialCoordinates> function;
 
+    /**
+     * Create a new instance with a callback to updated cell location
+     *
+     * @param func
+     */
     public EjectSeed(final Function<SpatialCoordinates, SpatialCoordinates> func) {
         this.function = func;
     }
 
+    /**
+     * Creates a new seed that is immediately ejected
+     *
+     * @param terrain             the terrain
+     * @param activeCell          cell performing the action
+     * @param temporalCoordinates time
+     * @param metadataStoreGroup  metadata cache
+     * @return a new ejected seed cell
+     */
     @Override
     public Cell performAction(final UniverseConstants properties, final Terrain terrain, final Organism organism,
                               final Cell activeCell, final TemporalCoordinates temporalCoordinates,
@@ -83,6 +103,12 @@ public class EjectSeed implements PlantBehavior {
         return retVal;
     }
 
+    /**
+     * Get the cost in energy units to perform this behavior
+     *
+     * @param properties configuration properties
+     * @return cost
+     */
     @Override
     public int getEnergyCost(final UniverseConstants properties) {
         return properties.get(PROPERTY_EJECT_SEED_COST, Integer.class);

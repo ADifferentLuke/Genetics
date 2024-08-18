@@ -8,11 +8,14 @@ package net.lukemcomber.genetics.io;
 import net.lukemcomber.genetics.biology.Gene;
 import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.OrganismFactory;
+import net.lukemcomber.genetics.biology.plant.PlantGenome;
+import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Serializes or deserializes {@link Genome} objects
@@ -49,7 +52,7 @@ public class GenomeSerDe {
                     gene.nucleotideD = gArray[i * 4 + 3];
                     geneList.addLast(gene);
                 }
-                retVal = OrganismFactory.createGenome(type, geneList);
+                retVal = createGenome(type, geneList);
             } else {
                 throw new EvolutionException(String.format(
                         "Genome has invalid number of bytes. Must be divisible by 4 but was %d", genome.length()));
@@ -75,6 +78,25 @@ public class GenomeSerDe {
             gArray[i * 4 + 3] = genome.getGeneNumber(i).nucleotideD;
         }
         return String.format("%s:%s", genome.getType(), Hex.encodeHexString(gArray));
+    }
+
+    /**
+     * Create a new genome from the type and the list of genes
+     *
+     * @param type  type of genome to create
+     * @param genes list of genes for genome
+     * @return a new genome
+     */
+    public static Genome createGenome(final String type, final List<Gene> genes) {
+        final Genome retVal;
+        switch (type) {
+            case PlantOrganism.TYPE:
+                retVal = new PlantGenome(genes);
+                break;
+            default:
+                throw new EvolutionException("Unknown species " + type);
+        }
+        return retVal;
     }
 
 }

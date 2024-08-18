@@ -30,10 +30,10 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * An organism that uses a {@link PlantGenome} and {@link PlantBehavior}
+ */
 public class PlantOrganism implements Organism {
-
-
-
     private static final Logger logger = Logger.getLogger(PlantOrganism.class.getName());
 
     public static final String PROPERTY_STARTING_ENERGY = "initial.plant.energy";
@@ -48,7 +48,6 @@ public class PlantOrganism implements Organism {
     private List<Cell> activeCells;
 
     private int energy;
-
     private int childCount = 0;
     private int seedCount = 0;
 
@@ -70,7 +69,17 @@ public class PlantOrganism implements Organism {
 
     private final FitnessFunction fitnessFunction;
 
-
+    /**
+     * Create a new instance
+     *
+     * @param parentUuid          the parents id
+     * @param seed                source seed
+     * @param temporalCoordinates time
+     * @param properties          configuration properties
+     * @param transciber          genome transcriber
+     * @param fitnessFunction     fitness function
+     * @param metadataStoreGroup  metadata store cache
+     */
     public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates,
                          final UniverseConstants properties, final GenomeTransciber transciber,
                          final FitnessFunction fitnessFunction,
@@ -86,7 +95,7 @@ public class PlantOrganism implements Organism {
         this.totalEnergyMetabolized = 0;
 
         this.energy = properties.get(PROPERTY_STARTING_ENERGY, Integer.class);
-        this.germinationCountDown = properties.get(PROPERTY_GERMINATION_LIMIT,Integer.class,10);
+        this.germinationCountDown = properties.get(PROPERTY_GERMINATION_LIMIT, Integer.class, 10);
         this.activeCells = new LinkedList<>();
         this.activeCells.add(seed);
         this.uuid = UUID.randomUUID().toString();
@@ -97,38 +106,70 @@ public class PlantOrganism implements Organism {
         alive = true; //It's allliiiiiiiivvvvveeee!
     }
 
+    /**
+     * Get the organisms unique id
+     *
+     * @return unique id
+     */
     @Override
     public String getParentId() {
         return parentUuid;
     }
 
+    /**
+     * Add energy to the organism from the environment
+     *
+     * @param energy
+     */
     @Override
-    public void addEnergyFromEcosystem(int energy) {
+    public void addEnergyFromEcosystem(final int energy) {
         totalResourcesGathered += energy;
         this.energy += energy;
     }
 
+    /**
+     * Remove energy from the organism for metabolism
+     *
+     * @param energy
+     */
     @Override
-    public void removeEnergyFromMetabolism(int energy) {
+    public void removeEnergyFromMetabolism(final int energy) {
         spendEnergy(energy);
     }
 
+    /**
+     * Spend energy to perform some action
+     *
+     * @param energy
+     */
     @Override
     public void spendEnergy(int energy) {
         totalEnergyMetabolized += energy;
         this.energy -= energy;
     }
 
+    /**
+     * Get the current fitness function
+     *
+     * @return fitness function
+     */
     @Override
     public FitnessFunction getFitnessFunction() {
         return fitnessFunction;
     }
 
+    /**
+     * Kill the organism
+     *
+     * @param temporalCoordinates time
+     * @param causeOfDeath        cause of death
+     * @param reason              human-readable message
+     */
     @Override
     public void kill(final TemporalCoordinates temporalCoordinates, final CauseOfDeath causeOfDeath, final String reason) {
         alive = false;
         final Performance performance = new Performance();
-        performance.setName( this.uuid);
+        performance.setName(this.uuid);
         performance.setParentId(this.parentUuid);
         performance.setDna(GenomeSerDe.serialize(getGenome()));
         performance.setOffspring(seedCount);
@@ -159,17 +200,29 @@ public class PlantOrganism implements Organism {
         logger.info(reason);
     }
 
+    /**
+     * Get the current genome transcriber
+     *
+     * @return transcriber
+     */
     @Override
     public GenomeTransciber getTranscriber() {
         return transciber;
     }
 
+    /**
+     * Get the organisms genome
+     *
+     * @return genome
+     */
     public Genome getGenome() {
         return genome;
     }
 
     /**
-     * @return
+     * Get the organism's type
+     *
+     * @return type
      */
     @Override
     public String getOrganismType() {
@@ -177,49 +230,74 @@ public class PlantOrganism implements Organism {
     }
 
     /**
-     * @return
+     * Get the first cell of the organism's life
+     *
+     * @return cell
      */
     @Override
-    public Cell getCells() {
+    public Cell getFirstCell() {
         return cell;
     }
 
+    /**
+     * Get the organisms current energy
+     *
+     * @return energy
+     */
     @Override
     public int getEnergy() {
         return this.energy;
     }
 
+    /**
+     * Check if organism is alive
+     *
+     * @return true if alive
+     */
     @Override
     public boolean isAlive() {
         return alive;
     }
 
+    /**
+     * Get the organisms birth tick
+     *
+     * @return tick
+     */
     @Override
     public long getBirthTick() {
         return birthTime.totalTicks();
     }
 
+    /**
+     * Get the last updated tick of the organism
+     *
+     * @return tick
+     */
     @Override
     public long getLastUpdatedTick() {
         return lastUpdateTime.totalTicks();
     }
 
     /**
-     * @param terrain
-     * @return
+     * Allow the organism to perform it's next action
+     *
+     * @param terrain             the terrain
+     * @param temporalCoordinates time
+     * @param onCellDeath         callback if a cell dies
      */
     @Override
-    public Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
+    public void performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
                               final BiConsumer<Organism, Cell> onCellDeath) {
 
         final long mark = temporalCoordinates.totalDays();
         // allow each cell to attempt to perform an action
 
         if (!alive) {
-            performActionOnAllCells((PlantCell) getCells(), cell -> {
+            performActionOnAllCells((PlantCell) getFirstCell(), cell -> {
                 terrain.deleteCell(cell.getCoordinates());
 
-                if (cell instanceof SeedCell && cell != getCells()) {
+                if (cell instanceof SeedCell && cell != getFirstCell()) {
                     final SeedCell seed = (SeedCell) cell;
                     //Remove the cell from the parent organism
                     cell.getParent().removeChild(cell);
@@ -231,7 +309,7 @@ public class PlantOrganism implements Organism {
                     logger.info(String.format("Created %s at %s from Seed", plantOrganism.getUniqueID(), seed.getCoordinates()));
 
 
-                    logger.info("New Organism born: " + plantOrganism.getUniqueID() );
+                    logger.info("New Organism born: " + plantOrganism.getUniqueID());
 
                     terrain.addOrganism(plantOrganism);
                 } else {
@@ -248,8 +326,8 @@ public class PlantOrganism implements Organism {
                 ((PlantBehavior) cell).performAction(properties, terrain, this, cell, temporalCoordinates, metadataStoreGroup);
             }
         } else {
-            performActionOnAllCells((PlantCell) getCells(), cell -> {
-                logger.info("Actioning cell " + cell );
+            performActionOnAllCells((PlantCell) getFirstCell(), cell -> {
+                logger.info("Actioning cell " + cell);
                 final PlantBehavior plantBehavior = genome.getNextAct();
                 if (null != plantBehavior) {
 
@@ -289,27 +367,36 @@ public class PlantOrganism implements Organism {
 
             String deathLogStr = "";
             if (0 <= starvationLimit && starvationLimit >= energy) {
-                kill( temporalCoordinates,CauseOfDeath.Exhaustion,"Organism " + uuid + " died from exhaustion.");
+                kill(temporalCoordinates, CauseOfDeath.Exhaustion, "Organism " + uuid + " died from exhaustion.");
             }
             if (0 <= stagnationLimit && stagnationLimit < mark - lastUpdateTime.totalDays()) {
-                kill(temporalCoordinates,CauseOfDeath.Stagnation,"Organism " + uuid + " died from stagnation.");
+                kill(temporalCoordinates, CauseOfDeath.Stagnation, "Organism " + uuid + " died from stagnation.");
             }
             if (0 <= ageLimit && ageLimit < temporalCoordinates.totalDays() - birthTime.totalDays()) {
-                kill(temporalCoordinates,CauseOfDeath.OldAge,"Organism " + uuid + " died from old age.");
+                kill(temporalCoordinates, CauseOfDeath.OldAge, "Organism " + uuid + " died from old age.");
             }
-            if( 1 == cell.getChildren().size() && 0 >= germinationCountDown-- ){
-                kill(temporalCoordinates,CauseOfDeath.Stagnation,"Organism " + uuid + " failed to germinate.");
+            if (1 == cell.getChildren().size() && 0 >= germinationCountDown--) {
+                kill(temporalCoordinates, CauseOfDeath.Stagnation, "Organism " + uuid + " failed to germinate.");
             }
         }
 
-        return null;
     }
 
+    /**
+     * Clean up all cells from the terrain
+     *
+     * @param terrain
+     */
     @Override
     public void cleanup(final Terrain terrain) {
 
     }
 
+    /**
+     * Get the organisms unique id
+     *
+     * @return unique id
+     */
     @Override
     public String getUniqueID() {
         return uuid;
@@ -331,6 +418,8 @@ public class PlantOrganism implements Organism {
     }
 
     /**
+     * Utility method for nicely formatting organism information into the provided {@link OutputStream}
+     *
      * @param out
      */
     @Override

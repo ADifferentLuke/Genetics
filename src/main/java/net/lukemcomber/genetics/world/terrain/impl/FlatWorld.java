@@ -386,7 +386,7 @@ public class FlatWorld implements Terrain {
         boolean retVal = false;
         if (null != organism) {
             if (!population.containsKey(organism.getUniqueID())) {
-                final List<Cell> cells = CellHelper.getAllOrganismsCells(organism.getCells());
+                final List<Cell> cells = CellHelper.getAllOrganismsCells(organism.getFirstCell());
                 // Before setting the cells, make sure there are no conflicts
                 boolean doesOrganismFit = true;
                 for (final Cell cell : cells) {
@@ -423,7 +423,7 @@ public class FlatWorld implements Terrain {
         boolean retVal = false;
 
         if (null != organism && population.containsKey(organism.getUniqueID())) {
-            CellHelper.getAllOrganismsCells(organism.getCells())
+            CellHelper.getAllOrganismsCells(organism.getFirstCell())
                     .forEach(cell -> {
                         deleteCell(cell.getCoordinates());
                     });

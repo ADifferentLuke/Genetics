@@ -5,6 +5,10 @@ import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.metadata.Performance;
 
+/**
+ * A fitness function based on Organism Age, Number of Cells, Energy Efficiency,
+ * Energy Waste, Offspring, and Death to generate a deterministic fitness
+ */
 public class BasicFitnessFunction implements FitnessFunction {
 
     public static final String FITNESS_AGE_WEIGHT = "fitness.age.weight";
@@ -25,11 +29,19 @@ public class BasicFitnessFunction implements FitnessFunction {
     private final double energyEfficiencyWeight;
     private final double childrenWeight;
 
+    /**
+     * Creates a new instance with default weights
+     */
     public BasicFitnessFunction() {
-        this( DEFAULT_AGE_WEIGHT, DEFAULT_CELLS_WEIGHT, DEFAULT_UNUSED_ENERGY_WEIGHT,
+        this(DEFAULT_AGE_WEIGHT, DEFAULT_CELLS_WEIGHT, DEFAULT_UNUSED_ENERGY_WEIGHT,
                 DEFAULT_ENERGY_EFFICIENCY_WEIGHT, DEFAULT_CHILDREN_WEIGHT);
     }
 
+    /**
+     * Creates a new instance with weights from configuration
+     *
+     * @param constants configuration properties
+     */
     public BasicFitnessFunction(final UniverseConstants constants) {
 
         this(
@@ -41,6 +53,15 @@ public class BasicFitnessFunction implements FitnessFunction {
         );
     }
 
+    /**
+     * Create a new instance by specifying each weight individually
+     *
+     * @param ageWeight
+     * @param numOfCellsWeight
+     * @param remainingEnergyWeight
+     * @param energyEfficiencyWeight
+     * @param childrenWeight
+     */
     public BasicFitnessFunction(final double ageWeight, final double numOfCellsWeight, final double remainingEnergyWeight,
                                 final double energyEfficiencyWeight, final double childrenWeight) {
 
@@ -51,6 +72,12 @@ public class BasicFitnessFunction implements FitnessFunction {
         this.childrenWeight = childrenWeight;
     }
 
+    /**
+     * Calculate the fitness from a {@link Performance}
+     *
+     * @param performance the function argument
+     * @return fitness
+     */
     @Override
     public Double apply(final Performance performance) {
 
@@ -58,16 +85,16 @@ public class BasicFitnessFunction implements FitnessFunction {
         final double cellsValue = cellsWeight * Math.log(Math.sqrt(performance.getCells()));
 
         // less waste the better
-        final double wasteValue = unusedEnergyWeight * ( 1 / ( 1 + (Math.exp(Math.abs(performance.getDeathEnergy())))));
+        final double wasteValue = unusedEnergyWeight * (1 / (1 + (Math.exp(Math.abs(performance.getDeathEnergy())))));
 
         // ratio of 1:1 energy usage is the most efficient
         final double energyDifferential = performance.getTotalEnergyHarvested() - performance.getTotalEnergyMetabolized();
         // Let's not blow up the world, check for divide by zero
-        final double energyValue = energyEfficiencyWeight * (1 / (  0 != energyDifferential ? energyDifferential : 1 ));
+        final double energyValue = energyEfficiencyWeight * (1 / (0 != energyDifferential ? energyDifferential : 1));
 
         final double childrenValue = childrenWeight * performance.getOffspring();
         final double deathValue = (double) performance.getCauseOfDeath() / Organism.CauseOfDeath.count;
 
-        return deathValue * (cellsValue + wasteValue + energyValue) * Math.log(childrenValue+1);
+        return deathValue * (cellsValue + wasteValue + energyValue) * Math.log(childrenValue + 1);
     }
 }

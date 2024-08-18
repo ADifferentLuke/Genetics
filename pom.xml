@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.lukemcomber</groupId>
   <artifactId>genetics</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
 
     <description>
         Genetics is a genetic algorithm simulator using asexual reproduction.

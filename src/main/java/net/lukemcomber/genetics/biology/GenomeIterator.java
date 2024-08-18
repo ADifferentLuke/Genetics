@@ -8,12 +8,21 @@ package net.lukemcomber.genetics.biology;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+/**
+ * An iterator over the bits in a genome
+ */
 public class GenomeIterator implements Iterator<Byte> {
 
     private int index;
     private int numBits;
     private final byte[] binaryGenome;
 
+    /**
+     * The genes in the genome and the number of bits in gene interpretation. Currently only suppors a max of 8 (1 byte)
+     *
+     * @param geneList     list of genes
+     * @param numberOfBits dna window size into genome
+     */
     protected GenomeIterator(final LinkedList<Gene> geneList, final int numberOfBits) {
 
         this.index = 0;
@@ -31,6 +40,11 @@ public class GenomeIterator implements Iterator<Byte> {
         return true;
     }
 
+    /**
+     * Get the next byte in the genome
+     *
+     * @return next byte
+     */
     @Override
     public Byte next() {
         byte result = extractBits(binaryGenome[index], numBits);

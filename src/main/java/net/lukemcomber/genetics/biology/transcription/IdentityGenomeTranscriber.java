@@ -13,11 +13,22 @@ import net.lukemcomber.genetics.model.UniverseConstants;
 
 import java.util.LinkedList;
 
+/**
+ * Genome transcriber that makes no errors and is always a perfect copy
+ */
 public class IdentityGenomeTranscriber implements GenomeTransciber {
+
+    /**
+     * Transcribe one genome into another without modification
+     *
+     * @param properties configuration properties
+     * @param genome     source genome
+     * @return destination genome
+     */
     @Override
     public Genome transcribe(final UniverseConstants properties, final Genome genome) {
         final Genome newGenome = genome.clone();
-        for( int i = 0; genome.getNumberOfGenes() > i; ++i ){
+        for (int i = 0; genome.getNumberOfGenes() > i; ++i) {
             final Gene originalGene = genome.getGeneNumber(i);
             final Gene newGene = newGenome.getGeneNumber(i);
 
@@ -29,7 +40,8 @@ public class IdentityGenomeTranscriber implements GenomeTransciber {
         }
         return newGenome;
     }
-    protected byte transcribe(final byte b){
+
+    protected byte transcribe(final byte b) {
         return b;
     }
 

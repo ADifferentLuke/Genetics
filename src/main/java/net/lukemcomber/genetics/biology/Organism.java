@@ -16,10 +16,13 @@ import java.util.function.BiConsumer;
 
 import static java.util.logging.Logger.getLogger;
 
-//TODO clean up this interface. It's NASTY!
+/**
+ * Represents an organism in the simulation
+ */
 public interface Organism {
 
     String DEFAULT_PARENT = "GOD";
+
     enum CauseOfDeath {
         Unknown,
         Stagnation,
@@ -29,69 +32,160 @@ public interface Organism {
         public final static int count = CauseOfDeath.values().length;
     }
 
-    GenomeTransciber getTranscriber();
+    /**
+     * Allow the organism to perform it's next action
+     *
+     * @param terrain             the terrain
+     * @param temporalCoordinates time
+     * @param onCellDeath         callback if a cell dies
+     */
+    void performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
+                       final BiConsumer<Organism, Cell> onCellDeath);
 
-    Genome getGenome();
-
-    String getOrganismType();
-
-    Cell getCells();
-
-    int getEnergy();
-
-    boolean isAlive();
-
-    //void modifyEnergy(int delta);
-
-    long getBirthTick();
-
-    long getLastUpdatedTick();
-
-    Cell performAction(final Terrain terrain, final TemporalCoordinates temporalCoordinates,
-                       final BiConsumer<Organism,Cell> onCellDeath);
-
+    /**
+     * Clean up all cells from the terrain
+     *
+     * @param terrain
+     */
     void cleanup(final Terrain terrain);
 
+    /**
+     * Get the organisms unique id
+     *
+     * @return unique id
+     */
     String getUniqueID();
+
+    /**
+     * Get the organism's parent id
+     *
+     * @return parent id
+     */
     String getParentId();
 
-    default int getMetabolismCost(){
-        return CellHelper.getAllOrganismsCells(getCells()).stream().mapToInt(Cell::getMetabolismCost).sum();
+    /**
+     * Get the current fitness function
+     *
+     * @return fitness function
+     */
+    FitnessFunction getFitnessFunction();
+
+    /**
+     * Get the current genome transcriber
+     *
+     * @return transcriber
+     */
+    GenomeTransciber getTranscriber();
+
+    /**
+     * Get the organisms genome
+     *
+     * @return genome
+     */
+    Genome getGenome();
+
+    /**
+     * Get the organism's type
+     *
+     * @return type
+     */
+    String getOrganismType();
+
+    /**
+     * Get the first cell of the organism's life
+     *
+     * @return cell
+     */
+    Cell getFirstCell();
+
+    /**
+     * Get the organisms current energy
+     *
+     * @return energy
+     */
+    int getEnergy();
+
+    /**
+     * Check if organism is alive
+     *
+     * @return true if alive
+     */
+    boolean isAlive();
+
+    /**
+     * Get the organisms birth tick
+     *
+     * @return tick
+     */
+    long getBirthTick();
+
+    /**
+     * Get the last updated tick of the organism
+     *
+     * @return tick
+     */
+    long getLastUpdatedTick();
+
+    /**
+     * Add energy to the organism from the environment
+     *
+     * @param energy
+     */
+    void addEnergyFromEcosystem(int energy);
+
+    /**
+     * Remove energy from the organism for metabolism
+     *
+     * @param energy
+     */
+    void removeEnergyFromMetabolism(int energy);
+
+    /**
+     * Spend energy to perform some action
+     *
+     * @param energy
+     */
+    void spendEnergy(int energy);
+
+    /**
+     * Kill the organism
+     *
+     * @param temporalCoordinates time
+     * @param causeOfDeath        cause of death
+     * @param reason              human-readable message
+     */
+    void kill(final TemporalCoordinates temporalCoordinates, CauseOfDeath causeOfDeath, final String reason);
+
+    /**
+     * Utility method for nicely formatting organism information into the provided {@link OutputStream}
+     *
+     * @param out
+     */
+    void prettyPrint(final OutputStream out);
+
+
+    /**
+     * Get the organism's cost of being alive in energy
+     *
+     * @return energy
+     */
+    default int getMetabolismCost() {
+        return CellHelper.getAllOrganismsCells(getFirstCell()).stream().mapToInt(Cell::getMetabolismCost).sum();
     }
 
-    default void leechResources( final Terrain terrain, final TemporalCoordinates temporalCoordinates){
-        final List<Cell> cells = CellHelper.getAllOrganismsCells(getCells());
+    /**
+     * Gather resource from the environment and metabolise it
+     *
+     * @param terrain
+     * @param temporalCoordinates time
+     */
+    default void leechResources(final Terrain terrain, final TemporalCoordinates temporalCoordinates) {
+        final List<Cell> cells = CellHelper.getAllOrganismsCells(getFirstCell());
         int newEnergy = cells.stream().mapToInt(cell -> cell.generateEnergy(terrain)).sum();
         int metaCost = getMetabolismCost();
-
-        //logger().info( "Gathered: " + newEnergy );
-       // logger().info( "Cost: " + (-metaCost));
 
         addEnergyFromEcosystem(newEnergy);
         removeEnergyFromMetabolism(metaCost);
     }
-
-    void addEnergyFromEcosystem(int energy);
-    void removeEnergyFromMetabolism(int energy);
-
-    void spendEnergy(int energy);
-
-    FitnessFunction getFitnessFunction();
-
-    void kill( final TemporalCoordinates temporalCoordinates, CauseOfDeath causeOfDeath, final String reason );
-
-    void prettyPrint(final OutputStream out);
-
-    /*
-    private static Logger logger() {
-        final class LogHolder {
-            //Lazy load
-            private static final Logger LOGGER = getLogger(Organism.class.getName());
-        }
-        return LogHolder.LOGGER;
-
-    }
-     */
-
 
 }

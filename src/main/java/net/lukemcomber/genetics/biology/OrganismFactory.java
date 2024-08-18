@@ -21,18 +21,31 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * A factory for creating new organisms
+ */
 public class OrganismFactory {
 
     private static final Logger logger = Logger.getLogger(OrganismFactory.class.getName());
 
-
+    /**
+     * Creates a new Organism using the {@link Genome} type to determine organism type
+     *
+     * @param parentId            the new organisms parent
+     * @param genome              the new organisms genome
+     * @param spatialCoordinates  location
+     * @param temporalCoordinates time
+     * @param properties          configuration properties
+     * @param groupStore          metadata store
+     * @return a new organism
+     */
     public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
                                   final TemporalCoordinates temporalCoordinates, final UniverseConstants properties,
-                                  final MetadataStoreGroup groupStore ) {
+                                  final MetadataStoreGroup groupStore) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
 
-            final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates,properties);
+            final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates, properties);
             final GenomeTransciber transciber = new AsexualTransposeAndMutateGeneTranscriber();
             final FitnessFunction fitnessFunction = new BasicFitnessFunction(properties);
 
@@ -45,15 +58,5 @@ public class OrganismFactory {
         return retVal;
     }
 
-    public static Genome createGenome(final String type, final List<Gene> genes) {
-        final Genome retVal;
-        switch (type) {
-            case PlantOrganism.TYPE:
-                retVal = new PlantGenome(genes);
-                break;
-            default:
-                throw new EvolutionException("Unknown species " + type);
-        }
-        return retVal;
-    }
+
 }

@@ -19,7 +19,9 @@ import net.lukemcomber.genetics.world.terrain.properties.SolarEnergyTerrainPrope
 
 import java.util.logging.Logger;
 
-//Is able to gather energy from the sun
+/**
+ * A leaf cell that is able to harvest energy from {@link SolarEnergyTerrainProperty}
+ */
 public class LeafCell extends PlantCell {
 
     public static final String TYPE = "leaf";
@@ -31,25 +33,44 @@ public class LeafCell extends PlantCell {
 
     private final int metabolismCost;
 
+    /**
+     * Create a new instance
+     * @param parent parent cell
+     * @param spatialCoordinates location
+     * @param properties configuration properties
+     */
     public LeafCell(final Cell parent, final SpatialCoordinates spatialCoordinates, final UniverseConstants properties){
         super(parent);
         this.spatialCoordinates = spatialCoordinates;
         this.metabolismCost = properties.get(PROPERTY_METACOST, Integer.class);
     }
 
+    /**
+     * Gets the cell's type
+     *
+     * @return cell type
+     */
     @Override
     public String getCellType() {
         return TYPE;
     }
 
     /**
-     * @return
+     * Get the cell's location
+     *
+     * @return location
      */
     @Override
     public SpatialCoordinates getCoordinates() {
         return spatialCoordinates;
     }
 
+    /**
+     * Generate energy from resources
+     *
+     * @param terrain
+     * @return amount of energy harvested
+     */
     @Override
     public int generateEnergy(final Terrain terrain) {
         int retVal = 0;
@@ -75,14 +96,21 @@ public class LeafCell extends PlantCell {
         return retVal;
     }
 
+    /**
+     * Get the cost of being alive
+     *
+     * @return cost
+     */
     @Override
     public int getMetabolismCost() {
         return metabolismCost;
     }
 
     /**
-     * @param behavior
-     * @return
+     * Return true if the cell is capable of performing the behavior
+     *
+     * @param behavior action to check
+     * @return true if possible otherwise false
      */
     @Override
     public boolean canCellSupport(final PlantBehavior behavior) {

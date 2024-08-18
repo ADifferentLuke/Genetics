@@ -16,6 +16,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Logger;
 
+/**
+ * A genome transcriber that uses {@link AsexualTransposGenomeTranscriber#GENOME_TRANSPOSE_PROBABILITY}
+ * to randomly transpose gene sequences
+ */
 public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
 
     private static final Logger logger = Logger.getLogger(AsexualTransposGenomeTranscriber.class.getName());
@@ -27,6 +31,13 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
 
     private Random rng;
 
+    /**
+     * Transcribe genome while randomly transposing genes
+     *
+     * @param properties     configuration properties
+     * @param originalGenome source genome
+     * @return modified genome
+     */
     @Override
     public Genome transcribe(final UniverseConstants properties, final Genome originalGenome) {
         final float probability = 1 / properties.get(GENOME_TRANSPOSE_PROBABILITY, Integer.class);
@@ -55,22 +66,22 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
             byte[] originalDna = gene.toBytes();
             int geneT = rng.nextInt(originalDna.length);
 
-            logger.finest( "Select geneNume " + geneNumber );
-            logger.finest( "DNA: " + byteArrayToString(originalDna));
-            logger.finest( "Select geneT " + geneT);
+            logger.finest("Select geneNume " + geneNumber);
+            logger.finest("DNA: " + byteArrayToString(originalDna));
+            logger.finest("Select geneT " + geneT);
 
             //do transcription
             final byte[] newByteArrGene = asexualTransposition(originalDna, flankLength, geneT);
 
             //set new gene in genome
             final Gene newGene = Gene.fromBytes(newByteArrGene);
-            genome.setGeneNumber(geneT,newGene);
+            genome.setGeneNumber(geneT, newGene);
         }
         return genome;
     }
 
     @VisibleForTesting
-    final byte[] asexualTransposition(final byte[] rawGeneData,final int flankingSize,final int geneT) {
+    final byte[] asexualTransposition(final byte[] rawGeneData, final int flankingSize, final int geneT) {
 
         //Make a copy so we don't modify the original gene
         final byte[] chromosome = new byte[rawGeneData.length];
@@ -114,7 +125,7 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
         return true;
     }
 
-    private int findInsertionPoint(final byte[] chromosome,final byte[] transposon,final int startIndex) {
+    private int findInsertionPoint(final byte[] chromosome, final byte[] transposon, final int startIndex) {
         int insertionPoint = startIndex;
 
         while (!isEqualOrInverse(
@@ -132,9 +143,14 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
     }
 
 
-    // TODO - put this in a more logical place
-    // little method for debugging
+    /**
+     * Helper method to return a byte array as a comma delimited string
+     *
+     * @param array
+     * @return byte array as a string
+     */
     public static String byteArrayToString(byte[] array) {
+        // little method for debugging
         StringBuilder stringBuilder = new StringBuilder("[");
         for (byte b : array) {
             stringBuilder.append(b).append(", ");

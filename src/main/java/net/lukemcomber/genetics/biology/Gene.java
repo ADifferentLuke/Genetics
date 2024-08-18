@@ -9,6 +9,9 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Represents a gene with 4 nucleotides
+ */
 public final class Gene {
 
     public byte nucleotideA;
@@ -16,6 +19,9 @@ public final class Gene {
     public byte nucleotideC;
     public byte nucleotideD;
 
+    /**
+     * Create a new empty gene
+     */
     public Gene() {
         nucleotideA = 0;
         nucleotideB = 0;
@@ -23,6 +29,14 @@ public final class Gene {
         nucleotideD = 0;
     }
 
+    /**
+     * Create a new gene with the given nucleotides
+     *
+     * @param nucleotideA
+     * @param nucleotideB
+     * @param nucleotideC
+     * @param nucleotideD
+     */
     public Gene(final byte nucleotideA, final byte nucleotideB, final byte nucleotideC, final byte nucleotideD) {
         this.nucleotideD = nucleotideD;
         this.nucleotideC = nucleotideC;
@@ -30,12 +44,23 @@ public final class Gene {
         this.nucleotideA = nucleotideA;
     }
 
-    public Gene( final Gene gene ){
+    /**
+     * Create new instance that is a copy
+     *
+     * @param gene
+     */
+    public Gene(final Gene gene) {
         this.nucleotideD = gene.nucleotideD;
         this.nucleotideC = gene.nucleotideC;
         this.nucleotideB = gene.nucleotideB;
         this.nucleotideA = gene.nucleotideA;
     }
+
+    /**
+     * Converts the gene to a byte arry
+     *
+     * @return byte array
+     */
     public byte[] toBytes() {
         ByteBuffer buffer = ByteBuffer.allocate(4);
         buffer.put(nucleotideA);
@@ -45,6 +70,12 @@ public final class Gene {
         return buffer.array();
     }
 
+    /**
+     * Convert a byte array to a new Gene
+     *
+     * @param nucleotides
+     * @return new Gene
+     */
     public static Gene fromBytes(final byte[] nucleotides) {
         final Gene retVal = new Gene();
         if (null != nucleotides && 4 == nucleotides.length) {
@@ -58,6 +89,11 @@ public final class Gene {
         return retVal;
     }
 
+    /**
+     * Get the gene in a human-readable format
+     *
+     * @return
+     */
     public String toString() {
         return String.format("[%d,%d,%d,%d]", nucleotideA, nucleotideB, nucleotideC, nucleotideD);
     }

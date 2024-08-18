@@ -8,15 +8,24 @@ package net.lukemcomber.genetics.world;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
-import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
-public class WorldFactory {
+/**
+ * A factory for creating new {@link Terrain}
+ */
+public class TerrainFactory {
 
-    public static Terrain createWorld(final UniverseConstants properties , final MetadataStoreGroup metadataStoreGroup) {
+    /**
+     * Build a new {@link Terrain} from the given {@link UniverseConstants} and {@link MetadataStoreGroup}
+     *
+     * @param properties         configuration properties
+     * @param metadataStoreGroup metadata store group
+     * @return a ne {@link Terrain}
+     */
+    public static Terrain create(final UniverseConstants properties, final MetadataStoreGroup metadataStoreGroup) {
         Terrain world;
-        final String worldType = properties.get(Terrain.PROPERTY_TERRAIN_TYPE,String.class);
+        final String worldType = properties.get(Terrain.PROPERTY_TERRAIN_TYPE, String.class);
         switch (worldType) {
             case FlatWorld.ID:
                 world = new FlatWorld(properties, metadataStoreGroup);

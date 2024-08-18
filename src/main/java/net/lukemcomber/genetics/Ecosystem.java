@@ -17,7 +17,7 @@ import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.universes.UniverseFactory;
 import net.lukemcomber.genetics.world.ResourceManager;
-import net.lukemcomber.genetics.world.WorldFactory;
+import net.lukemcomber.genetics.world.TerrainFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import org.apache.commons.lang3.StringUtils;
 
@@ -71,7 +71,7 @@ public abstract class Ecosystem {
 
         metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid, properties);
 
-        terrain = WorldFactory.createWorld(properties, metadataStoreGroup);
+        terrain = TerrainFactory.create(properties, metadataStoreGroup);
         terrain.initialize(size.xAxis(), size.yAxis(), size.zAxis());
 
         this.active = true; //TODO should move to initialized?

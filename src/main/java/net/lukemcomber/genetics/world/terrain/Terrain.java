@@ -45,6 +45,12 @@ public interface Terrain {
      */
     void deleteTerrainProperty(final SpatialCoordinates spatialCoordinates, final String id);
 
+    /**
+     * Check if spatial coordinates are out of bounds
+     *
+     * @param spatialCoordinates
+     * @return true if the coordinates are out of bounds
+     */
     default boolean isOutOfBounds(final SpatialCoordinates spatialCoordinates) {
         return !(getSizeOfXAxis() > spatialCoordinates.xAxis()
                 && getSizeOfYAxis() > spatialCoordinates.yAxis()
@@ -70,6 +76,13 @@ public interface Terrain {
      */
     List<TerrainProperty> getTerrain(final SpatialCoordinates spatialCoordinates);
 
+    /**
+     * Initialize the terrain to the given dimensions
+     *
+     * @param x width
+     * @param y height
+     * @param z depth
+     */
     void initialize(final int x, final int y, final int z);
 
     /**
@@ -86,7 +99,7 @@ public interface Terrain {
      * @param cell the cell to attempt to place
      * @return true if cell is successfully placed, otherwise false
      */
-    boolean setCell(final Cell cell,final Organism organism);
+    boolean setCell(final Cell cell, final Organism organism);
 
     /**
      * Deletes a cell from the world at position (x,y,z). Die Cell Die!
@@ -101,34 +114,113 @@ public interface Terrain {
      * @return the cell at position (x,y,z) or null if one doesn't exist
      */
     Cell getCell(final SpatialCoordinates spatialCoordinates);
-    Organism getOrganism(final SpatialCoordinates spatialCoordinates);
 
+
+    /**
+     * Get the size of the x-axis
+     *
+     * @return pixel count
+     */
     int getSizeOfXAxis();
 
+    /**
+     * Get the size of the y-axis
+     *
+     * @return pixel count
+     */
     int getSizeOfYAxis();
 
+    /**
+     * Get the size of the z-axis
+     *
+     * @return pixel count
+     */
     int getSizeOfZAxis();
 
     /**
      * Returns true iff the organism can fit, there are no cell collisions,
-     *  and the organism is added to the environment.
+     * and the organism is added to the environment.
+     *
+     * @param organism organism to add
+     * @return true if added
      */
     boolean addOrganism(final Organism organism);
 
+    /**
+     * Get the organism that has a cell at the given coordinate
+     *
+     * @param spatialCoordinates location
+     * @return an organism or null if one does not exist
+     */
+    Organism getOrganism(final SpatialCoordinates spatialCoordinates);
+
+    /**
+     * Forces a cleanup of all cells in an organism. If a cell has already been cleared, don't error but
+     * continue clearing cells.
+     *
+     * @param organism organism to delete
+     * @return true if organism is deleted
+     */
     boolean deleteOrganism(final Organism organism);
 
+    /**
+     * Get the organism with the provided id
+     *
+     * @param oid id to lookup
+     * @return an organism or null
+     */
     Organism getOrganism(final String oid);
 
+    /**
+     * Get count of organisms current in the terrain
+     *
+     * @return count
+     */
     int getOrganismCount();
+
+    /**
+     * Return an iterator to iterate over the organisms in the terrain
+     *
+     * @return iterator
+     */
     Iterator<Organism> getOrganisms();
+
+    /**
+     * Returns true if the organism exists
+     *
+     * @param organism organism to lookup
+     * @return true if the organism exists
+     */
     boolean hasOrganism(final Organism organism);
 
+    /**
+     * Get count of all organisms that have existed
+     *
+     * @return count
+     */
+    long getTotalOrganismCount();
+
+
+    /**
+     * Get the resource manager
+     *
+     * @return
+     */
     ResourceManager getResourceManager();
 
+    /**
+     * Get the configuration properties
+     *
+     * @return
+     */
     UniverseConstants getProperties();
 
+    /**
+     * Returns the instances unique id
+     *
+     * @return uuid
+     */
     UUID getUUID();
 
-   long getTotalOrganismCount();
 
 }

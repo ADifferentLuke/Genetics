@@ -7,21 +7,34 @@ package net.lukemcomber.genetics.world.terrain.properties;
 
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
 
+/**
+ * A {@link TerrainProperty} for soil toxicity
+ */
 public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
 
     public static final String ID = "SOIL_TOXICITY";
     private Integer value;
 
+    /**
+     * Initialize the property
+     */
     public SoilToxicityTerrainProperty() {
         value = null;
     }
 
+    /**
+     * Initialize the property and set the value
+     *
+     * @param value value to set
+     */
     public SoilToxicityTerrainProperty(final int value) {
         this.value = value;
     }
 
     /**
-     * @return
+     * Get the current value of the property
+     *
+     * @return value
      */
     @Override
     public Integer getValue() {
@@ -29,23 +42,29 @@ public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
     }
 
     /**
+     * Sets the value of the property
+     *
      * @param integer the value to set
      */
     @Override
-    public void setValue(Integer integer) {
+    public void setValue(final Integer integer) {
         value = integer;
     }
 
     /**
-     * @param s
+     * Sets the value of the property from a string
+     *
+     * @param s value to set
      */
     @Override
-    public void setValue(String s) {
-       value = Integer.parseInt(s);
+    public void setValue(final String s) {
+        value = Integer.parseInt(s);
     }
 
     /**
-     * @return
+     * Get the ID of the property
+     *
+     * @return {@link SoilToxicityTerrainProperty#ID}
      */
     @Override
     public String getId() {
@@ -53,7 +72,9 @@ public class SoilToxicityTerrainProperty implements TerrainProperty<Integer> {
     }
 
     /**
-     * @return
+     * Return a clone of the property
+     *
+     * @return the clone
      */
     @Override
     public TerrainProperty<Integer> clone() {

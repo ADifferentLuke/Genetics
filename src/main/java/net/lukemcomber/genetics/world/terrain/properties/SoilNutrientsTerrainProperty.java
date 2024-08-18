@@ -7,22 +7,34 @@ package net.lukemcomber.genetics.world.terrain.properties;
 
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
 
+/**
+ * A {@link TerrainProperty} for soil nutrients
+ */
 public class SoilNutrientsTerrainProperty implements TerrainProperty<Integer> {
 
     public static final String ID = "SOIL_NUTRIENTS";
-
     private Integer value;
 
-    //TODO these may need a factory
-    public SoilNutrientsTerrainProperty(){
-       value = null;
+    /**
+     * Initialize the property
+     */
+    public SoilNutrientsTerrainProperty() {
+        value = null;
     }
-    public SoilNutrientsTerrainProperty(final int value){
+
+    /**
+     * Initialize the property and set the value
+     *
+     * @param value value to set
+     */
+    public SoilNutrientsTerrainProperty(final int value) {
         this.value = value;
     }
 
     /**
-     * @return
+     * Get the current value of the property
+     *
+     * @return value
      */
     @Override
     public Integer getValue() {
@@ -30,6 +42,8 @@ public class SoilNutrientsTerrainProperty implements TerrainProperty<Integer> {
     }
 
     /**
+     * Sets the value of the property
+     *
      * @param integer the value to set
      */
     @Override
@@ -38,15 +52,19 @@ public class SoilNutrientsTerrainProperty implements TerrainProperty<Integer> {
     }
 
     /**
-     * @param s
+     * Sets the value of the property from a string
+     *
+     * @param s value to set
      */
     @Override
-    public void setValue(String s) {
-       value = Integer.parseInt(s);
+    public void setValue(final String s) {
+        value = Integer.parseInt(s);
     }
 
     /**
-     * @return
+     * Get the ID of the property
+     *
+     * @return {@link SoilNutrientsTerrainProperty#ID}
      */
     @Override
     public String getId() {
@@ -54,13 +72,15 @@ public class SoilNutrientsTerrainProperty implements TerrainProperty<Integer> {
     }
 
     /**
-     * @return
+     * Return a clone of the property
+     *
+     * @return the clone
      */
     @Override
     public TerrainProperty<Integer> clone() {
-        if( null == value ){
+        if (null == value) {
             return new SoilNutrientsTerrainProperty();
-        }else {
+        } else {
             return new SoilNutrientsTerrainProperty(value);
         }
     }

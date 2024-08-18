@@ -11,8 +11,17 @@ import net.lukemcomber.genetics.world.terrain.properties.SoilNutrientsTerrainPro
 import net.lukemcomber.genetics.world.terrain.properties.SoilToxicityTerrainProperty;
 import net.lukemcomber.genetics.world.terrain.properties.SolarEnergyTerrainProperty;
 
+/**
+ * Factory for creating new {@link TerrainProperty}
+ */
 public class TerrainPropertyFactory {
 
+    /**
+     * Return a new {@link TerrainProperty} of type that matches the id
+     *
+     * @param id type of {@link TerrainProperty}
+     * @return new {@link TerrainProperty}
+     */
     public static TerrainProperty<?> createTerrainProperty(final String id) {
         final TerrainProperty<?> retVal;
         switch (id) {

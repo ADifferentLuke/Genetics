@@ -29,28 +29,48 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * The ecosystem the simulation will run in. An ecosystem comprises Terrain, Organisms, and Resources
+ */
 public abstract class Ecosystem {
 
     private static final Logger logger = Logger.getLogger(Ecosystem.class.getName());
     private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
+
+    protected final UniverseConstants properties;
+    protected final MetadataStoreGroup metadataStoreGroup;
     private Terrain terrain;
     private final int ticksPerDay;
     private final String uuid;
-    protected final UniverseConstants properties;
-    protected final MetadataStoreGroup metadataStoreGroup;
     private final List<String> initialPopulation;
     private long totalTicks;
     private long totalDays;
     private int currentTick;
-
     private final String name;
-
     private boolean active;
     private boolean initalized;
+
+    /**
+     * Creates a new instance of an {@link Ecosystem}
+     *
+     * @param ticksPerDay count of ticks in a day
+     * @param size        scale of terrain
+     * @param type        type of the ecosystem
+     * @throws IOException
+     */
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type) throws IOException {
-        this(ticksPerDay,size,type,null);
+        this(ticksPerDay, size, type, null);
     }
 
+    /**
+     * Creates a new instance of an {@link Ecosystem}
+     *
+     * @param ticksPerDay count of ticks in a day
+     * @param size        scale of terrain
+     * @param type        type of the ecosystem
+     * @param name        human-readable name of the simulation
+     * @throws IOException
+     */
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type, final String name) throws IOException {
 
 
@@ -63,7 +83,7 @@ public abstract class Ecosystem {
 
         properties = UniverseFactory.get(type);
         uuid = UUID.randomUUID().toString();
-        if(StringUtils.isNotEmpty(name)){
+        if (StringUtils.isNotEmpty(name)) {
             this.name = name;
         } else {
             this.name = uuid;
@@ -78,42 +98,90 @@ public abstract class Ecosystem {
         this.initalized = false;
     }
 
+    /**
+     * Gets the total ticks of the simulation
+     *
+     * @return ticks
+     */
     public long getTotalTicks() {
         return totalTicks;
     }
 
+    /**
+     * Sets the total ticks
+     *
+     * @param totalTicks
+     */
     public void setTotalTicks(final long totalTicks) {
         this.totalTicks = totalTicks;
     }
 
+    /**
+     * Get total days
+     *
+     * @return total days
+     */
     public long getTotalDays() {
         return totalDays;
     }
 
+    /**
+     * Sets the total days
+     *
+     * @param totalDays
+     */
     public void setTotalDays(final long totalDays) {
         this.totalDays = totalDays;
     }
 
+    /**
+     * Get the terrain
+     *
+     * @return terrain
+     */
     public Terrain getTerrain() {
         return terrain;
     }
 
+    /**
+     * Get the current tick
+     *
+     * @return current tick
+     */
     public int getCurrentTick() {
         return currentTick;
     }
 
+    /**
+     * Sets the current tick
+     *
+     * @param currentTick
+     */
     public void setCurrentTick(final int currentTick) {
         this.currentTick = currentTick;
     }
 
+    /**
+     * Get simulation name
+     *
+     * @return name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the simulation's configuration property
+     *
+     * @return properties
+     */
     public UniverseConstants getProperties() {
         return properties;
     }
 
+    /**
+     * Initializes the ecosystem
+     */
     public void initialize() {
         if (null != terrain.getResourceManager()) {
             terrain.getResourceManager().initializeAllTerrainResources();
@@ -121,14 +189,27 @@ public abstract class Ecosystem {
         initalized = true;
     }
 
+    /**
+     * Get the ecosystems unique id
+     *
+     * @return
+     */
     public String getId() {
         return uuid;
     }
 
+    /**
+     * Get the count of ticks in a day
+     *
+     * @return ticks in a day
+     */
     public int getTicksPerDay() {
         return ticksPerDay;
     }
 
+    /**
+     * Refresh the ecosystem's resources
+     */
     void refreshResources() {
         if (active) {
             final ResourceManager manager = getTerrain().getResourceManager();
@@ -136,6 +217,11 @@ public abstract class Ecosystem {
         }
     }
 
+    /**
+     * Add an organism the simulation's seed populations
+     *
+     * @param organism organism to add
+     */
     public void addOrganismToInitialPopulation(final Organism organism) {
         if (!initalized) {
             initialPopulation.add(GenomeSerDe.serialize(organism.getGenome()));
@@ -145,31 +231,51 @@ public abstract class Ecosystem {
         }
     }
 
+    /**
+     * Get the list of organisms that seeded the ecosystem
+     *
+     * @return list of genome strings
+     */
     public List<String> getInitialPopulation() {
         return initialPopulation;
     }
 
+    /**
+     * Is the simulation active
+     *
+     * @return true if currently running
+     */
     public boolean isActive() {
         return active;
     }
 
-    void isActive(final boolean active) {
+    /**
+     * Set if the ecosystem is active
+     *
+     * @param active
+     */
+    public void isActive(final boolean active) {
         this.active = active;
     }
 
-    private void tick(final int steps) {
-        this.totalTicks += steps;
-        this.currentTick += steps;
-
-        if (this.currentTick >= ticksPerDay) {
-            totalDays++;
-            this.currentTick = 0;
-        }
-    }
-
+    /**
+     * Advance time by one tick
+     *
+     * @return true if active
+     * @throws EvolutionException
+     */
     public abstract boolean advance() throws EvolutionException;
+
+    /**
+     * Get the ecosystem configuration used to build this ecosystem
+     *
+     * @return ecosystem configuration
+     */
     public abstract EcosystemConfiguration getSetupConfiguration();
 
+    /**
+     * Advance the environment by one tick
+     */
     protected void tickEnvironment() {
         final long currentDay = getTotalDays();
         tick(1);
@@ -181,6 +287,9 @@ public abstract class Ecosystem {
         }
     }
 
+    /**
+     * Advance all organisms by one tick
+     */
     protected void tickOrganisms() {
         final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(getTotalTicks(), getTotalDays(), getCurrentTick());
         logger.info("Organism count " + getTerrain().getOrganismCount());
@@ -209,4 +318,13 @@ public abstract class Ecosystem {
         }
     }
 
+    private void tick(final int steps) {
+        this.totalTicks += steps;
+        this.currentTick += steps;
+
+        if (this.currentTick >= ticksPerDay) {
+            totalDays++;
+            this.currentTick = 0;
+        }
+    }
 }

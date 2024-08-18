@@ -239,7 +239,6 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
      * @param pageNumber     page number to return
      * @param recordsPerPage number of records per page
      * @return list of records
-     * @throws FileNotFoundException
      */
     @Override
     public List<T> page(final String index, final int pageNumber, final int recordsPerPage) {

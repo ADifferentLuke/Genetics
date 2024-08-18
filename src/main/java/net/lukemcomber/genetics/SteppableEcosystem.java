@@ -1,5 +1,10 @@
 package net.lukemcomber.genetics;
 
+/*
+ * (c) 2023 Luke McOmber
+ * This code is licensed under MIT license (see LICENSE.txt for details)
+ */
+
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
@@ -14,29 +19,59 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * An interactive ecosystem that is updated by turns (collections of ticks)
+ */
 public class SteppableEcosystem extends Ecosystem {
 
-    private static final Logger logger = Logger.getLogger(SteppableEcosystem.class.getName());
-
-    private static final LoggerOutputStream loggerOutputStream = new LoggerOutputStream(logger, Level.INFO);
+    private final Logger logger = Logger.getLogger(SteppableEcosystem.class.getName());
 
     private final long ticksPerTurn;
 
-    public SteppableEcosystem(int ticksPerTurn, int ticksPerDay, SpatialCoordinates size, String type) throws IOException {
-        super(ticksPerDay, size, type);
-        this.ticksPerTurn = ticksPerTurn;
+    /**
+     * Creates a new instance
+     *
+     * @param ticksPerTurn number of ticks in a turn
+     * @param ticksPerDay  number of ticks in a day
+     * @param size         size of the terrain
+     * @param type         type of ecosystem
+     * @throws IOException
+     */
+    public SteppableEcosystem(final int ticksPerTurn, final int ticksPerDay, final SpatialCoordinates size, final String type) throws IOException {
+        this(ticksPerTurn, ticksPerDay, size, type, null);
     }
 
-    public SteppableEcosystem(int ticksPerTurn, int ticksPerDay, SpatialCoordinates size, String type, String name) throws IOException {
+    /**
+     * Creates a new instance
+     *
+     * @param ticksPerTurn number of ticks in a turn
+     * @param ticksPerDay  number of ticks in a day
+     * @param size         size of the terrain
+     * @param type         type of ecosystem
+     * @param name         name of the simulation
+     * @throws IOException
+     */
+    public SteppableEcosystem(final int ticksPerTurn, final int ticksPerDay, final SpatialCoordinates size, final String type, final String name) throws IOException {
 
         super(ticksPerDay, size, type, name);
         this.ticksPerTurn = ticksPerTurn;
     }
 
+    /**
+     * Get the number of ticks in a turn
+     *
+     * @return ticks per turn
+     */
     public long getTicksPerTurn() {
         return ticksPerTurn;
     }
 
+    /**
+     * Advance time by one tick
+     *
+     * @return true if active
+     * @throws EvolutionException
+     */
     public boolean advance() throws EvolutionException {
         if (isActive()) {
             for (int i = 0; i < getTicksPerTurn(); ++i) {
@@ -55,6 +90,11 @@ public class SteppableEcosystem extends Ecosystem {
         return isActive();
     }
 
+    /**
+     * Get the ecosystem configuration used to build this ecosystem
+     *
+     * @return ecosystem configuration
+     */
     @Override
     public EcosystemConfiguration getSetupConfiguration() {
         final SteppableEcosystemConfiguration setupConfiguration = new SteppableEcosystemConfiguration();

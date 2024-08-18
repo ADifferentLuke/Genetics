@@ -36,10 +36,11 @@ public class SimpleSimulation {
     private int reusePopulation;
 
     @JsonProperty("startOrganisms")
-    private Map<SpatialCoordinates,String> startOrganisms;
+    private Map<SpatialCoordinates, String> startOrganisms;
 
     /**
      * Get simulation name
+     *
      * @return name
      */
     public String getName() {
@@ -48,6 +49,7 @@ public class SimpleSimulation {
 
     /**
      * Sets simulation name
+     *
      * @param name
      */
     public void setName(String name) {
@@ -56,6 +58,7 @@ public class SimpleSimulation {
 
     /**
      * Gets the number of epochs
+     *
      * @return number of epochs
      */
     public int getEpochs() {
@@ -64,6 +67,7 @@ public class SimpleSimulation {
 
     /**
      * Set the number of epochs
+     *
      * @param epochs
      */
     public void setEpochs(int epochs) {
@@ -72,6 +76,7 @@ public class SimpleSimulation {
 
     /**
      * Get simulations height
+     *
      * @return height
      */
     public int getHeight() {
@@ -80,6 +85,7 @@ public class SimpleSimulation {
 
     /**
      * Sets the simulation height
+     *
      * @param height
      */
     public void setHeight(int height) {
@@ -88,6 +94,7 @@ public class SimpleSimulation {
 
     /**
      * Get the simulation's width
+     *
      * @return width
      */
     public int getWidth() {
@@ -96,6 +103,7 @@ public class SimpleSimulation {
 
     /**
      * Sets the simulation's width
+     *
      * @param width
      */
     public void setWidth(int width) {
@@ -104,6 +112,7 @@ public class SimpleSimulation {
 
     /**
      * Get ticks per day
+     *
      * @return ticks per day
      */
     public int getTicksPerDay() {
@@ -112,6 +121,7 @@ public class SimpleSimulation {
 
     /**
      * Set ticks per day
+     *
      * @param ticksPerDay
      */
     public void setTicksPerDay(int ticksPerDay) {
@@ -120,6 +130,7 @@ public class SimpleSimulation {
 
     /**
      * Get maximum number of days
+     *
      * @return max number of days
      */
     public long getMaxDays() {
@@ -128,6 +139,7 @@ public class SimpleSimulation {
 
     /**
      * Sets the maximum number of days
+     *
      * @param maxDays
      */
     public void setMaxDays(long maxDays) {
@@ -136,6 +148,7 @@ public class SimpleSimulation {
 
     /**
      * Get the initial population count
+     *
      * @return initial population count
      */
     public int getInitialPopulation() {
@@ -144,6 +157,7 @@ public class SimpleSimulation {
 
     /**
      * Set the initial population count
+     *
      * @param initialPopulation
      */
     public void setInitialPopulation(int initialPopulation) {
@@ -152,6 +166,7 @@ public class SimpleSimulation {
 
     /**
      * Get the tick delay in milliseconds
+     *
      * @return tick delay
      */
     public int getTickDelayMs() {
@@ -160,6 +175,7 @@ public class SimpleSimulation {
 
     /**
      * Sets the tick delay in milliseconds
+     *
      * @param tickDelayMs
      */
     public void setTickDelayMs(int tickDelayMs) {
@@ -168,6 +184,7 @@ public class SimpleSimulation {
 
     /**
      * Get count of population to reuse over epochs
+     *
      * @return reincarnation count
      */
     public int getReusePopulation() {
@@ -176,6 +193,7 @@ public class SimpleSimulation {
 
     /**
      * Set count of population to reuse over epochs
+     *
      * @param reusePopulation
      */
     public void setReusePopulation(int reusePopulation) {
@@ -184,6 +202,7 @@ public class SimpleSimulation {
 
     /**
      * Gets the organisms and coordinates to start simulation
+     *
      * @return map of coordinates to genome strings
      */
     public Map<SpatialCoordinates, String> getStartOrganisms() {
@@ -192,6 +211,7 @@ public class SimpleSimulation {
 
     /**
      * Sets the organisms and coordinates to start simulation
+     *
      * @param startOrganisms
      */
     public void setStartOrganisms(Map<SpatialCoordinates, String> startOrganisms) {

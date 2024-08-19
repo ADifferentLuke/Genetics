@@ -31,7 +31,7 @@ Javadoc can be found [here.](https://www.javadoc.io/doc/net.lukemcomber/genetics
     <dependency>
         <groupId>net.lukemcomber</groupId>
         <artifactId>genetics</artifactId>
-        <version>v0.2.1</version>
+        <version>v0.2.2</version>
     </dependency>
 
 #### Sources used:

@@ -7,7 +7,6 @@ package net.lukemcomber.genetics.store;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -18,7 +17,8 @@ import java.util.List;
 public abstract class MetadataStore<T extends Metadata> {
 
     public static final String PROPERTY_DATASTORE_TTL = "metadata.ttl";
-
+    public static final String PROPERTY_TYPE_ENABLED_TEMPLATE = "metadata.%s.enabled";
+    public static final String METADATA_EXPORT = "metadata.export";
     /**
      * Store data in the metadata store
      *
@@ -45,13 +45,13 @@ public abstract class MetadataStore<T extends Metadata> {
     public abstract List<T> page(int pageNumber, int countPerPage) throws FileNotFoundException;
 
     /**
-     * Attempt to expire the data store. If the force flag is set, then force an expiration
+     * Expire the data store. If blocked is true, wait until thread shutdown to return
      *
-     * @param force flag to force expiration
-     * @return true if expired
+     * @param block wait for shutdown
+     * @return true if enable
      * @throws IOException
      */
-    public abstract boolean expire(boolean force) throws IOException;
+    public abstract boolean expire(boolean block) throws IOException;
 
 
     /**
@@ -70,6 +70,7 @@ public abstract class MetadataStore<T extends Metadata> {
      * @return number of stored records
      */
     public abstract long count();
+
 
 }
 

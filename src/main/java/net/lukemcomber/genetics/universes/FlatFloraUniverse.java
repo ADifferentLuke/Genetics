@@ -19,6 +19,7 @@ import net.lukemcomber.genetics.biology.transcription.AsexualTransposGenomeTrans
 import net.lukemcomber.genetics.biology.transcription.MutationGenomeTranscriber;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.impl.ExportedMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Environment;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import net.lukemcomber.genetics.world.terrain.Terrain;
@@ -48,7 +49,7 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(PlantOrganism.PROPERTY_OLD_AGE_LIMIT, 100)
                 .put(PlantOrganism.PROPERTY_STARVATION_LIMIT, 0)
                 .put(PlantOrganism.PROPERTY_STAGNATION_LIMIT, 10)
-                .put(PlantOrganism.PROPERTY_GERMINATION_LIMIT,10)
+                .put(PlantOrganism.PROPERTY_GERMINATION_LIMIT, 10)
                 /* Cell Properties */
                 .put(LeafCell.PROPERTY_ENERGY, 2)
                 .put(LeafCell.PROPERTY_METACOST, 1)
@@ -67,7 +68,10 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY, 5)
                 .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 5)
                 /* Metadata Store */
-                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400l) // One day in seconds
+                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400L) // One day in seconds
+                .put(MetadataStore.METADATA_EXPORT, false)
+                .put(ExportedMetadataStore.PROPERTY_TYPE_PATH, "./output/")
+                /* Metadata */
                 .put(Performance.PROPERTY_PERFORMANCE_ENABLE, true)
                 .put(Environment.PROPERTY_PERFORMANCE_ENABLE, true)
                 .build();

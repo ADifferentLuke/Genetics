@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 @Test
@@ -32,9 +33,9 @@ public class TestSearchableMetadataStore {
     }
 
     public void test() throws IOException, InterruptedException {
-        final TmpMetadataStoreTest.TestUniverse testUniverse = new TmpMetadataStoreTest.TestUniverse(ImmutableMap.of(
+        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
                 Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
-                "metadata.TestMetadata.enabled", true,
+                "metadata.TestSearchableMetadata.enabled", true,
                 MetadataStore.PROPERTY_DATASTORE_TTL, 1000000l
         ));
 
@@ -42,26 +43,26 @@ public class TestSearchableMetadataStore {
         final int RECORD_SELECT_NUMBER = 21; //just randomly picked
 
         final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore("unit-test-2", testUniverse);
-        final SearchableMetadataStore<TestMetadata> testMetaStore = (SearchableMetadataStore<TestMetadata>) group.get(TestMetadata.class);
+        final SearchableMetadataStore<TestSearchableMetadata> testMetaStore = (SearchableMetadataStore<TestSearchableMetadata>) group.get(TestSearchableMetadata.class);
         final List<Integer> checkList = new ArrayList<>(NUM_RECORDS);
-        TestMetadata cacheRecord = null;
+        TestSearchableMetadata cacheRecord = null;
 
 
         logger.info("Generating fake data ...");
         for (int i = 0; i < NUM_RECORDS; i++) {
 
-            final TestMetadata testMetadata = new TestMetadata();
-            testMetadata.str = RandomStringUtils.randomAlphanumeric(1, 1000);
-            testMetadata.intNumber = RandomUtils.nextInt();
-            testMetadata.longNumber = RandomUtils.nextLong();
+            final TestSearchableMetadata testSearchableMetadata = new TestSearchableMetadata();
+            testSearchableMetadata.str = RandomStringUtils.randomAlphanumeric(1, 1000);
+            testSearchableMetadata.intNumber = RandomUtils.nextInt();
+            testSearchableMetadata.longNumber = RandomUtils.nextLong();
 
-            checkList.add(testMetadata.intNumber);
+            checkList.add(testSearchableMetadata.intNumber);
 
 
-            testMetaStore.store(testMetadata);
+            testMetaStore.store(testSearchableMetadata);
 
             if (RECORD_SELECT_NUMBER == i) {
-                cacheRecord = testMetadata;
+                cacheRecord = testSearchableMetadata;
             }
 
             Thread.sleep(100);
@@ -77,18 +78,18 @@ public class TestSearchableMetadataStore {
         int countPerPage = 12;
 
         //Get top 25
-        final List<TestMetadata> page = testMetaStore.page("int", pageNo, countPerPage);
+        final List<TestSearchableMetadata> page = testMetaStore.page("int", pageNo, countPerPage);
         for (int i = 0; i < page.size(); ++i) {
             assertEquals(page.get(i).intNumber, checkList.get((pageNo * countPerPage) + i));
         }
 
         if (null != cacheRecord) {
-            final List<TestMetadata> recordStrLookupResults = testMetaStore.find( cacheRecord.str, 5);
+            final List<TestSearchableMetadata> recordStrLookupResults = testMetaStore.find( cacheRecord.str, 5);
             assertEquals(1, recordStrLookupResults.size());
 
             assertEquals( cacheRecord.str, recordStrLookupResults.get(0).str);
 
-            final List<TestMetadata> recordIntLookupResults = testMetaStore.find( cacheRecord.intNumber, 5 );
+            final List<TestSearchableMetadata> recordIntLookupResults = testMetaStore.find( cacheRecord.intNumber, 5 );
             if( 0 >= recordIntLookupResults.size()){
                throw new RuntimeException("Find by named type failed");
             }
@@ -100,5 +101,7 @@ public class TestSearchableMetadataStore {
         }
         testMetaStore.expire(true);
 
+        final List<TestSearchableMetadata> leakedData = testMetaStore.retrieve();
+        assertNull(leakedData, "Data leaked after expiration.");
     }
 }

@@ -43,7 +43,6 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         int length;
     }
 
-    public static final String PROPERTY_TYPE_ENABLED = "metadata.%s.enabled";
     public static final String PROPERTY_TYPE_TTL = "metadata.%s.ttl";
 
     private Map<String, TreeMap<Object, List<CachePosition>>> indexedFields;
@@ -51,11 +50,13 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
     private long recordCount;
     private boolean enabled; //RW is atomic
     private boolean forceShutdown; //RW is atomic
-    private Thread writeThread;
+    private final Thread writeThread;
     private final BlockingQueue<T> outputQueue;
     private final ReentrantReadWriteLock ioSystemLock;
-    private final Path tmpFilePath;
-    private final RandomAccessFile ioFile;
+    private final Path datFilePath;
+    private final Path idxFilePath;
+    private final RandomAccessFile datFile;
+    private final RandomAccessFile idxFile;
 
     private long cursor;
     private final Class<T> type;
@@ -91,7 +92,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         };
 
 
-        final String propertyName = String.format(PROPERTY_TYPE_ENABLED, type.getSimpleName());
+        final String propertyName = String.format(PROPERTY_TYPE_ENABLED_TEMPLATE, type.getSimpleName());
 
         logger.info("Checking " + propertyName);
 
@@ -108,20 +109,22 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
         if (enabled) {
             try {
-                tmpFilePath = Files.createTempFile("store-", String.format("-%d-%s", currentTimeMillis, type.getSimpleName()));
-                ioFile = new RandomAccessFile(tmpFilePath.toFile(), "rw");
+                datFilePath = Files.createTempFile("store-", String.format("-%d-%s.dat", currentTimeMillis, type.getSimpleName()));
+                idxFilePath = Files.createTempFile("store-", String.format("-%d-%s.idx", currentTimeMillis, type.getSimpleName()));
+                datFile = new RandomAccessFile(datFilePath.toFile(), "rw");
+                idxFile = new RandomAccessFile(idxFilePath.toFile(), "rw");
             } catch (IOException e) {
                 throw new EvolutionException(e);
             }
 
-            logger.info("Create tmp file " + tmpFilePath);
+            logger.info(String.format("Store:\n\tIdx: %s\n\tDat: %s", idxFilePath.toFile().getAbsolutePath(), datFilePath.toFile().getAbsolutePath()));
 
             writeThread = new Thread(String.format("%s-%d-meta-poller", type.getSimpleName(), currentTimeMillis)) {
 
                 @Override
                 public void run() {
 
-                    try (final Output kyroOutput = new Output(new FileOutputStream(tmpFilePath.toFile()));) {
+                    try (final Output kyroOutput = new Output(new FileOutputStream(datFilePath.toFile()))) {
                         logger.info("Beginning poller " + writeThread.getName());
                         while (enabled) {
                             try {
@@ -134,7 +137,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
                                         /*
                                          * DEV NOTE: Turned out the juice is worth the squeeze
                                          */
-                                        cursor = writeAndCacheMetadata(metadata, cursor, ioFile);
+                                        cursor = writeAndCacheMetadata(metadata, cursor, datFile, idxFile);
 
                                     } catch (IllegalAccessException e) {
                                         throw new RuntimeException(e);
@@ -143,25 +146,27 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
                                     }
                                 }
                                 final long inactiveTime = (System.currentTimeMillis() / 1000) - lastAccessed.get();
-                                if (forceShutdown || inactiveTime > ttl) {
-
-                                    try {
-                                        ioSystemLock.writeLock().lock();
-                                        enabled = false;
-                                        ioFile.close();
-                                        Files.deleteIfExists(tmpFilePath);
-                                        indexedFields.clear();
-
-                                    } finally {
-                                        ioSystemLock.writeLock().unlock();
-                                    }
-
-                                } else {
-                                    //We have not expired yet
+                                if (inactiveTime > ttl) {
+                                    enabled = false;
                                 }
                             } catch (final InterruptedException e) {
                                 logger.info(writeThread.getName() + " woken up.");
                             }
+                        }
+                        try {
+                            ioSystemLock.writeLock().lock();
+                            datFile.close();
+                            idxFile.close();
+                            Files.deleteIfExists(datFilePath);
+                            Files.deleteIfExists(idxFilePath);
+                            indexedFields.clear();
+
+                        } finally {
+                            ioSystemLock.writeLock().unlock();
+                        }
+
+                        synchronized (writeThread) {
+                            writeThread.notifyAll();
                         }
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
@@ -174,8 +179,11 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
             writeThread.setDaemon(true);
             writeThread.start();
         } else {
-            tmpFilePath = null;
-            ioFile = null;
+            datFilePath = null;
+            datFile = null;
+            idxFile = null;
+            idxFilePath = null;
+            writeThread = null;
         }
 
     }
@@ -282,7 +290,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
                     if (indexes.containsKey(value)) {
                         final List<CachePosition> positions = indexes.get(value);
                         for (int i = 0; i < positions.size() && i < limit; i++) {
-                            retVal.add(readDataFromFile(positions.get(i), ioFile));
+                            retVal.add(readDataFromFile(positions.get(i), datFile));
                         }
                     }
                 } else {
@@ -325,34 +333,32 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
      * If the force flag is used, false will be returned while the system cleans up resources.
      * Once resources are freed, will return false
      *
-     * @param force flag to force expiration
+     * @param block flag to force expiration
      * @return true if expired
      * @throws IOException
      */
     @Override
-    public boolean expire(final boolean force) throws IOException {
-        if (enabled) {
-            this.forceShutdown = force; //boolean assignment is atomic
-            if (force) {
+    public boolean expire(final boolean block) throws IOException {
+        if (null != writeThread) {
+            if (enabled) {
+                enabled = false;
                 writeThread.interrupt();
             }
-
-            /*
-             * DEV NOTE: There is a window here where the writer thread is
-             *  woken up and begun file cleanup, but hasn't changed enabled before
-             *  we return the value.
-             *
-             * As a result, this store will report enabled in the process of cleanup, but
-             * will report expired on the next call.
-             *
-             * This means we can be disabled, have the tmp file removed, but the calling process
-             * still thinks we're enabled. Make sure to gracefully handle that scenario.
-             */
+            if( block ){
+                synchronized (writeThread) {
+                    try {
+                        writeThread.join();
+                    } catch (final InterruptedException e) {
+                        throw new EvolutionException("Failed to join thread %s".formatted(writeThread.getName()));
+                    }
+                }
+            }
         }
         return !enabled;
     }
 
-    private long writeAndCacheMetadata(final T metadata, final long currentPosition, final RandomAccessFile file) throws IOException, IllegalAccessException {
+    private long writeAndCacheMetadata(final T metadata, final long currentPosition,
+                                       final RandomAccessFile datFile, final RandomAccessFile idxFile) throws IOException, IllegalAccessException {
 
         final ByteArrayOutputStream binaryStream = new ByteArrayOutputStream();
 
@@ -367,14 +373,17 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         kryoPool.free(kryo);
 
 
-        file.seek(currentPosition);
-        file.write(data);
+        datFile.seek(currentPosition);
+        datFile.write(data);
 
         recordCount++;
 
         final CachePosition cachePosition = new CachePosition();
         cachePosition.length = data.length;
         cachePosition.startByte = currentPosition;
+
+        idxFile.writeLong(cachePosition.startByte);
+        idxFile.writeInt(cachePosition.length);
 
         Class<?> clazz = metadata.getClass();
         for (Field field : clazz.getDeclaredFields()) {
@@ -423,7 +432,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
                     .limit(recordCount)
                     .map(pos -> {
                         try {
-                            return readDataFromFile(pos, ioFile);
+                            return readDataFromFile(pos, datFile);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

@@ -46,7 +46,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
     private long recordCount;
     private boolean enabled; //RW is atomic
     private boolean forceShutdown; //RW is atomic
-    private Thread writeThread;
+    private final Thread writeThread;
     private final BlockingQueue<T> outputQueue;
     private final ReentrantReadWriteLock ioSystemLock;
     private final Path tmpFilePath;
@@ -139,22 +139,19 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
                                     }
                                 }
                                 final long inactiveTime = (System.currentTimeMillis() / 1000) - lastAccessed.get();
-                                if (forceShutdown || inactiveTime > ttl) {
-
-                                    try {
-                                        ioSystemLock.writeLock().lock();
-                                        enabled = false;
-                                        Files.deleteIfExists(tmpFilePath);
-                                    } finally {
-                                        ioSystemLock.writeLock().unlock();
-                                    }
-
+                                if (inactiveTime > ttl) {
+                                    enabled = false;
                                 } else {
                                     //We have not expired yet
                                 }
                             } catch (final InterruptedException e) {
                                 logger.info(writeThread.getName() + " woken up.");
                             }
+                        }
+                        Files.deleteIfExists(tmpFilePath);
+
+                        synchronized (writeThread) {
+                            writeThread.notifyAll();
                         }
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
@@ -168,6 +165,7 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
             writeThread.start();
         } else {
             tmpFilePath = null;
+            writeThread = null;
         }
 
     }
@@ -240,29 +238,26 @@ public class TmpMetadataStore<T extends Metadata> extends MetadataStore<T> {
      * If the force flag is used, false will be returned while the system cleans up resources.
      * Once resources are freed, will return false
      *
-     * @param force flag to force expiration
+     * @param block flag to force expiration
      * @return true if expired
      * @throws IOException
      */
     @Override
-    public boolean expire(final boolean force) throws IOException {
-        if (enabled) {
-            this.forceShutdown = force; //boolean assignment is atomic
-            if (force) {
+    public boolean expire(final boolean block) throws IOException {
+        if (null != writeThread) {
+            if (enabled) {
+                enabled = false;
                 writeThread.interrupt();
             }
-
-            /*
-             * DEV NOTE: There is a window here where the writer thread is
-             *  woken up and begun file cleanup, but hasn't changed enabled before
-             *  we return the value.
-             *
-             * As a result, this store will report enabled in the process of cleanup, but
-             * will report expired on the next call.
-             *
-             * This means we can be disabled, have the tmp file removed, but the calling process
-             * still thinks we're enabled. Make sure to gracefully handle that scenario.
-             */
+            if( block ){
+                synchronized (writeThread) {
+                    try {
+                        writeThread.join();
+                    } catch (final InterruptedException e) {
+                        throw new EvolutionException("Failed to join thread %s".formatted(writeThread.getName()));
+                    }
+                }
+            }
         }
         return !enabled;
     }

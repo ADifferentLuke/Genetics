@@ -48,7 +48,7 @@ public class MetadataStoreFactory {
             sessionStore = reference.get();
         }
         if (null == sessionStore) {
-            sessionStore = new MetadataStoreGroup(properties);
+            sessionStore = new MetadataStoreGroup(properties,simulation);
             instance.metadataStoreBySession.put(simulation, new WeakReference<>(sessionStore));
         }
         return sessionStore;

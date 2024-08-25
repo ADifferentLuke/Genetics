@@ -169,23 +169,6 @@ public interface Organism {
      *
      * @return energy
      */
-    default int getMetabolismCost() {
-        return CellHelper.getAllOrganismsCells(getFirstCell()).stream().mapToInt(Cell::getMetabolismCost).sum();
-    }
-
-    /**
-     * Gather resource from the environment and metabolise it
-     *
-     * @param terrain
-     * @param temporalCoordinates time
-     */
-    default void leechResources(final Terrain terrain, final TemporalCoordinates temporalCoordinates) {
-        final List<Cell> cells = CellHelper.getAllOrganismsCells(getFirstCell());
-        int newEnergy = cells.stream().mapToInt(cell -> cell.generateEnergy(terrain)).sum();
-        int metaCost = getMetabolismCost();
-
-        addEnergyFromEcosystem(newEnergy);
-        removeEnergyFromMetabolism(metaCost);
-    }
+    int getMetabolismCost();
 
 }

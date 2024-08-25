@@ -10,6 +10,7 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Interface for representing cells and providing a uniform interface for manipulating them
@@ -20,12 +21,6 @@ public abstract class Cell {
 
     private Cell parent = null;
 
-    /**
-     * Creates a new cell with no children or parent
-     */
-    public Cell() {
-        children = new LinkedList<>();
-    }
 
     /**
      * Creates a new cell with no children but with a parent

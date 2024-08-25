@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -61,6 +62,7 @@ public class PlantOrganism implements Organism {
     private int germinationCountDown;
     private int totalResourcesGathered;
     private int totalEnergyMetabolized;
+    private int totalMetabolismCost;
 
     private final UniverseConstants properties;
 
@@ -87,13 +89,15 @@ public class PlantOrganism implements Organism {
 
         this.genome = seed.getGenome();
         this.parentUuid = parentUuid;
-        this.cell = seed;
         this.properties = properties;
         this.metadataStoreGroup = metadataStoreGroup;
         this.fitnessFunction = fitnessFunction;
+
         this.totalResourcesGathered = 0;
         this.totalEnergyMetabolized = 0;
+        this.totalMetabolismCost = seed.getMetabolismCost();
 
+        this.cell = seed;
         this.energy = properties.get(PROPERTY_STARTING_ENERGY, Integer.class);
         this.germinationCountDown = properties.get(PROPERTY_GERMINATION_LIMIT, Integer.class, 10);
         this.activeCells = new LinkedList<>();
@@ -327,9 +331,15 @@ public class PlantOrganism implements Organism {
             }
         } else {
             performActionOnAllCells((PlantCell) getFirstCell(), cell -> {
+
+                logger.info("Burning calories for cell " + cell);
+                removeEnergyFromMetabolism(cell.getMetabolismCost());
+                logger.info("Leeching resources..");
+                addEnergyFromEcosystem(cell.generateEnergy(terrain));
                 logger.info("Actioning cell " + cell);
                 final PlantBehavior plantBehavior = genome.getNextAct();
                 if (null != plantBehavior) {
+
 
                     if (cell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost(terrain.getProperties()) <= energy) {
                         logger.info("Attempting " + plantBehavior);
@@ -343,6 +353,7 @@ public class PlantOrganism implements Organism {
                                 //Update last updated time
                                 lastUpdateTime = temporalCoordinates;
                                 childCount++;
+                                totalMetabolismCost += newCell.getMetabolismCost();
                                 if (newCell instanceof SeedCell) {
                                     seedCount++;
                                 }
@@ -431,6 +442,11 @@ public class PlantOrganism implements Organism {
         pout.println(String.format("Energy: %d", energy));
         pout.println(String.format("Cells: %s", childCount));
         pout.println();
+    }
+
+    @Override
+    public int getMetabolismCost() {
+        return totalMetabolismCost;
     }
 
 }

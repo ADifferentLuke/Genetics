@@ -91,8 +91,7 @@ public abstract class Ecosystem {
 
         metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid, properties);
 
-        terrain = TerrainFactory.create(properties, metadataStoreGroup);
-        terrain.initialize(size.xAxis(), size.yAxis(), size.zAxis());
+        terrain = TerrainFactory.create(size, properties, metadataStoreGroup);
 
         this.active = true; //TODO should move to initialized?
         this.initalized = false;
@@ -304,7 +303,6 @@ public abstract class Ecosystem {
         for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
             Organism organism = it.next();
             logger.info("Ticking Organism: " + organism.getUniqueID());
-            organism.leechResources(getTerrain(), temporalCoordinates);
             organism.performAction(getTerrain(), temporalCoordinates, ((organism1, cell) -> {
                 final ResourceManager manager = getTerrain().getResourceManager();
                 manager.renewEnvironmentResourceFromCellDeath(organism, cell);

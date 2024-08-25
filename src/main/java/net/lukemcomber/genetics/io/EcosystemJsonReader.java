@@ -30,43 +30,43 @@ public class EcosystemJsonReader extends SpatialCoordinateRangeParser {
     /**
      * /world
      */
-    public static final String WORLD_PROPERTY_PATH = "/world";
+    public static final String WORLD_PROPERTY_PATH = "world";
     /**
      * /name
      */
-    public static final String NAME_PROPERTY_PATH = "/name";
+    public static final String NAME_PROPERTY_PATH = "name";
     /**
      * /width
      */
-    public static final String WIDTH_PROPERTY_PATH = "/width";
+    public static final String WIDTH_PROPERTY_PATH = "width";
     /**
      * /height
      */
-    public static final String HEIGHT_PROPERTY_PATH = "/height";
+    public static final String HEIGHT_PROPERTY_PATH = "height";
     /**
      * /depth
      */
-    public static final String DEPTH_PROPERTY_PATH = "/depth";
+    public static final String DEPTH_PROPERTY_PATH = "depth";
     /**
      * /tickPerDay
      */
-    public static final String TICKS_PER_DAY_PROPERTY_PATH = "/tickPerDay";
+    public static final String TICKS_PER_DAY_PROPERTY_PATH = "ticksPerDay";
     /**
      * /ticksPerTurn
      */
-    public static final String TICKS_PER_TURN_PROPERTY_PATH = "/ticksPerTurn";
+    public static final String TICKS_PER_TURN_PROPERTY_PATH = "ticksPerTurn";
     /**
      * /maxDays
      */
-    public static final String MAX_DAYS_PROPERTY_PATH = "/maxDays";
+    public static final String MAX_DAYS_PROPERTY_PATH = "maxDays";
     /**
      * /tickDelay
      */
-    public static final String TICK_DELAY_PROPERTY_PATH = "/tickDelay";
+    public static final String TICK_DELAY_PROPERTY_PATH = "tickDelay";
     /**
      * /zoo
      */
-    public static final String ZOO_PROPERTY_PATH = "/zoo";
+    public static final String ZOO_PROPERTY_PATH = "zoo";
 
     /**
      * Creates an Ecosystem object from a Jackson {@link JsonNode} and initializes it. Currently

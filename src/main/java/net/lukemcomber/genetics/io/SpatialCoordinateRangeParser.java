@@ -24,9 +24,6 @@ import java.util.function.BiFunction;
 public abstract class SpatialCoordinateRangeParser {
 
     class RangeValueItem {
-        public Range<Integer> xCoordinates;
-        public Range<Integer> yCoordinates;
-        public Range<Integer> zCoordinates;
         public SpatialRangeCoordinates rangeCoordinates;
 
         public String value;
@@ -138,14 +135,14 @@ public abstract class SpatialCoordinateRangeParser {
     protected void iterateRangeValue(final RangeValueItem item, final SpatialCoordinates spatialMaxAxis,
                                      final BiFunction<SpatialCoordinates, String, Boolean> func) {
         if (null != item) {
-            final int xUpperBound = null != item.xCoordinates ? item.xCoordinates.getMaximum() : spatialMaxAxis.xAxis() - 1;
-            final int xLowerBound = null != item.xCoordinates ? item.xCoordinates.getMinimum() : 0;
+            final int xUpperBound = null != item.rangeCoordinates ? item.rangeCoordinates.xRange().getMaximum() : spatialMaxAxis.xAxis() - 1;
+            final int xLowerBound = null != item.rangeCoordinates ? item.rangeCoordinates.xRange().getMinimum() : 0;
 
-            final int yUpperBound = null != item.yCoordinates ? item.yCoordinates.getMaximum() : spatialMaxAxis.yAxis() - 1;
-            final int yLowerBound = null != item.yCoordinates ? item.yCoordinates.getMinimum() : 0;
+            final int yUpperBound = null != item.rangeCoordinates ? item.rangeCoordinates.yRange().getMaximum() : spatialMaxAxis.yAxis() - 1;
+            final int yLowerBound = null != item.rangeCoordinates ? item.rangeCoordinates.yRange().getMinimum() : 0;
 
-            final int zUpperBound = null != item.zCoordinates ? item.zCoordinates.getMaximum() : spatialMaxAxis.zAxis() - 1;
-            final int zLowerBound = null != item.zCoordinates ? item.zCoordinates.getMinimum() : 0;
+            final int zUpperBound = null != item.rangeCoordinates ? item.rangeCoordinates.zRange().getMaximum() : spatialMaxAxis.zAxis() - 1;
+            final int zLowerBound = null != item.rangeCoordinates ? item.rangeCoordinates.zRange().getMinimum() : 0;
 
             for (int i = xLowerBound; xUpperBound >= i; ++i) {
                 for (int j = yLowerBound; yUpperBound >= j; ++j) {

@@ -15,6 +15,7 @@ import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.TerrainProperty;
 import net.lukemcomber.genetics.exception.EvolutionException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,12 +26,11 @@ import java.util.stream.Collectors;
 /**
  * A 2-dimensional implementation of {@link Terrain}
  */
-public class FlatWorld implements Terrain {
+public class FlatWorld extends Terrain {
 
     private static final Logger logger = Logger.getLogger(FlatWorld.class.getName());
 
     public static final String ID = "FLAT_WORLD";
-    public final UUID uuid;
 
 
     private class MatrixCell {
@@ -43,29 +43,31 @@ public class FlatWorld implements Terrain {
 
     }
 
-    private final static boolean debug = false;
-    private MatrixCell[][] organismMap;
-    private Map<String, TerrainProperty>[][] environmentMap;
-    private Map<String, Organism> population;
-    private final UniverseConstants constants;
-    private int worldHeight;
-    private int worldWidth;
-    private boolean isInitialized = false;
-    private long totalOrganisms;
-    private ResourceManager resourceManager;
-    private final MetadataStoreGroup metadataStoreGroup;
+    private final MatrixCell[][] organismMap;
+    private final Map<String, TerrainProperty>[][] environmentMap;
+    private final ResourceManager resourceManager;
 
     /**
      * Create a new instance from the given configuration properties and a metadata store group
      *
-     * @param constants          configuration propertied
-     * @param metadataStoreGroup metadata store group
+     * @param spatialBounds size of environment
+     * @param constants     configuration propertied
+     * @param store         metadata store group
      */
-    public FlatWorld(final UniverseConstants constants, final MetadataStoreGroup metadataStoreGroup) {
-        this.constants = constants;
-        uuid = UUID.randomUUID();
-        this.metadataStoreGroup = metadataStoreGroup;
-        totalOrganisms = 0;
+    public FlatWorld(final SpatialCoordinates spatialBounds, final UniverseConstants constants, final MetadataStoreGroup store) {
+        super(spatialBounds, constants, store);
+        resourceManager = new FlatWorldResourceManager(this, constants);
+
+        organismMap = new MatrixCell[spatialBounds.xAxis()][spatialBounds.yAxis()];
+        environmentMap = new HashMap[spatialBounds.xAxis()][spatialBounds.yAxis()];
+
+        //we are at load time, spend extra time now initializing and less time later overall
+        for (int i = 0; i < spatialBounds.xAxis(); ++i) {
+            for (int j = 0; j < spatialBounds.yAxis(); ++j) {
+                environmentMap[i][j] = new HashMap<>();
+            }
+        }
+        logger.info(String.format("World %s initialized to (%d,%d,%d).", ID, spatialBounds.xAxis(), spatialBounds.yAxis(), spatialBounds.zAxis()));
     }
 
     /**
@@ -76,17 +78,10 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public void setTerrainProperty(final SpatialCoordinates spatialCoordinates, final TerrainProperty terrainProperty) {
-        checkInitialized();
 
         if (0 == spatialCoordinates.zAxis()) {
             //we are flat, ignore anything above the z axis
             checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
-
-            if (debug) {
-                System.out.println(String.format("(%d,%d,%d) - Set %s to %d", spatialCoordinates.xAxis(),
-                        spatialCoordinates.yAxis(), spatialCoordinates.zAxis(), terrainProperty.getId(),
-                        terrainProperty.getValue()));
-            }
 
             //on conflict overwrites
             environmentMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].put(terrainProperty.getId(), terrainProperty);
@@ -103,7 +98,6 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public TerrainProperty getTerrainProperty(final SpatialCoordinates spatialCoordinates, final String id) {
-        checkInitialized();
         checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
         return environmentMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].get(id);
     }
@@ -116,23 +110,8 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public void deleteTerrainProperty(final SpatialCoordinates spatialCoordinates, final String id) {
-        checkInitialized();
         checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
         environmentMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].remove(id);
-    }
-
-    /**
-     * Sets a list of {@link TerrainProperty} at a specific coordinate
-     *
-     * @param spatialCoordinates location
-     * @param propertyList       the list of properties to set in the environment
-     */
-    @Override
-    public void setTerrain(final SpatialCoordinates spatialCoordinates, final List<TerrainProperty> propertyList) {
-        checkInitialized();
-        checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
-        environmentMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()] = propertyList.stream().collect(
-                Collectors.toMap(TerrainProperty::getId, Function.identity()));
     }
 
     /**
@@ -142,10 +121,25 @@ public class FlatWorld implements Terrain {
      * @return list of properties
      */
     @Override
-    public List<TerrainProperty> getTerrain(final SpatialCoordinates spatialCoordinates) {
-        checkInitialized();
+    public List<TerrainProperty> getTerrainProperties(final SpatialCoordinates spatialCoordinates) {
         checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
         return new ArrayList<>(environmentMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].values());
+    }
+
+
+    /**
+     * Get the organism that has a cell at the given coordinate
+     *
+     * @param spatialCoordinates location
+     * @return an organism or null if one does not exist
+     */
+    @Override
+    public Organism getOrganism(final SpatialCoordinates spatialCoordinates) {
+        checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
+        if (null != organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()]) {
+            return organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].organism;
+        }
+        return null;
     }
 
     /**
@@ -157,31 +151,6 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public void initialize(int x, int y, int z) {
-        worldHeight = y;
-        worldWidth = x;
-        organismMap = new MatrixCell[x][y];
-        environmentMap = new HashMap[x][y];
-        /*
-         * Because we only allow iterator access to the organism data structure and the
-         * organisms themselves can remove themselves from terrain, we have a concurrency problem.
-         *
-         * Dirty fix is to use a Concurrent map, but does not solve the underlying design problem
-         * that essentially guarantees concurrent access in a single thread context. Bad design maybe?
-         *
-         * TODO think more on this
-         */
-        population = new ConcurrentHashMap<>();
-
-        //we are at load time, spend extra time now initializing and less time later overall
-        for (int i = 0; i < x; ++i) {
-            for (int j = 0; j < y; ++j) {
-                environmentMap[i][j] = new HashMap<>();
-            }
-        }
-        logger.info(String.format("World %s initialized to (%d,%d,%d).", ID, x, y, z));
-
-        isInitialized = true;
-        resourceManager = new FlatWorldResourceManager(this, constants);
     }
 
     /**
@@ -191,7 +160,6 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public boolean hasCell(final SpatialCoordinates spatialCoordinates) {
-        checkInitialized();
         return null != organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()];
     }
 
@@ -205,7 +173,6 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public boolean setCell(final Cell cell, final Organism organism) {
-        checkInitialized();
         checkCoordinates(cell.getCoordinates().xAxis(), cell.getCoordinates().yAxis());
         final MatrixCell currentCell = organismMap[cell.getCoordinates().xAxis()][cell.getCoordinates().yAxis()];
         if (null == currentCell) {
@@ -227,7 +194,6 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public boolean deleteCell(final SpatialCoordinates spatialCoordinates) {
-        checkInitialized();
         checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
         final MatrixCell currentCell = organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()];
         organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()] = null;
@@ -244,70 +210,11 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public Cell getCell(final SpatialCoordinates spatialCoordinates) {
-        checkInitialized();
         checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
         if (null != organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()]) {
             return organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].cell;
         }
         return null;
-    }
-
-    /**
-     * Get the organism that has a cell at the given coordinate
-     *
-     * @param spatialCoordinates location
-     * @return an organism or null if one does not exist
-     */
-    @Override
-    public Organism getOrganism(final SpatialCoordinates spatialCoordinates) {
-        checkInitialized();
-        checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
-        if (null != organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()]) {
-            return organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()].organism;
-        }
-        return null;
-    }
-
-    /**
-     * Get the size of the x-axis
-     *
-     * @return pixel count
-     */
-    @Override
-    public int getSizeOfXAxis() {
-        return worldWidth;
-    }
-
-
-    /**
-     * Get the size of the y-axis
-     *
-     * @return pixel count
-     */
-    @Override
-    public int getSizeOfYAxis() {
-        return worldHeight;
-    }
-
-    /**
-     * Get the size of the z-axis
-     *
-     * @return 0
-     */
-    @Override
-    public int getSizeOfZAxis() {
-        return 0;
-    }
-
-    /**
-     * Returns true if the organism exists
-     *
-     * @param organism organism to lookup
-     * @return true if the organism exists
-     */
-    @Override
-    public boolean hasOrganism(final Organism organism) {
-        return null != population && population.containsKey(organism.getUniqueID());
     }
 
     /**
@@ -317,43 +224,8 @@ public class FlatWorld implements Terrain {
      */
     @Override
     public ResourceManager getResourceManager() {
-        checkInitialized();
         return resourceManager;
     }
-
-    /**
-     * Get the configuration properties
-     *
-     * @return
-     */
-    @Override
-    public UniverseConstants getProperties() {
-        /*
-         * Does not need to be initialized() first
-         */
-        return constants;
-    }
-
-    /**
-     * Returns the instances unique id
-     *
-     * @return uuid
-     */
-    @Override
-    public UUID getUUID() {
-        return uuid;
-    }
-
-    /**
-     * Get count of all organisms that have existed
-     *
-     * @return count
-     */
-    @Override
-    public long getTotalOrganismCount() {
-        return totalOrganisms;
-    }
-
 
     /**
      * Check if spatial coordinates are out of bounds
@@ -374,108 +246,11 @@ public class FlatWorld implements Terrain {
                 && 0 <= spatialCoordinates.yAxis());
     }
 
-    /**
-     * Attempt to add the organism to the terrain. The organism must fit and
-     * not collide with other cells.
-     *
-     * @param organism organism to add
-     * @return true if organism added
-     */
-    @Override
-    public boolean addOrganism(final Organism organism) {
-        boolean retVal = false;
-        if (null != organism) {
-            if (!population.containsKey(organism.getUniqueID())) {
-                final List<Cell> cells = CellHelper.getAllOrganismsCells(organism.getFirstCell());
-                // Before setting the cells, make sure there are no conflicts
-                boolean doesOrganismFit = true;
-                for (final Cell cell : cells) {
-                    if (hasCell(cell.getCoordinates())) {
-                        final Cell currentCell = getCell(cell.getCoordinates());
-                        if (currentCell != cell) {
-                            doesOrganismFit = false;
-                        }
-                    }
-                }
-                if (doesOrganismFit) {
-                    cells.forEach(c -> setCell(c, organism));
-                    population.put(organism.getUniqueID(), organism);
-                    retVal = true;
-                    totalOrganisms++;
-
-                } else {
-                    throw new RuntimeException("Failed to create terrain. Organisms physically conflict.");
-                }
-            }
-        }
-        return retVal;
-    }
-
-    /**
-     * Forces a cleanup of all cells in an organism. If a cell has already been cleared, don't error but
-     * continue clearing cells.
-     *
-     * @param organism organism to delete
-     * @return true if organism is deleted
-     */
-    @Override
-    public boolean deleteOrganism(final Organism organism) {
-        boolean retVal = false;
-
-        if (null != organism && population.containsKey(organism.getUniqueID())) {
-            CellHelper.getAllOrganismsCells(organism.getFirstCell())
-                    .forEach(cell -> {
-                        deleteCell(cell.getCoordinates());
-                    });
-            retVal = population.remove(organism.getUniqueID()) != null;
-
-        }
-
-        return retVal;
-    }
-
-    /**
-     * Get the organism with the provided id
-     *
-     * @param oid id to lookup
-     * @return an organism or null
-     */
-    @Override
-    public Organism getOrganism(final String oid) {
-        return population.get(oid);
-    }
-
-    /**
-     * Get count of organisms current in the terrain
-     *
-     * @return count
-     */
-    @Override
-    public int getOrganismCount() {
-        return isInitialized ? population.size() : 0;
-    }
-
-    /**
-     * Return an iterator to iterate over the organisms in the terrain
-     *
-     * @return iterator
-     */
-    @Override
-    public Iterator<Organism> getOrganisms() {
-        return population.values().iterator();
-    }
 
     private void checkCoordinates(final int x, final int y) {
-        if (x >= worldWidth || y >= worldHeight) {
+        if (x >= getSizeOfXAxis() || y >= getSizeOfYAxis()) {
             throw new ArrayIndexOutOfBoundsException("SpatialCoordinates (" + x + "," + y
-                    + ") are out of bounds for world size [" + worldWidth + "," + worldHeight + "].");
+                    + ") are out of bounds for world size [" + getSizeOfXAxis() + "," + getSizeOfYAxis() + "].");
         }
     }
-
-    private void checkInitialized() {
-        if (!isInitialized) {
-            throw new EvolutionException("FlatWorld has not yet been initialized.");
-        }
-    }
-
 }

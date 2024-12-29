@@ -1,7 +1,6 @@
 package net.lukemcomber.genetics.biology.fitness;
 
 import net.lukemcomber.genetics.biology.fitness.impl.BasicFitnessFunction;
-import net.lukemcomber.genetics.store.TestSearchableMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import org.testng.annotations.Test;
 

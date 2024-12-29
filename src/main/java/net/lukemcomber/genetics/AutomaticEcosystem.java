@@ -11,13 +11,16 @@ import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
 import net.lukemcomber.genetics.model.ecosystem.impl.AutomatedEcosystemConfiguration;
+import net.lukemcomber.genetics.store.Metadata;
 import net.lukemcomber.genetics.store.MetadataStore;
+import net.lukemcomber.genetics.store.impl.MetadataStorage;
 import net.lukemcomber.genetics.store.metadata.Environment;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -180,12 +183,21 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
                 if (getTotalDays() >= maxDays) {
                     isActive(false);
                     killRemainingOrganisms();
+                    final Set<Class<? extends Metadata>> activeStores = metadataStoreGroup.getActiveMetadataStores();
+                    activeStores.forEach( clazz -> {
+
+                        MetadataStore<?> storage = metadataStoreGroup.get(clazz);
+                        MetadataStorage.persist(storage,getName(), properties);
+                    });
+
+                    // TODO Expire metadata store after N time
+                    metadataStoreGroup.expire();
                 } else {
 
                     final long processingTime = System.currentTimeMillis() + startTimeMillis;
                     final long sleepTime = tickDelayMs - processingTime;
                     if (0 < sleepTime) {
-                        Thread.sleep(tickDelayMs);
+                        Thread.sleep(tickDelayMs); //throttle
                     }
                 }
 

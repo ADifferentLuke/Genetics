@@ -1,7 +1,7 @@
 package net.lukemcomber.genetics.store;
 
 import com.google.common.collect.ImmutableMap;
-import net.lukemcomber.genetics.store.impl.ExportedMetadataStore;
+import net.lukemcomber.genetics.store.impl.MetadataStorage;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -14,12 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.testng.Assert.assertEquals;
-
 @Test
 public class TestExportedMetadataStore {
 
-    private static final Logger logger = Logger.getLogger(TestSearchableMetadataStore.class.getName());
+    private static final Logger logger = Logger.getLogger(TestKryoMetadataStore.class.getName());
     private static final String OUTPUT_PATH = "./output";
 
     public TestExportedMetadataStore(){
@@ -32,14 +30,15 @@ public class TestExportedMetadataStore {
                 TestSearchableMetadata.PROPERTY_ENABLED, true,
                 MetadataStore.PROPERTY_DATASTORE_TTL, 1000000L,
                 MetadataStore.METADATA_EXPORT, true,
-                ExportedMetadataStore.PROPERTY_TYPE_PATH, OUTPUT_PATH
+                MetadataStorage.PROPERTY_TYPE_PATH, OUTPUT_PATH
         ));
 
         final int NUM_RECORDS = 75;
         final String simulation = "unit-test-3";
 
         final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore(simulation, testUniverse);
-        final ExportedMetadataStore<TestSearchableMetadata> testMetaStore = (ExportedMetadataStore<TestSearchableMetadata>) group.get(TestSearchableMetadata.class);
+        final MetadataStore<TestSearchableMetadata> testMetaStore = group.get(TestSearchableMetadata.class);
+        //final MetadataStorage<TestSearchableMetadata> testMetaStore = (MetadataStorage<TestSearchableMetadata>) group.get(TestSearchableMetadata.class);
         final List<Integer> checkList = new ArrayList<>(NUM_RECORDS);
 
         logger.info("Generating fake data ...");
@@ -73,7 +72,7 @@ public class TestExportedMetadataStore {
             throw new RuntimeException("Export file not found! Check %s.".formatted(path));
         }
 
-        logger.info("ExportedMetadataStore thread shutdown.");
+        logger.info("MetadataStorage thread shutdown.");
 
     }
 

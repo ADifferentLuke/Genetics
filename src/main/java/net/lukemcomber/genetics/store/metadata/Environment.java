@@ -1,13 +1,15 @@
 package net.lukemcomber.genetics.store.metadata;
 
 import net.lukemcomber.genetics.store.Metadata;
+import net.lukemcomber.genetics.store.Primary;
 
 /**
  * {@link Metadata} to track population growth over time
  */
 public class Environment implements Metadata {
 
-    public static final String PROPERTY_PERFORMANCE_ENABLE = "metadata.Environment.enabled";
+    public static final String PROPERTY_ENVIRONMENT_ENABLE = "metadata.Environment.enabled";
+    @Primary
     private Long tickCount;
     private Long totalOrganisms;
 

@@ -14,7 +14,7 @@ import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
 import net.lukemcomber.genetics.store.MetadataStore;
-import net.lukemcomber.genetics.store.SearchableMetadataStore;
+import net.lukemcomber.genetics.store.Primary;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -33,9 +32,9 @@ import java.util.logging.Logger;
  *
  * @param <T> type of data to store
  */
-public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMetadataStore<T> {
+public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genetics.store.SearchableMetadataStore<T> {
 
-    private static final Logger logger = Logger.getLogger(TmpSearchableMetadataStore.class.getName());
+    private static final Logger logger = Logger.getLogger(KryoMetadataStore.class.getName());
 
 
     class CachePosition {
@@ -45,11 +44,9 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
     public static final String PROPERTY_TYPE_TTL = "metadata.%s.ttl";
 
-    private Map<String, TreeMap<Object, List<CachePosition>>> indexedFields;
-    private AtomicLong lastAccessed; //longs are not atomic!!!!!
+    private final Map<String, TreeMap<Object, List<CachePosition>>> indexedFields;
     private long recordCount;
     private boolean enabled; //RW is atomic
-    private boolean forceShutdown; //RW is atomic
     private final Thread writeThread;
     private final BlockingQueue<T> outputQueue;
     private final ReentrantReadWriteLock ioSystemLock;
@@ -63,12 +60,12 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
     private final Pool<Kryo> kryoPool;
 
     /**
-     * Create new {@link SearchableMetadataStore} of the specified type.
+     * Create new {@link net.lukemcomber.genetics.store.SearchableMetadataStore} of the specified type.
      *
      * @param type       type of data to store
      * @param properties config properties
      */
-    public TmpSearchableMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
+    public KryoMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
 
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
@@ -78,7 +75,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         this.type = type;
         if (0 >= cTtl) {
             // Get global property
-            ttl = properties.get(PROPERTY_DATASTORE_TTL, Long.class); //24hrs in seconds
+            ttl = properties.get(PROPERTY_DATASTORE_TTL, Long.class);
         } else {
             ttl = cTtl;
         }
@@ -96,16 +93,12 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
         logger.info("Checking " + propertyName);
 
-        forceShutdown = false;
         enabled = properties.get(propertyName, Boolean.class, false);
 
         outputQueue = new LinkedBlockingQueue<>();
-        lastAccessed = new AtomicLong();
         ioSystemLock = new ReentrantReadWriteLock(true); //fair
 
         final long currentTimeMillis = System.currentTimeMillis();
-
-        lastAccessed.set(currentTimeMillis / 1000); //seconds
 
         if (enabled) {
             try {
@@ -124,12 +117,12 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
                 @Override
                 public void run() {
 
-                    try (final Output kyroOutput = new Output(new FileOutputStream(datFilePath.toFile()))) {
+                    try {
                         logger.info("Beginning poller " + writeThread.getName());
-                        while (enabled) {
+                        while (true){
                             try {
                                 //blocks
-                                final T metadata = outputQueue.poll(1, TimeUnit.SECONDS);
+                                final T metadata = outputQueue.poll(1, TimeUnit.MINUTES);
                                 if (null != metadata) {
                                     final ReentrantReadWriteLock.WriteLock writeLock = ioSystemLock.writeLock();
                                     try {
@@ -145,21 +138,18 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
                                         writeLock.unlock();
                                     }
                                 }
-                                final long inactiveTime = (System.currentTimeMillis() / 1000) - lastAccessed.get();
-                                if (inactiveTime > ttl) {
-                                    enabled = false;
-                                }
                             } catch (final InterruptedException e) {
                                 logger.info(writeThread.getName() + " woken up.");
+                                break; // I hate this but checking interrupt fails
                             }
                         }
                         try {
                             ioSystemLock.writeLock().lock();
+                            indexedFields.clear();
                             datFile.close();
                             idxFile.close();
                             Files.deleteIfExists(datFilePath);
                             Files.deleteIfExists(idxFilePath);
-                            indexedFields.clear();
 
                         } finally {
                             ioSystemLock.writeLock().unlock();
@@ -195,41 +185,9 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
      */
     @Override
     public void store(final T data) {
-        if (outputQueue.offer(data)) {
-            lastAccessed.set(System.currentTimeMillis() / 1000); //seconds
-        }
+        outputQueue.offer(data);
     }
 
-
-    /**
-     * Returns a list of all data stored in the datastore. May block.
-     *
-     * @return list of records
-     * @throws FileNotFoundException
-     */
-    public List<T> retrieve() throws FileNotFoundException {
-        return page(0, (int) count());
-    }
-
-    /**
-     * Returns a list of all data stored in the datastore. May block.
-     *
-     * @return list of records
-     * @throws FileNotFoundException
-     */
-    @Override
-    public List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException {
-
-        List<T> retVal = new LinkedList<>();
-
-        if (null != indexedFields) {
-
-            final String key = indexedFields.keySet().stream().findFirst().orElse("default");
-            retVal = readFromIndex(key, pageNumber, countPerPage);
-
-        }
-        return retVal;
-    }
 
     /**
      * Returns a count of records in the data store
@@ -239,6 +197,11 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
     @Override
     public long count() {
         return recordCount;
+    }
+
+    @Override
+    public Class<T> type() {
+        return type;
     }
 
     /**
@@ -281,7 +244,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
             final TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
             /*
              * There is no guarantee that our lookup value is the same type as the Map.
-             *   so peek the first entry and compage types
+             *   so peek the first entry and compare types
              */
             if (!indexes.isEmpty()) {
                 final Object indexKey = indexes.firstKey();
@@ -303,7 +266,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
     /**
      * Search all indexes for the provided value. This tends to be significantly more expensive than
-     * {@link SearchableMetadataStore#find(String, Object, int)}
+     * {@link net.lukemcomber.genetics.store.SearchableMetadataStore#find(String, Object, int)}
      *
      * @param value value to search for
      * @param limit maximum number of results
@@ -357,6 +320,11 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         return !enabled;
     }
 
+    @Override
+    public boolean isExpired() {
+        return !enabled;
+    }
+
     private long writeAndCacheMetadata(final T metadata, final long currentPosition,
                                        final RandomAccessFile datFile, final RandomAccessFile idxFile) throws IOException, IllegalAccessException {
 
@@ -385,11 +353,13 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         idxFile.writeLong(cachePosition.startByte);
         idxFile.writeInt(cachePosition.length);
 
-        Class<?> clazz = metadata.getClass();
-        for (Field field : clazz.getDeclaredFields()) {
+        final Class<?> clazz = metadata.getClass();
+        for (final Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
-            if (field.isAnnotationPresent(Indexed.class)) {
-                final String key = field.getAnnotation(Indexed.class).name();
+            if (field.isAnnotationPresent(Indexed.class) || field.isAnnotationPresent(Primary.class)) {
+
+                final String key = null != field.getAnnotation(Indexed.class) ?
+                        field.getAnnotation(Indexed.class).name() : field.getAnnotation(Primary.class).name();
 
                 final TreeMap<Object, List<CachePosition>> indexList;
                 if (indexedFields.containsKey(key)) {
@@ -426,7 +396,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
 
         final List<T> results;
         if (indexedFields.containsKey(index)) {
-            TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
+            final TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
             results = indexes.descendingMap().entrySet().stream().flatMap(entry -> entry.getValue().stream())
                     .skip((long) page * recordCount)
                     .limit(recordCount)
@@ -457,7 +427,7 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         try {
 
             readLock.lock();
-            if (file.getChannel().isOpen()) {
+            if (file.getChannel().isOpen() && startPosition + data.length < file.length()) {
                 file.seek(startPosition);
                 readCount = file.read(data);
             }
@@ -476,6 +446,4 @@ public class TmpSearchableMetadataStore<T extends Metadata> extends SearchableMe
         }
         return retVal;
     }
-
-
 }

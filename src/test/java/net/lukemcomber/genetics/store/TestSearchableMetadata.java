@@ -5,7 +5,6 @@ package net.lukemcomber.genetics.store;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
-@Searchable
 public class TestSearchableMetadata implements Metadata {
 
     public static final String PROPERTY_ENABLED = "metadata.TestSearchableMetadata.enabled";

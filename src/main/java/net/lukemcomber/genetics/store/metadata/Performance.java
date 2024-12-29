@@ -7,12 +7,9 @@ package net.lukemcomber.genetics.store.metadata;
 
 import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
+import net.lukemcomber.genetics.store.Primary;
 import net.lukemcomber.genetics.store.Searchable;
 
-/**
- * A {@link Searchable} {@link Metadata} for tracking organism performance
- */
-@Searchable
 public class Performance implements Metadata {
 
     public static final String PROPERTY_PERFORMANCE_ENABLE = "metadata.Performance.enabled";
@@ -249,7 +246,7 @@ public class Performance implements Metadata {
     private String parentId;
     @Indexed(name = "genome")
     private String dna = "";
-    @Indexed(name = "fitness")
+    @Primary
     private Double fitness;
     private Integer causeOfDeath;
     private Long age;

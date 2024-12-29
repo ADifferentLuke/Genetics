@@ -2,14 +2,14 @@ package net.lukemcomber.genetics.store;
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.UniverseConstants;
-import net.lukemcomber.genetics.store.impl.ExportedMetadataStore;
-import net.lukemcomber.genetics.store.impl.TmpSearchableMetadataStore;
-import net.lukemcomber.genetics.store.impl.TmpMetadataStore;
+import net.lukemcomber.genetics.store.impl.KryoMetadataStore;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * A thread safe collection of {@link MetadataStore} objects
@@ -19,7 +19,7 @@ public class MetadataStoreGroup {
     private static final Logger logger = Logger.getLogger(MetadataStoreGroup.class.getName());
 
 
-    private final Map<String, MetadataStore<?>> groupStore;
+    private final Map<String, MetadataStore<? extends Metadata>> groupStore;
     private final UniverseConstants properties;
     private final String simulationName;
 
@@ -48,20 +48,14 @@ public class MetadataStoreGroup {
         MetadataStore<T> metadataStore = (MetadataStore<T>) groupStore.get(clazz.getSimpleName());
         if (null == metadataStore) {
 
-            final Boolean useExportableFormat = properties.get(MetadataStore.METADATA_EXPORT, Boolean.class, false);
-            logger.info( "Export Format " + useExportableFormat );
-            if( useExportableFormat ){
-                metadataStore = new ExportedMetadataStore<>(clazz,properties,simulationName);
-            } else {
-                if (!clazz.isAnnotationPresent(Searchable.class)) {
-                    metadataStore = new TmpMetadataStore<T>(clazz, properties);
-                } else {
-                    metadataStore = new TmpSearchableMetadataStore<T>(clazz, properties);
-                }
-            }
+            metadataStore = new KryoMetadataStore<T>(clazz, properties);
             groupStore.put(clazz.getSimpleName(), metadataStore);
         }
         return metadataStore;
+    }
+
+    public synchronized Set<Class<? extends Metadata>> getActiveMetadataStores() {
+        return groupStore.values().stream().map(MetadataStore::type).collect(Collectors.toSet());
     }
 
     /**
@@ -70,7 +64,7 @@ public class MetadataStoreGroup {
     public void expire() {
         groupStore.forEach((key, store) -> {
             try {
-                if (store.expire()) {
+                if (store.expire(false)) {
                     groupStore.remove(key);
                 }
             } catch (IOException e) {

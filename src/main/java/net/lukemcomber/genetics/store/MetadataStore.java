@@ -27,14 +27,6 @@ public abstract class MetadataStore<T extends Metadata> {
     public abstract void store(final T data);
 
     /**
-     * Returns a list of all data stored in the datastore
-     *
-     * @return list of records
-     * @throws FileNotFoundException
-     */
-    public abstract List<T> retrieve() throws FileNotFoundException;
-
-    /**
      * Returns a page of data stored in the datastore
      *
      * @param pageNumber   page number to return
@@ -42,7 +34,7 @@ public abstract class MetadataStore<T extends Metadata> {
      * @return list of records
      * @throws FileNotFoundException
      */
-    public abstract List<T> page(int pageNumber, int countPerPage) throws FileNotFoundException;
+    public abstract List<T> page(final String namespace, final int pageNumber, final int countPerPage) throws FileNotFoundException;
 
     /**
      * Expire the data store. If blocked is true, wait until thread shutdown to return
@@ -53,16 +45,7 @@ public abstract class MetadataStore<T extends Metadata> {
      */
     public abstract boolean expire(boolean block) throws IOException;
 
-
-    /**
-     * Attempts to expire the datastore
-     *
-     * @return true if expired
-     * @throws IOException
-     */
-    public boolean expire() throws IOException {
-        return expire(false);
-    }
+    public abstract boolean isExpired();
 
     /**
      * Returns a count of records in the data store
@@ -71,6 +54,7 @@ public abstract class MetadataStore<T extends Metadata> {
      */
     public abstract long count();
 
+    public abstract Class<T> type();
 
 }
 

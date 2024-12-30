@@ -6,10 +6,11 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -20,25 +21,26 @@ public class TestExportedMetadataStore {
     private static final Logger logger = Logger.getLogger(TestKryoMetadataStore.class.getName());
     private static final String OUTPUT_PATH = "./output";
 
-    public TestExportedMetadataStore(){
+    public TestExportedMetadataStore() {
         logger.info("STARTING EXPORT");
     }
 
     public void test() throws IOException, InterruptedException {
-        final TestMetadataStore.TestUniverse testUniverse = new TestMetadataStore.TestUniverse(ImmutableMap.of(
-                Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
-                TestSearchableMetadata.PROPERTY_ENABLED, true,
-                MetadataStore.PROPERTY_DATASTORE_TTL, 1000000L,
-                MetadataStore.METADATA_EXPORT, true,
-                MetadataStorage.PROPERTY_TYPE_PATH, OUTPUT_PATH
-        ));
+        final TestMetadataStore.TestUniverse testUniverse = new TestMetadataStore.TestUniverse(ImmutableMap.<String,Object>builder()
+                .put(Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID)
+                .put(TestSearchableMetadata.PROPERTY_ENABLED, true)
+                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 1000000L)
+                .put(MetadataStore.METADATA_EXPORT, true)
+                .put(MetadataStorage.PROPERTY_TYPE_PATH, OUTPUT_PATH)
+                .put("metadata.TestSearchableMetadata.export", true)
+                .build());
+
 
         final int NUM_RECORDS = 75;
         final String simulation = "unit-test-3";
 
         final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore(simulation, testUniverse);
         final MetadataStore<TestSearchableMetadata> testMetaStore = group.get(TestSearchableMetadata.class);
-        //final MetadataStorage<TestSearchableMetadata> testMetaStore = (MetadataStorage<TestSearchableMetadata>) group.get(TestSearchableMetadata.class);
         final List<Integer> checkList = new ArrayList<>(NUM_RECORDS);
 
         logger.info("Generating fake data ...");
@@ -56,21 +58,22 @@ public class TestExportedMetadataStore {
             Thread.sleep(100);
         }
 
-        // 1 second sleep
-        Thread.sleep(1000);
+        final String outputFile = MetadataStorage.persist(testMetaStore, simulation, testUniverse);
+        if (StringUtils.isEmpty(outputFile)) {
+            throw new RuntimeException("Export failed.");
+        }
+        final File exportFile = new File(outputFile);
+        if( !exportFile.exists()) {
+            throw new RuntimeException("Output %s does not exist.".formatted(outputFile));
+        }
 
         testMetaStore.expire(true);
 
-        final String path = "%s/%s_%s.txt.gz".formatted(
-                OUTPUT_PATH,
-                TestSearchableMetadata.class.getSimpleName(), simulation);
-
-        final Path fullOutputPathAndFile = Path.of(path);
-        if (fullOutputPathAndFile.toFile().exists()) {
-
-        } else {
-            throw new RuntimeException("Export file not found! Check %s.".formatted(path));
+        if( !exportFile.exists()) {
+            throw new RuntimeException("Output %s deleted during expiration!.".formatted(outputFile));
         }
+
+        exportFile.deleteOnExit();
 
         logger.info("MetadataStorage thread shutdown.");
 

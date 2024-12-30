@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
@@ -28,27 +29,29 @@ public class MetadataStorage {
     public static final String PROPERTY_FILE_POSTFIX = "metadata.export.postfix";
     public static final String PROPERTY_EXPORT_CHUNK_SIZE = "metadata.export.chunk.size";
 
-    public static boolean persist(final MetadataStore<? extends Metadata> store, final String simulation, final UniverseConstants properties) {
+    public static String persist(final MetadataStore<? extends Metadata> store, final String simulation, final UniverseConstants properties) {
 
         final ObjectMapper mapper = new ObjectMapper();
+        String resultPath = null;
         final String property = PROPERTY_METADATA_EXPORT_TEMPLATE.formatted(store.type().getSimpleName());
         if (properties.get(property, Boolean.class, false)) {
 
-            final String writePath = properties.get(PROPERTY_TYPE_PATH, String.class);
+            final String basePath = properties.get(PROPERTY_TYPE_PATH, String.class);
+            final String fullPath = (basePath.endsWith(File.separator) ? basePath.substring(0, basePath.length() - 1) : basePath) +
+                    (simulation.endsWith(File.separator) ? simulation.substring(0, simulation.length() - 1) : simulation);
             final String filePostfix = properties.get(PROPERTY_FILE_POSTFIX, String.class, "");
 
-            final String fullOutputPathString = "%s/%s/%s%s.txt.gz".formatted(
-                    writePath.endsWith(File.separator) ? writePath.substring(0, writePath.length() - 1) : writePath,
-                    simulation.endsWith(File.separator) ? simulation.substring(0, simulation.length() - 1) : simulation,
+            final String fullOutputPathString = "%s/%s%s.txt.gz".formatted(
+                    fullPath,
                     store.type().getSimpleName(),
                     StringUtils.isNotBlank(filePostfix) ? "_" + filePostfix : "");
 
             final Path fullOutputPathAndFile = Path.of(fullOutputPathString);
 
             try {
-                Files.createDirectories(Paths.get(writePath));
+                Files.createDirectories(Paths.get(fullPath));
             } catch (final IOException e) {
-                throw new EvolutionException("Failed to create output path [%s].".formatted(writePath));
+                throw new EvolutionException("Failed to create output path [%s].".formatted(fullPath));
             }
 
             logger.info("Exporting data to %s".formatted(fullOutputPathString));
@@ -58,41 +61,48 @@ public class MetadataStorage {
                  final Writer writer = new OutputStreamWriter(new GZIPOutputStream(output), StandardCharsets.UTF_8)) {
 
                 // Get the Primary index
-                final Class<?> clazz = store.getClass();
+                final Class<?> clazz = store.type();
                 String primaryIndex = null;
+                // sequential search ... nice
                 for (final Field field : clazz.getDeclaredFields()) {
                     if (field.isAnnotationPresent(Primary.class)) {
                         primaryIndex = field.getAnnotation(Primary.class).name();
+                        break;
                     }
                 }
-                if( StringUtils.isEmpty(primaryIndex)){
+                if (StringUtils.isEmpty(primaryIndex)) {
                     writer.close();
-                    throw new EvolutionException( "Type %s has no primary index. Data cannot be exported.".formatted(store.type().getSimpleName()));
+                    throw new EvolutionException("Type %s has no primary index. Data cannot be exported.".formatted(store.type().getSimpleName()));
                 } else {
-                    final int chunkSize = properties.get(PROPERTY_EXPORT_CHUNK_SIZE,int.class,1000);
+                    final int chunkSize = properties.get(PROPERTY_EXPORT_CHUNK_SIZE, int.class, 1000);
                     int pageNumber = 0;
                     List<? extends Metadata> page;
-                    while( null != ( page = store.page(primaryIndex,pageNumber++,chunkSize) )){
+
+                    do {
                         // we got the records, now write them out!!!
-                        page.forEach( metadata -> {
-                            try {
-                                final String json = mapper.writeValueAsString(metadata);
-                                writer.write(json);
-                                writer.write("\n");
-                            } catch (final IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-                    }
+                        page = store.page(primaryIndex, pageNumber++, chunkSize);
+                        if(Objects.nonNull(page)) {
+                            page.forEach(metadata -> {
+                                try {
+                                    final String json = mapper.writeValueAsString(metadata);
+                                    writer.write(json);
+                                    writer.write("\n");
+                                } catch (final IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        }
+                    } while (0 < page.size());
                     writer.flush();
                     writer.close();
                 }
+                resultPath = fullOutputPathString;
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        return true;
+        return resultPath;
     }
 
 }

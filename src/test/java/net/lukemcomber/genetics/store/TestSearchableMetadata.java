@@ -12,7 +12,7 @@ public class TestSearchableMetadata implements Metadata {
     public String str;
 
     public Long longNumber;
-    @Indexed( name="int")
+    @Primary(name="int")
     public Integer intNumber;
 
 

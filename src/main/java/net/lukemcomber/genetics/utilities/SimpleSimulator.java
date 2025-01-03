@@ -109,7 +109,6 @@ public class SimpleSimulator {
             fauna.forEach(((coordinates, genome) -> {
                 final Organism organism;
                 try {
-                    final Genome genome1 = GenomeSerDe.deserialize(genome);
                     organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
                             GenomeSerDe.deserialize(genome), coordinates, temporalCoordinates,
                             terrain.getProperties(), groupStore);
@@ -120,12 +119,26 @@ public class SimpleSimulator {
             }));
             logger.info("Epoch started.");
             sessions.put(ecosystem.getId(), ecosystem);
-            ecosystem.initialize();
+
+            final Set<String> survivingDna = new HashSet<>();
+            final MetadataStore<Performance> metadataStore = groupStore.get(Performance.class);
+
+            ecosystem.initialize(() -> {
+
+                if (metadataStore instanceof SearchableMetadataStore<Performance>) {
+                    ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, simulation.getReusePopulation() ).forEach(performance -> {
+                        survivingDna.add(performance.getDna());
+                    });
+                }
+                return true;
+            });
 
             initialPopulation.removeAll(reincarnates.values());
             addToFilter(initialPopulation);
-            final Set<String> bestOfSim = monitorSimulation(ecosystem, simulation.getReusePopulation());
-            reincarnates = genomeCreator.generateRandomLocations(simulation.getWidth(), simulation.getHeight(), bestOfSim, null);
+
+            ecosystem.getEcosystemThread().join();
+
+            reincarnates = genomeCreator.generateRandomLocations(simulation.getWidth(), simulation.getHeight(), survivingDna, null);
 
         }
     }
@@ -162,6 +175,7 @@ public class SimpleSimulator {
             final SimpleSimulator simulation = new SimpleSimulator(simpleSimulation, filterFile);
 
             simulation.run(null);
+            System.out.println("Finished.");
         } else {
             System.err.println("File [" + args[0] + "] does not exist.");
         }

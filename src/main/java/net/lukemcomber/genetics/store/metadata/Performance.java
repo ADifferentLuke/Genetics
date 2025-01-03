@@ -246,7 +246,7 @@ public class Performance implements Metadata {
     private String parentId;
     @Indexed(name = "genome")
     private String dna = "";
-    @Primary
+    @Primary(name = "fitness")
     private Double fitness;
     private Integer causeOfDeath;
     private Long age;

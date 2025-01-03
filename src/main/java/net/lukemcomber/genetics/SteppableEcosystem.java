@@ -16,6 +16,7 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,6 +65,16 @@ public class SteppableEcosystem extends Ecosystem {
      */
     public long getTicksPerTurn() {
         return ticksPerTurn;
+    }
+
+    @Override
+    public void initialize(final Supplier<Boolean> cleanUpHook) {
+        if (getIsInitialized().compareAndSet(false, true)) {
+            if (null != getTerrain().getResourceManager()) {
+                getTerrain().getResourceManager().initializeAllTerrainResources();
+            }
+            isActive(true);
+        }
     }
 
     /**

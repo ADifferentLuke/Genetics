@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +35,8 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
     private final long maxDays;
     private final long tickDelayMs;
     private final Thread ecosystemThread;
+
+    private Supplier<Boolean> cleanUpFunction;
 
     /**
      * Create a new instance
@@ -70,12 +72,14 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
         this.maxDays = maxDays;
         this.tickDelayMs = delayMs;
 
-        isActive(true);
-
         ecosystemThread = new Thread(this);
         ecosystemThread.setName("World-" + getId());
         ecosystemThread.setDaemon(true);
 
+    }
+
+    public Thread getEcosystemThread(){ //TODO protected
+        return ecosystemThread;
     }
 
     /**
@@ -145,15 +149,19 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
      * Starts the simulation
      */
     @Override
-    public synchronized void initialize() {
-        super.initialize();
-        ecosystemThread.start();
+    public synchronized void initialize(final Supplier<Boolean> cleanUpFunction) {
+        if( getIsInitialized().compareAndSet( false, true)) {
+            this.cleanUpFunction = cleanUpFunction;
+            if (null != getTerrain().getResourceManager()) {
+                getTerrain().getResourceManager().initializeAllTerrainResources();
+            }
+            isActive(true);
+            ecosystemThread.start();
+        }
     }
 
     /**
      * Thread entry point to run ecosystem. Should not be called directly.
-     * <p>
-     * Use {@link AutomaticEcosystem#initialize()} to start the simulation.
      */
     @Override
     public void run() {
@@ -170,7 +178,7 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
                 tickEnvironment();
                 tickOrganisms();
 
-                if (getTotalTicks() % 10 == 0) {
+                if (getTotalTicks() % 10 == 0) { // TODO make configurable
 
                     final Environment environmentData = new Environment();
                     environmentData.setTickCount(getTotalTicks());
@@ -187,11 +195,11 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
                     activeStores.forEach( clazz -> {
 
                         MetadataStore<?> storage = metadataStoreGroup.get(clazz);
-                        MetadataStorage.persist(storage,getName(), properties);
+                        final String path = MetadataStorage.persist(storage,getName(), properties);
+                        logger.info( "Saved data: " + path );
                     });
-
-                    // TODO Expire metadata store after N time
-                    metadataStoreGroup.expire();
+                    cleanUpFunction.get();
+                    metadataStoreGroup.close();
                 } else {
 
                     final long processingTime = System.currentTimeMillis() + startTimeMillis;
@@ -203,11 +211,11 @@ public class AutomaticEcosystem extends Ecosystem implements Runnable {
 
 
             }
-            logger.info("Simulation " + getId() + " finished.");
         } catch (final InterruptedException e) {
             logger.log(Level.SEVERE, String.format("World id %s failed to delay. Terminating.", getId()), e);
-            isActive(false);
         }
+        logger.info("Simulation " + getId() + " finished.");
+        isActive(false);
 
     }
 

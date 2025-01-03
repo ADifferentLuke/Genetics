@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,8 +50,9 @@ public abstract class Ecosystem {
     private long totalDays;
     private int currentTick;
     private final String name;
-    private boolean active;
-    private boolean initalized;
+    private final AtomicBoolean isRunning;
+    private final AtomicBoolean isInitialized;
+    private final AtomicBoolean isCleanedUp;
 
     /**
      * Creates a new instance of an {@link Ecosystem}
@@ -93,8 +97,19 @@ public abstract class Ecosystem {
 
         terrain = TerrainFactory.create(size, properties, metadataStoreGroup);
 
-        this.active = true; //TODO should move to initialized?
-        this.initalized = false;
+        isRunning = new AtomicBoolean(false);
+        isInitialized = new AtomicBoolean(false);
+        isCleanedUp = new AtomicBoolean(false);
+    }
+
+    protected  AtomicBoolean getIsRunning(){
+        return isRunning;
+    }
+    protected  AtomicBoolean getIsInitialized(){
+        return isInitialized;
+    }
+    protected  AtomicBoolean getIsCleanedUp(){
+        return isCleanedUp;
     }
 
     /**
@@ -181,12 +196,16 @@ public abstract class Ecosystem {
     /**
      * Initializes the ecosystem
      */
-    public void initialize() {
-        if (null != terrain.getResourceManager()) {
-            terrain.getResourceManager().initializeAllTerrainResources();
+    public abstract void initialize(final Supplier<Boolean> cleanUpHook ) ;
+    /*
+        if( isInitialized.compareAndSet(false,true)) {
+            if (null != terrain.getResourceManager()) {
+                terrain.getResourceManager().initializeAllTerrainResources();
+            }
         }
-        initalized = true;
     }
+
+     */
 
     /**
      * Get the ecosystems unique id
@@ -210,7 +229,7 @@ public abstract class Ecosystem {
      * Refresh the ecosystem's resources
      */
     void refreshResources() {
-        if (active) {
+        if (isRunning.get()) {
             final ResourceManager manager = getTerrain().getResourceManager();
             manager.renewDailyEnvironmentResource();
         }
@@ -222,7 +241,7 @@ public abstract class Ecosystem {
      * @param organism organism to add
      */
     public void addOrganismToInitialPopulation(final Organism organism) {
-        if (!initalized) {
+        if (!isInitialized.get()) {
             initialPopulation.add(GenomeSerDe.serialize(organism.getGenome()));
             terrain.addOrganism(organism);
         } else {
@@ -245,7 +264,7 @@ public abstract class Ecosystem {
      * @return true if currently running
      */
     public boolean isActive() {
-        return active;
+        return isRunning.get();
     }
 
     /**
@@ -254,7 +273,7 @@ public abstract class Ecosystem {
      * @param active
      */
     public void isActive(final boolean active) {
-        this.active = active;
+        isRunning.set(active);
     }
 
     /**

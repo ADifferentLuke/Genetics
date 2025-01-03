@@ -21,17 +21,15 @@ public class MetadataStoreGroup {
 
     private final Map<String, MetadataStore<? extends Metadata>> groupStore;
     private final UniverseConstants properties;
-    private final String simulationName;
 
     /**
      * Creates a new collection of {@link MetadataStore} objects
      *
      * @param properties configuration properties
      */
-    protected MetadataStoreGroup(final UniverseConstants properties, final String simulation) {
+    protected MetadataStoreGroup(final UniverseConstants properties) {
         groupStore = new ConcurrentHashMap<>();
         this.properties = properties;
-        this.simulationName = simulation;
     }
 
     /**
@@ -61,7 +59,7 @@ public class MetadataStoreGroup {
     /**
      * Expires the all the {@link MetadataStore} and clean up resources
      */
-    public void expire() {
+    public void close() {
         groupStore.forEach((key, store) -> {
             try {
                 if (store.expire(false)) {

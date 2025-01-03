@@ -38,6 +38,7 @@ public class MetadataStorage {
 
             final String basePath = properties.get(PROPERTY_TYPE_PATH, String.class);
             final String fullPath = (basePath.endsWith(File.separator) ? basePath.substring(0, basePath.length() - 1) : basePath) +
+                    File.separator +
                     (simulation.endsWith(File.separator) ? simulation.substring(0, simulation.length() - 1) : simulation);
             final String filePostfix = properties.get(PROPERTY_FILE_POSTFIX, String.class, "");
 

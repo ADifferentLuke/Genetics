@@ -158,7 +158,7 @@ public class EcosystemJsonReader extends SpatialCoordinateRangeParser {
             });
 
         }
-        ecosystem.initialize();
+        ecosystem.initialize(null);
         return ecosystem;
     }
 

@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -44,7 +45,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
     public static final String PROPERTY_TYPE_TTL = "metadata.%s.ttl";
 
-    private final Map<String, TreeMap<Object, List<CachePosition>>> indexedFields;
+    private final Map<String, ConcurrentSkipListMap<Object, LinkedBlockingQueue<CachePosition>>> indexedFields;
     private long recordCount;
     private boolean enabled; //RW is atomic
     private final Thread writeThread;
@@ -55,6 +56,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     private final RandomAccessFile datFile;
     private final RandomAccessFile idxFile;
 
+    private boolean cleanedUp;
     private long cursor;
     private final Class<T> type;
     private final Pool<Kryo> kryoPool;
@@ -67,9 +69,10 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      */
     public KryoMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
 
+        cleanedUp = false;
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
-        indexedFields = new HashMap<>();
+        indexedFields = new ConcurrentSkipListMap<>();
         recordCount = 0;
         final Long cTtl = properties.get(String.format(PROPERTY_TYPE_TTL, type.getSimpleName()), Long.class, -1l);
         this.type = type;
@@ -112,6 +115,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
             logger.info(String.format("Store:\n\tIdx: %s\n\tDat: %s", idxFilePath.toFile().getAbsolutePath(), datFilePath.toFile().getAbsolutePath()));
 
+            final Timer expirationTimer = new Timer();
             writeThread = new Thread(String.format("%s-%d-meta-poller", type.getSimpleName(), currentTimeMillis)) {
 
                 @Override
@@ -143,17 +147,35 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                                 break; // I hate this but checking interrupt fails
                             }
                         }
-                        try {
-                            ioSystemLock.writeLock().lock();
-                            indexedFields.clear();
-                            datFile.close();
-                            idxFile.close();
-                            Files.deleteIfExists(datFilePath);
-                            Files.deleteIfExists(idxFilePath);
 
-                        } finally {
-                            ioSystemLock.writeLock().unlock();
-                        }
+                        /* TODO create reference to cleanup runnable
+                            store locally, and schedule for run
+                                - when scheduledrun, clear local cache
+                                - on termination clear timer, run runnales
+
+                         */
+
+                        expirationTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+
+                                    ioSystemLock.writeLock().lock();
+                                    indexedFields.clear();
+                                    datFile.close();
+                                    idxFile.close();
+                                    Files.deleteIfExists(datFilePath);
+                                    Files.deleteIfExists(idxFilePath);
+                                    cleanedUp = true;
+
+                                } catch (final IOException e) {
+                                    throw new RuntimeException(e);
+                                } finally {
+                                    ioSystemLock.writeLock().unlock();
+                                }
+                            }
+                        }, ttl);
+
 
                         synchronized (writeThread) {
                             writeThread.notifyAll();
@@ -241,7 +263,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     public List<T> find(final String index, final Object value, final int limit) throws IOException {
         final List<T> retVal = new LinkedList<>();
         if (indexedFields.containsKey(index)) {
-            final TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
+            final ConcurrentSkipListMap<Object, LinkedBlockingQueue<CachePosition>> indexes = indexedFields.get(index);
             /*
              * There is no guarantee that our lookup value is the same type as the Map.
              *   so peek the first entry and compare types
@@ -251,9 +273,10 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
                 if (indexKey.getClass() == value.getClass()) {
                     if (indexes.containsKey(value)) {
-                        final List<CachePosition> positions = indexes.get(value);
-                        for (int i = 0; i < positions.size() && i < limit; i++) {
-                            retVal.add(readDataFromFile(positions.get(i), datFile));
+                        final LinkedBlockingQueue<CachePosition> positions = indexes.get(value);
+                        CachePosition targetPosition;
+                        while (null != (targetPosition = positions.poll())) {
+                            retVal.add(readDataFromFile(targetPosition, datFile));
                         }
                     }
                 } else {
@@ -361,21 +384,21 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                 final String key = null != field.getAnnotation(Indexed.class) ?
                         field.getAnnotation(Indexed.class).name() : field.getAnnotation(Primary.class).name();
 
-                final TreeMap<Object, List<CachePosition>> indexList;
+                final ConcurrentSkipListMap<Object, LinkedBlockingQueue<CachePosition>> indexList;
                 if (indexedFields.containsKey(key)) {
                     indexList = indexedFields.get(key);
                 } else {
-                    indexList = new TreeMap<>();
+                    indexList = new ConcurrentSkipListMap<>();
                     indexedFields.put(key, indexList);
                 }
                 final Object val = field.get(metadata);
 
                 if (!Objects.isNull(val)) {
-                    final List<CachePosition> records;
+                    final LinkedBlockingQueue<CachePosition> records;
                     if (indexList.containsKey(val)) {
                         records = indexList.get(val);
                     } else {
-                        records = new LinkedList<>();
+                        records = new LinkedBlockingQueue<>();
                     }
                     records.add(cachePosition);
                     indexList.put(val, records);
@@ -396,7 +419,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
         final List<T> results;
         if (indexedFields.containsKey(index)) {
-            final TreeMap<Object, List<CachePosition>> indexes = indexedFields.get(index);
+            final ConcurrentSkipListMap<Object, LinkedBlockingQueue<CachePosition>> indexes = indexedFields.get(index);
             results = indexes.descendingMap().entrySet().stream().flatMap(entry -> entry.getValue().stream())
                     .skip((long) page * recordCount)
                     .limit(recordCount)
@@ -424,12 +447,13 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
         final long startPosition = position.startByte;
         final byte[] data = new byte[position.length];
         int readCount = 0;
+        boolean seeked = false;
         try {
-
             readLock.lock();
-            if (file.getChannel().isOpen() && startPosition + data.length < file.length()) {
+            if (file.getChannel().isOpen() && startPosition + data.length <= file.length()) {
                 file.seek(startPosition);
                 readCount = file.read(data);
+                seeked = true;
             }
 
         } finally {
@@ -442,7 +466,9 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             retVal = kryo.readObject(input, type);
             kryoPool.free(kryo);
         } else {
+            logger.severe( "readDataFromFile - setting a null. Read count: " + readCount);
             retVal = null;
+            throw new RuntimeException("Null read!");
         }
         return retVal;
     }

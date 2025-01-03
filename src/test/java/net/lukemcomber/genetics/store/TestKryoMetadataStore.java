@@ -79,22 +79,29 @@ public class TestKryoMetadataStore {
 
         //Get top 25
         final List<TestSearchableMetadata> page = testMetaStore.page("int", pageNo, countPerPage);
+        logger.severe("List size: " + page.size());
+        logger.severe( "Total size: " + testMetaStore.count());
         for (int i = 0; i < page.size(); ++i) {
-            assertEquals(page.get(i).intNumber, checkList.get((pageNo * countPerPage) + i));
+            try {
+                assertEquals(page.get(i).intNumber, checkList.get((pageNo * countPerPage) + i));
+            } catch( final Exception e ){
+                logger.severe(e.getMessage());
+                throw e;
+            }
         }
 
         if (null != cacheRecord) {
-            final List<TestSearchableMetadata> recordStrLookupResults = testMetaStore.find( cacheRecord.str, 5);
+            final List<TestSearchableMetadata> recordStrLookupResults = testMetaStore.find(cacheRecord.str, 5);
             assertEquals(1, recordStrLookupResults.size());
 
-            assertEquals( cacheRecord.str, recordStrLookupResults.get(0).str);
+            assertEquals(cacheRecord.str, recordStrLookupResults.get(0).str);
 
-            final List<TestSearchableMetadata> recordIntLookupResults = testMetaStore.find( cacheRecord.intNumber, 5 );
-            if( 0 >= recordIntLookupResults.size()){
-               throw new RuntimeException("Find by named type failed");
+            final List<TestSearchableMetadata> recordIntLookupResults = testMetaStore.find(cacheRecord.intNumber, 5);
+            if (0 >= recordIntLookupResults.size()) {
+                throw new RuntimeException("Find by named type failed");
             }
 
-            assertEquals( cacheRecord.intNumber,recordIntLookupResults.get(0).intNumber );
+            assertEquals(cacheRecord.intNumber, recordIntLookupResults.get(0).intNumber);
 
         } else if (RECORD_SELECT_NUMBER < NUM_RECORDS) {
             throw new RuntimeException("Should have gotten a record but didn't?");

@@ -7,7 +7,7 @@ package net.lukemcomber.genetics.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import net.lukemcomber.genetics.AutomaticEcosystem;
+import net.lukemcomber.genetics.EpochEcosystem;
 import net.lukemcomber.genetics.SteppableEcosystem;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.OrganismFactory;
@@ -15,6 +15,8 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.Ecosystem;
+import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.impl.SteppableEcosystemConfiguration;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.world.terrain.Terrain;
@@ -114,7 +116,14 @@ public class EcosystemJsonReader extends SpatialCoordinateRangeParser {
         if (!ticksPerTurnNode.isMissingNode()) {
             final int ticksPerTurn = ticksPerTurnNode.asInt();
             if (0 < ticksPerTurn) {
-                ecosystem = new SteppableEcosystem(ticksPerTurn, ticksPerDay, gridSize, worldType, name);
+                ecosystem = new SteppableEcosystem(SteppableEcosystemConfiguration.builder()
+                        .ticksPerTurn(ticksPerTurn)
+                        .ticksPerDay(ticksPerDay)
+                        .size(gridSize)
+                        .type(worldType)
+                        .name(name)
+                        .build());
+
             } else {
                 throw new RuntimeException("Ticks per turn cannot be a negative value. You can't time travel!");
             }
@@ -125,7 +134,14 @@ public class EcosystemJsonReader extends SpatialCoordinateRangeParser {
             final long maxDays = maxDaysNode.asLong();
             final long tickDelay = tickDelayNode.asLong();
 
-            ecosystem = new AutomaticEcosystem(ticksPerDay, gridSize, worldType, maxDays, tickDelay, name);
+            ecosystem = new EpochEcosystem(EpochEcosystemConfiguration.builder()
+                    .ticksPerDay(ticksPerDay)
+                    .size(gridSize)
+                    .type(worldType)
+                    .maxDays(maxDays)
+                    .tickDelayMs(tickDelay)
+                    .name(name)
+                    .build());
         }
 
         /* Build the initial organisms */

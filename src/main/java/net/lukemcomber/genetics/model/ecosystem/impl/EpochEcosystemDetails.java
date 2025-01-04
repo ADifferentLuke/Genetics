@@ -6,12 +6,12 @@ package net.lukemcomber.genetics.model.ecosystem.impl;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 
 /**
  * Configuration options for automated simulations
  */
-public class AutomatedEcosystemConfiguration extends EcosystemConfiguration {
+public class EpochEcosystemDetails extends EcosystemDetails {
     /**
      * Get the max number of days per simulation
      *

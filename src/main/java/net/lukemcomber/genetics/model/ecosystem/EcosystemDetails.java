@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.model.ecosystem;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,9 @@ import java.util.Map;
 /**
  * Configuration options for simulations
  */
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class EcosystemConfiguration {
+public abstract class EcosystemDetails {
 
     /**
      * Get the simulations id
@@ -269,6 +271,7 @@ public abstract class EcosystemConfiguration {
     public void setInitialPopulation(List<String> initialPopulation) {
         this.initialPopulation = initialPopulation;
     }
+
 
     @JsonProperty("id")
     private String id;

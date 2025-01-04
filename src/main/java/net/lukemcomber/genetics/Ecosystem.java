@@ -10,7 +10,7 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
-import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.io.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -197,15 +196,6 @@ public abstract class Ecosystem {
      * Initializes the ecosystem
      */
     public abstract void initialize(final Supplier<Boolean> cleanUpHook ) ;
-    /*
-        if( isInitialized.compareAndSet(false,true)) {
-            if (null != terrain.getResourceManager()) {
-                terrain.getResourceManager().initializeAllTerrainResources();
-            }
-        }
-    }
-
-     */
 
     /**
      * Get the ecosystems unique id
@@ -276,20 +266,13 @@ public abstract class Ecosystem {
         isRunning.set(active);
     }
 
-    /**
-     * Advance time by one tick
-     *
-     * @return true if active
-     * @throws EvolutionException
-     */
-    public abstract boolean advance() throws EvolutionException;
 
     /**
      * Get the ecosystem configuration used to build this ecosystem
      *
      * @return ecosystem configuration
      */
-    public abstract EcosystemConfiguration getSetupConfiguration();
+    public abstract EcosystemDetails getSetupConfiguration();
 
     /**
      * Advance the environment by one tick

@@ -7,9 +7,9 @@ package net.lukemcomber.genetics;
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
-import net.lukemcomber.genetics.model.ecosystem.EcosystemConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.SteppableEcosystemConfiguration;
-import net.lukemcomber.genetics.io.LoggerOutputStream;
+import net.lukemcomber.genetics.model.ecosystem.impl.SteppableEcosystemDetails;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.metadata.Environment;
 import net.lukemcomber.genetics.world.terrain.Terrain;
@@ -17,7 +17,6 @@ import net.lukemcomber.genetics.world.terrain.Terrain;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -26,36 +25,11 @@ import java.util.logging.Logger;
 public class SteppableEcosystem extends Ecosystem {
 
     private final Logger logger = Logger.getLogger(SteppableEcosystem.class.getName());
+    private final SteppableEcosystemConfiguration configuration;
 
-    private final long ticksPerTurn;
-
-    /**
-     * Creates a new instance
-     *
-     * @param ticksPerTurn number of ticks in a turn
-     * @param ticksPerDay  number of ticks in a day
-     * @param size         size of the terrain
-     * @param type         type of ecosystem
-     * @throws IOException
-     */
-    public SteppableEcosystem(final int ticksPerTurn, final int ticksPerDay, final SpatialCoordinates size, final String type) throws IOException {
-        this(ticksPerTurn, ticksPerDay, size, type, null);
-    }
-
-    /**
-     * Creates a new instance
-     *
-     * @param ticksPerTurn number of ticks in a turn
-     * @param ticksPerDay  number of ticks in a day
-     * @param size         size of the terrain
-     * @param type         type of ecosystem
-     * @param name         name of the simulation
-     * @throws IOException
-     */
-    public SteppableEcosystem(final int ticksPerTurn, final int ticksPerDay, final SpatialCoordinates size, final String type, final String name) throws IOException {
-
-        super(ticksPerDay, size, type, name);
-        this.ticksPerTurn = ticksPerTurn;
+    public SteppableEcosystem(final SteppableEcosystemConfiguration configuration) throws IOException {
+        super(configuration.getTicksPerDay(), configuration.getSize(), configuration.getType(), configuration.getName());
+        this.configuration = configuration;
     }
 
     /**
@@ -64,7 +38,7 @@ public class SteppableEcosystem extends Ecosystem {
      * @return ticks per turn
      */
     public long getTicksPerTurn() {
-        return ticksPerTurn;
+        return configuration.getTicksPerTurn();
     }
 
     @Override
@@ -107,8 +81,8 @@ public class SteppableEcosystem extends Ecosystem {
      * @return ecosystem configuration
      */
     @Override
-    public EcosystemConfiguration getSetupConfiguration() {
-        final SteppableEcosystemConfiguration setupConfiguration = new SteppableEcosystemConfiguration();
+    public EcosystemDetails getSetupConfiguration() {
+        final SteppableEcosystemDetails setupConfiguration = new SteppableEcosystemDetails();
 
         final Terrain terrain = getTerrain();
         if (Objects.nonNull(terrain)) {
@@ -116,7 +90,7 @@ public class SteppableEcosystem extends Ecosystem {
             setupConfiguration.setHeight(getTerrain().getSizeOfYAxis());
             setupConfiguration.setDepth(getTerrain().getSizeOfZAxis());
         }
-        setupConfiguration.setTurnsPerTick(ticksPerTurn);
+        setupConfiguration.setTurnsPerTick(configuration.getTicksPerTurn());
         setupConfiguration.setInteractive(true);
         setupConfiguration.setActive(isActive());
         setupConfiguration.setName(getName());

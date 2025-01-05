@@ -8,6 +8,7 @@ package net.lukemcomber.genetics.store;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Provides methods for accessing the tracked metadata
@@ -19,6 +20,9 @@ public abstract class MetadataStore<T extends Metadata> {
     public static final String PROPERTY_DATASTORE_TTL = "metadata.ttl";
     public static final String PROPERTY_TYPE_ENABLED_TEMPLATE = "metadata.%s.enabled";
     public static final String METADATA_EXPORT = "metadata.export";
+
+    public abstract void initialize(final Callable<Void> onCleanUpHook);
+
     /**
      * Store data in the metadata store
      *

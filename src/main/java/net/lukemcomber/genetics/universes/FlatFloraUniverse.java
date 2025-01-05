@@ -75,7 +75,7 @@ public final class FlatFloraUniverse extends UniverseConstants {
                 .put(AsexualTransposGenomeTranscriber.GENOME_TRANSPOSE_PROBABILITY, 5)
                 .put(MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 5)
                 /* Metadata Store */
-                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400L) // One day in seconds
+                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 86400) // One day in seconds
                 .put(MetadataStore.METADATA_EXPORT, true)
                 .put(MetadataStorage.PROPERTY_TYPE_PATH, "./output/")
                 /* Metadata */

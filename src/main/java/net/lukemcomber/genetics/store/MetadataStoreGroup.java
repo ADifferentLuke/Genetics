@@ -6,6 +6,7 @@ import net.lukemcomber.genetics.store.impl.KryoMetadataStore;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -47,6 +48,14 @@ public class MetadataStoreGroup {
         if (null == metadataStore) {
 
             metadataStore = new KryoMetadataStore<T>(clazz, properties);
+            metadataStore.initialize(() -> {
+                if (groupStore.containsKey(clazz.getSimpleName())) {
+                    if (Objects.nonNull(groupStore.get(clazz.getSimpleName()))) {
+                        groupStore.remove(clazz.getSimpleName());
+                    }
+                }
+                return null;
+            });
             groupStore.put(clazz.getSimpleName(), metadataStore);
         }
         return metadataStore;
@@ -59,12 +68,10 @@ public class MetadataStoreGroup {
     /**
      * Expires the all the {@link MetadataStore} and clean up resources
      */
-    public void close() {
+    public void markForExpiration() {
         groupStore.forEach((key, store) -> {
             try {
-                if (store.expire(false)) {
-                    groupStore.remove(key);
-                }
+                store.expire(false);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

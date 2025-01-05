@@ -6,6 +6,7 @@ import net.lukemcomber.genetics.MultiEpochEcosystem;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochConfiguration;
+import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.universes.CustomUniverse;
 import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 
@@ -93,6 +94,8 @@ public class SimpleSimulator {
             simulation.start();
             simulation.join();
 
+            // kill all
+            MetadataStoreFactory.freeResourcesAndTerminate();
 
             System.out.println("Finished.");
         } else {

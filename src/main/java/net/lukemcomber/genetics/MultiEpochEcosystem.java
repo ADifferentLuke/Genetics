@@ -20,7 +20,6 @@ import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.SearchableMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Performance;
-import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 import net.lukemcomber.genetics.utilities.RandomGenomeCreator;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
@@ -31,13 +30,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class MultiEpochEcosystem extends Ecosystem implements Runnable {
@@ -47,7 +43,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
     private final Set<String> organismFilter;
     private final ConcurrentMap<String, Ecosystem> sessions;
     private final Map<SpatialCoordinates, String> initialPopulation;
-    private Supplier<Boolean> cleanupFunction;
+    private Callable<Void> cleanupFunction;
 
     private BufferedWriter bufferedWriter;
 
@@ -138,7 +134,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                                 survivingDna.add(performance.getDna());
                             });
                         }
-                        return true;
+                        return null;
                     });
 
                     initialPopulation.removeAll(reincarnates.values());
@@ -157,7 +153,13 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
-            if (!cleanupFunction.get()) {
+            if( Objects.nonNull(cleanupFunction)){
+                try {
+                    cleanupFunction.call();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
                 logger.severe("Clean Up function is null!!");
                 throw new EvolutionException("Clean Up function is null!");
             }
@@ -167,7 +169,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
     }
 
     @Override
-    public void initialize(final Supplier<Boolean> cleanUpHook) {
+    public void initialize(final Callable<Void> cleanUpHook) {
         try {
             if (getIsInitialized().compareAndSet(false, true)) {
                 final String proposedPath;
@@ -205,15 +207,15 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                         try {
                             bufferedWriter.flush();
                             bufferedWriter.close();
-                        } catch (final IOException e) {
+                            if (Objects.nonNull(cleanUpHook)) {
+                                cleanUpHook.call();
+                            }
+                        } catch (final Exception e) {
                             throw new RuntimeException(e);
                         }
-                        if (null != cleanUpHook) {
-                            return cleanUpHook.get();
-                        }
-                        return true;
+
                     }
-                    return false;
+                    return null;
                 };
             }
         } catch (final IOException e) {

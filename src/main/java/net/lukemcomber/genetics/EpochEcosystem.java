@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +37,7 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
     private final EpochEcosystemConfiguration configuration;
     private final Thread ecosystemThread;
 
-    private Supplier<Boolean> cleanUpFunction;
+    private Callable<Void> cleanUpFunction;
 
     public EpochEcosystem(final UniverseConstants universe, final EpochEcosystemConfiguration configuration) throws IOException {
         super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
@@ -108,7 +109,7 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
      * Starts the simulation
      */
     @Override
-    public synchronized void initialize(final Supplier<Boolean> cleanUpFunction) {
+    public synchronized void initialize(final Callable<Void> cleanUpFunction) {
         if (getIsInitialized().compareAndSet(false, true)) {
             this.cleanUpFunction = cleanUpFunction;
             if (null != getTerrain().getResourceManager()) {
@@ -157,8 +158,14 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
                         final String path = MetadataStorage.persist(storage, getName(), properties);
                         logger.info("Saved data: " + path);
                     });
-                    cleanUpFunction.get();
-                    metadataStoreGroup.close();
+                    if( Objects.nonNull(this.cleanUpFunction)){
+                        try {
+                            cleanUpFunction.call();
+                        } catch (final Exception e){
+                            logger.log(Level.SEVERE,"Clean up hook failed unexpectedly.", e);
+                        }
+                    }
+                    metadataStoreGroup.markForExpiration();
                 } else {
 
                     final long processingTime = System.currentTimeMillis() + startTimeMillis;

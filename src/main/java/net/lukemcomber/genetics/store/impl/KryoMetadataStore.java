@@ -21,10 +21,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
@@ -57,11 +54,14 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     private final RandomAccessFile datFile;
     private final RandomAccessFile idxFile;
 
+    private final AtomicBoolean isInitialized;
+    private final AtomicBoolean isRunning;
     private final AtomicBoolean isCleanedUp;
     private long cursor;
     private final Class<T> type;
     private final Pool<Kryo> kryoPool;
 
+    private Callable<Void> onCleanUpHook;
     final Timer expirationTimer;
 
     /**
@@ -70,9 +70,14 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      * @param type       type of data to store
      * @param properties config properties
      */
-    public KryoMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
+    public KryoMetadataStore(final Class<T> type, final UniverseConstants properties ) throws EvolutionException {
 
         isCleanedUp = new AtomicBoolean(false);
+        isInitialized = new AtomicBoolean( false);
+        isRunning = new AtomicBoolean( false );
+
+        onCleanUpHook = null;
+
         expirationTimer = new Timer(true);
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
@@ -123,61 +128,58 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                 @Override
                 public void run() {
 
-                    try {
-                        logger.info("Beginning poller " + writeThread.getName());
-                        while (true) {
-                            try {
-                                //blocks
-                                final T metadata = outputQueue.poll(1, TimeUnit.MINUTES);
-                                if (null != metadata) {
-                                    final ReentrantReadWriteLock.WriteLock writeLock = ioSystemLock.writeLock();
-                                    try {
-                                        writeLock.lock();
-                                        /*
-                                         * DEV NOTE: Turned out the juice is worth the squeeze
-                                         */
-                                        cursor = writeAndCacheMetadata(metadata, cursor, datFile, idxFile);
+                    if (isInitialized.get() && isRunning.compareAndSet(false, true)) {
+                        try {
+                            logger.info("Beginning poller " + writeThread.getName());
+                            while (true) {
+                                try {
+                                    //blocks
+                                    final T metadata = outputQueue.poll(1, TimeUnit.MINUTES);
+                                    if (null != metadata) {
+                                        final ReentrantReadWriteLock.WriteLock writeLock = ioSystemLock.writeLock();
+                                        try {
+                                            writeLock.lock();
+                                            /*
+                                             * DEV NOTE: Turned out the juice is worth the squeeze
+                                             */
+                                            cursor = writeAndCacheMetadata(metadata, cursor, datFile, idxFile);
 
-                                    } catch (IllegalAccessException e) {
-                                        throw new RuntimeException(e);
-                                    } finally {
-                                        writeLock.unlock();
+                                        } catch (IllegalAccessException e) {
+                                            throw new RuntimeException(e);
+                                        } finally {
+                                            writeLock.unlock();
+                                        }
                                     }
+                                } catch (final InterruptedException e) {
+                                    logger.info(writeThread.getName() + " woken up.");
+                                    break; // I hate this but checking interrupt fails
                                 }
-                            } catch (final InterruptedException e) {
-                                logger.info(writeThread.getName() + " woken up.");
-                                break; // I hate this but checking interrupt fails
                             }
-                        }
 
-                        /* TODO create reference to cleanup runnable
-                            store locally, and schedule for run
-                                - when scheduledrun, clear local cache
-                                - on termination clear timer, run runnales
 
-                         */
+                            expirationTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    cleanUp();
+                                }
+                            }, ttl);
 
-                        expirationTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                freeResourcesAndTerminate();
+
+                            synchronized (writeThread) {
+                                writeThread.notifyAll();
                             }
-                        }, ttl);
-
-
-                        synchronized (writeThread) {
-                            writeThread.notifyAll();
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
+                        logger.info(writeThread.getName() + " shutting down.");
+                    } else {
+                        logger.info("Metadata Store is already running.");
                     }
-                    logger.info(writeThread.getName() + " shutting down.");
-                }
 
+                }
             };
 
             writeThread.setDaemon(true);
-            writeThread.start();
         } else {
             datFilePath = null;
             datFile = null;
@@ -186,18 +188,19 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             writeThread = null;
         }
 
+
     }
 
-    public synchronized void freeResourcesAndTerminate() {
-        if (enabled) {
+    private void cleanUp(){
+        if (isRunning.compareAndSet(true,false) && isCleanedUp.compareAndSet(false, true)) {
             try {
-                expire(true);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        if (isCleanedUp.compareAndSet(false, true)) {
-            try {
+                if( Objects.nonNull(onCleanUpHook)){
+                    try {
+                        onCleanUpHook.call();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 ioSystemLock.writeLock().lock();
                 indexedFields.clear();
                 datFile.close();
@@ -214,6 +217,33 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             }
         } else {
             logger.info("Store resources already freed.");
+        }
+    }
+
+    public synchronized void freeResourcesAndTerminate() {
+        if (isRunning.get()) {
+            try {
+                expire(true);
+                expirationTimer.cancel();
+                cleanUp();
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * onCleanUpHook will be called before the expiration timer is set, but after reading the last message
+     *
+     * @param onCleanUpHook
+     */
+    @Override
+    public void initialize(final Callable<Void> onCleanUpHook) {
+        if( !isCleanedUp.get() && !isRunning.get() && isInitialized.compareAndSet(false,true)){
+            this.onCleanUpHook = onCleanUpHook;
+            writeThread.start();
+        } else {
+            logger.warning( "Metadata store already initialized.");
         }
     }
 
@@ -363,7 +393,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     // may block
     @Override
     public boolean isExpired() {
-        return !enabled;
+        return isCleanedUp.get();
     }
 
     private long writeAndCacheMetadata(final T metadata, final long currentPosition,

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -180,7 +181,7 @@ public abstract class Ecosystem {
     /**
      * Initializes the ecosystem
      */
-    public abstract void initialize(final Supplier<Boolean> cleanUpHook);
+    public abstract void initialize(final Callable<Void> cleanUpHook);
 
     /**
      * Get the ecosystems unique id

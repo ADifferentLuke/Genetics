@@ -26,7 +26,7 @@ public class TestTmpMetadataStore {
         final TestMetadataStore.TestUniverse testUniverse = new TestMetadataStore.TestUniverse(ImmutableMap.of(
                 Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
                 "metadata.TestMetadata.enabled", true,
-                MetadataStore.PROPERTY_DATASTORE_TTL, 1000000l
+                MetadataStore.PROPERTY_DATASTORE_TTL, 1000000
         ));
         final MetadataStoreGroup group = MetadataStoreFactory.getMetadataStore("tmp-datastore-test-1", testUniverse);
         final MetadataStore<TestMetadata> testMetaStore = group.get(TestMetadata.class);

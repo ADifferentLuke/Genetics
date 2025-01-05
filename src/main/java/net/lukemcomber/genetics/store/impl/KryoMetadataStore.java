@@ -25,6 +25,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -56,10 +57,12 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     private final RandomAccessFile datFile;
     private final RandomAccessFile idxFile;
 
-    private boolean cleanedUp;
+    private final AtomicBoolean isCleanedUp;
     private long cursor;
     private final Class<T> type;
     private final Pool<Kryo> kryoPool;
+
+    final Timer expirationTimer;
 
     /**
      * Create new {@link net.lukemcomber.genetics.store.SearchableMetadataStore} of the specified type.
@@ -69,16 +72,17 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      */
     public KryoMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
 
-        cleanedUp = false;
+        isCleanedUp = new AtomicBoolean(false);
+        expirationTimer = new Timer(true);
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
         indexedFields = new ConcurrentSkipListMap<>();
         recordCount = 0;
-        final Long cTtl = properties.get(String.format(PROPERTY_TYPE_TTL, type.getSimpleName()), Long.class, -1l);
+        final Integer cTtl = properties.get(String.format(PROPERTY_TYPE_TTL, type.getSimpleName()), Integer.class, -1);
         this.type = type;
         if (0 >= cTtl) {
             // Get global property
-            ttl = properties.get(PROPERTY_DATASTORE_TTL, Long.class);
+            ttl = properties.get(PROPERTY_DATASTORE_TTL, Integer.class);
         } else {
             ttl = cTtl;
         }
@@ -114,8 +118,6 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             }
 
             logger.info(String.format("Store:\n\tIdx: %s\n\tDat: %s", idxFilePath.toFile().getAbsolutePath(), datFilePath.toFile().getAbsolutePath()));
-
-            final Timer expirationTimer = new Timer();
             writeThread = new Thread(String.format("%s-%d-meta-poller", type.getSimpleName(), currentTimeMillis)) {
 
                 @Override
@@ -123,7 +125,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
                     try {
                         logger.info("Beginning poller " + writeThread.getName());
-                        while (true){
+                        while (true) {
                             try {
                                 //blocks
                                 final T metadata = outputQueue.poll(1, TimeUnit.MINUTES);
@@ -158,21 +160,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                         expirationTimer.schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                try {
-
-                                    ioSystemLock.writeLock().lock();
-                                    indexedFields.clear();
-                                    datFile.close();
-                                    idxFile.close();
-                                    Files.deleteIfExists(datFilePath);
-                                    Files.deleteIfExists(idxFilePath);
-                                    cleanedUp = true;
-
-                                } catch (final IOException e) {
-                                    throw new RuntimeException(e);
-                                } finally {
-                                    ioSystemLock.writeLock().unlock();
-                                }
+                                freeResourcesAndTerminate();
                             }
                         }, ttl);
 
@@ -198,6 +186,35 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             writeThread = null;
         }
 
+    }
+
+    public synchronized void freeResourcesAndTerminate() {
+        if (enabled) {
+            try {
+                expire(true);
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (isCleanedUp.compareAndSet(false, true)) {
+            try {
+                ioSystemLock.writeLock().lock();
+                indexedFields.clear();
+                datFile.close();
+                idxFile.close();
+                logger.info("Deleting file " + datFilePath.toAbsolutePath());
+                logger.info("Deleting file " + idxFilePath.toAbsolutePath());
+                Files.deleteIfExists(datFilePath);
+                Files.deleteIfExists(idxFilePath);
+
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                ioSystemLock.writeLock().unlock();
+            }
+        } else {
+            logger.info("Store resources already freed.");
+        }
     }
 
     /**
@@ -330,7 +347,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                 enabled = false;
                 writeThread.interrupt();
             }
-            if( block ){
+            if (block) {
                 synchronized (writeThread) {
                     try {
                         writeThread.join();
@@ -343,6 +360,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
         return !enabled;
     }
 
+    // may block
     @Override
     public boolean isExpired() {
         return !enabled;
@@ -466,7 +484,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             retVal = kryo.readObject(input, type);
             kryoPool.free(kryo);
         } else {
-            logger.severe( "readDataFromFile - setting a null. Read count: " + readCount);
+            logger.severe("readDataFromFile - setting a null. Read count: " + readCount);
             retVal = null;
             throw new RuntimeException("Null read!");
         }

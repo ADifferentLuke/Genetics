@@ -54,6 +54,8 @@ public abstract class MetadataStore<T extends Metadata> {
      */
     public abstract long count();
 
+    public abstract void freeResourcesAndTerminate();
+
     public abstract Class<T> type();
 
 }

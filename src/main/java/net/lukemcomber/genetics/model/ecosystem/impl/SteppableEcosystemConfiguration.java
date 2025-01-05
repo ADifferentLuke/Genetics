@@ -12,7 +12,6 @@ public class SteppableEcosystemConfiguration {
 
     private int ticksPerDay;
     private SpatialCoordinates size;
-    private String type;
     private String name;
     private long ticksPerTurn;
 }

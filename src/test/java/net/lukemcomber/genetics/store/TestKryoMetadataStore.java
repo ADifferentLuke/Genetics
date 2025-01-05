@@ -36,7 +36,7 @@ public class TestKryoMetadataStore {
         final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
                 Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
                 "metadata.TestSearchableMetadata.enabled", true,
-                MetadataStore.PROPERTY_DATASTORE_TTL, 1000000l
+                MetadataStore.PROPERTY_DATASTORE_TTL, 1000000
         ));
 
         final int NUM_RECORDS = 75;

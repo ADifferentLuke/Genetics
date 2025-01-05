@@ -13,6 +13,5 @@ public class EpochEcosystemConfiguration {
 
     private int ticksPerDay;
     private SpatialCoordinates size;
-    private String type;
     private String name;
 }

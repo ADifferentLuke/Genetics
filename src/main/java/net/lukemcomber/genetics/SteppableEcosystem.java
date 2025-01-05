@@ -7,6 +7,7 @@ package net.lukemcomber.genetics;
 
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.SteppableEcosystemConfiguration;
 import net.lukemcomber.genetics.model.ecosystem.impl.SteppableEcosystemDetails;
@@ -27,8 +28,8 @@ public class SteppableEcosystem extends Ecosystem {
     private final Logger logger = Logger.getLogger(SteppableEcosystem.class.getName());
     private final SteppableEcosystemConfiguration configuration;
 
-    public SteppableEcosystem(final SteppableEcosystemConfiguration configuration) throws IOException {
-        super(configuration.getTicksPerDay(), configuration.getSize(), configuration.getType(), configuration.getName());
+    public SteppableEcosystem(final UniverseConstants universe, final SteppableEcosystemConfiguration configuration) throws IOException {
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
         this.configuration = configuration;
     }
 

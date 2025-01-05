@@ -53,28 +53,11 @@ public abstract class Ecosystem {
     private final AtomicBoolean isInitialized;
     private final AtomicBoolean isCleanedUp;
 
-    /**
-     * Creates a new instance of an {@link Ecosystem}
-     *
-     * @param ticksPerDay count of ticks in a day
-     * @param size        scale of terrain
-     * @param type        type of the ecosystem
-     * @throws IOException
-     */
-    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type) throws IOException {
-        this(ticksPerDay, size, type, null);
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe) throws IOException {
+        this(ticksPerDay, size, universe, null);
     }
 
-    /**
-     * Creates a new instance of an {@link Ecosystem}
-     *
-     * @param ticksPerDay count of ticks in a day
-     * @param size        scale of terrain
-     * @param type        type of the ecosystem
-     * @param name        human-readable name of the simulation
-     * @throws IOException
-     */
-    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final String type, final String name) throws IOException {
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe, final String name) throws IOException {
 
 
         this.ticksPerDay = ticksPerDay;
@@ -84,7 +67,7 @@ public abstract class Ecosystem {
         totalTicks = 0;
         currentTick = 0;
 
-        properties = UniverseFactory.get(type);
+        properties = universe;
         uuid = UUID.randomUUID().toString();
         if (StringUtils.isNotEmpty(name)) {
             this.name = name;
@@ -101,13 +84,15 @@ public abstract class Ecosystem {
         isCleanedUp = new AtomicBoolean(false);
     }
 
-    protected  AtomicBoolean getIsRunning(){
+    protected AtomicBoolean getIsRunning() {
         return isRunning;
     }
-    protected  AtomicBoolean getIsInitialized(){
+
+    protected AtomicBoolean getIsInitialized() {
         return isInitialized;
     }
-    protected  AtomicBoolean getIsCleanedUp(){
+
+    protected AtomicBoolean getIsCleanedUp() {
         return isCleanedUp;
     }
 
@@ -195,7 +180,7 @@ public abstract class Ecosystem {
     /**
      * Initializes the ecosystem
      */
-    public abstract void initialize(final Supplier<Boolean> cleanUpHook ) ;
+    public abstract void initialize(final Supplier<Boolean> cleanUpHook);
 
     /**
      * Get the ecosystems unique id

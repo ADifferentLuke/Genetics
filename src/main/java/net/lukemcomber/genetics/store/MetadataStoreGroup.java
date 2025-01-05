@@ -70,4 +70,11 @@ public class MetadataStoreGroup {
             }
         });
     }
+
+    public void freeResourcesAndTerminate() {
+
+        for (final MetadataStore<?> store : groupStore.values()) {
+            store.freeResourcesAndTerminate();
+        }
+    }
 }

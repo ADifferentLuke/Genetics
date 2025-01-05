@@ -29,7 +29,7 @@ public class TestExportedMetadataStore {
         final TestMetadataStore.TestUniverse testUniverse = new TestMetadataStore.TestUniverse(ImmutableMap.<String,Object>builder()
                 .put(Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID)
                 .put(TestSearchableMetadata.PROPERTY_ENABLED, true)
-                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 1000000L)
+                .put(MetadataStore.PROPERTY_DATASTORE_TTL, 1000000)
                 .put(MetadataStore.METADATA_EXPORT, true)
                 .put(MetadataStorage.PROPERTY_TYPE_PATH, OUTPUT_PATH)
                 .put("metadata.TestSearchableMetadata.export", true)

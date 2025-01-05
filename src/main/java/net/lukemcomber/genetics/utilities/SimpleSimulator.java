@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.lukemcomber.genetics.MultiEpochEcosystem;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
+import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochConfiguration;
+import net.lukemcomber.genetics.universes.CustomUniverse;
+import net.lukemcomber.genetics.universes.FlatFloraUniverse;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +31,6 @@ public class SimpleSimulator {
         "maxDays": 10,
         "initialPopulation": 100,
         "reusePopulation": 50,
-        "type": "flat-floral-universe",
         "filter": "misc/genome.filter",
         "name": "simsim",
         "tickDelayMs": 0
@@ -47,16 +49,24 @@ public class SimpleSimulator {
      */
     public static void main(final String[] args) throws IOException, InterruptedException {
 
-        if (1 != args.length) {
-            System.err.println("Usage: SimpleSimulator <file>");
+        if (!(1 <= args.length && 2 >= args.length)) {
+            System.err.println("Usage: SimpleSimulator <file> [<universe>]");
             return;
         }
 
         final File inputFile = new File(args[0]);
+        final File universeFile = args.length == 2 ? new File(args[1]) : null;
         final ObjectMapper objectMapper = new ObjectMapper();
 
         final InputStream configFile = SimpleSimulator.class.getResourceAsStream("/logging/logging.properties");
         LogManager.getLogManager().readConfiguration(configFile);
+
+        UniverseConstants universe = null;
+        if( null != universeFile){
+            universe = new CustomUniverse(universeFile);
+        } else {
+            universe = new FlatFloraUniverse();
+        }
 
 
         if (inputFile.exists()) {
@@ -68,7 +78,6 @@ public class SimpleSimulator {
                             inputJson.path("height").asInt(), 0))
                     .epochs(inputJson.path("epochs").asInt(1))
                     .fileFilterPath(inputJson.path("filter").asText(null))
-                    .type(inputJson.path("type").asText())
                     .initialPopulation(inputJson.path("initialPopulation").asInt())
                     .maxDays(inputJson.path("maxDays").asInt())
                     .reusePopulation(inputJson.path("reusePopulation").asInt())
@@ -77,12 +86,13 @@ public class SimpleSimulator {
                     .ticksPerDay(inputJson.path("ticksPerDay").asInt())
                     .deleteFilterOnExit(inputJson.path("deleteFilterOnExit").asBoolean(false))
                     .build();
-            final MultiEpochEcosystem ecosystem = new MultiEpochEcosystem(configuration);
+            final MultiEpochEcosystem ecosystem = new MultiEpochEcosystem(universe, configuration);
             ecosystem.initialize(null);
             final Thread simulation = new Thread(ecosystem);
             simulation.setName("SimpleSimulatorEcosystem");
             simulation.start();
             simulation.join();
+
 
             System.out.println("Finished.");
         } else {

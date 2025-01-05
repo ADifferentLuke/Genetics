@@ -10,6 +10,7 @@ import net.lukemcomber.genetics.model.UniverseConstants;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -53,4 +54,15 @@ public class MetadataStoreFactory {
         }
         return sessionStore;
     }
+
+    public synchronized static void freeResourcesAndTerminate() {
+
+        for (final WeakReference<MetadataStoreGroup> reference : instance.metadataStoreBySession.values()) {
+            final MetadataStoreGroup group = reference.get();
+            if (Objects.nonNull(group)) {
+                group.freeResourcesAndTerminate();
+            }
+        }
+    }
+
 }

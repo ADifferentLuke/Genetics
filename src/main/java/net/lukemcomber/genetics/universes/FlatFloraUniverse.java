@@ -5,6 +5,9 @@ package net.lukemcomber.genetics.universes;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.biology.plant.behavior.EjectSeed;
@@ -27,11 +30,15 @@ import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorldResourceManager;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * A 2-dimensional universe for plant life
  */
 public final class FlatFloraUniverse extends UniverseConstants {
+
+    private static final Logger logger = Logger.getLogger(FlatFloraUniverse.class.getName());
+
 
     public static final String ID = "flat-floral-universe";
 

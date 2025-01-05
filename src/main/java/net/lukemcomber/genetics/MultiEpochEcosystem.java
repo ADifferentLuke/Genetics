@@ -11,6 +11,7 @@ import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
+import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemConfiguration;
 import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochConfiguration;
@@ -50,12 +51,12 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
 
     private BufferedWriter bufferedWriter;
 
-    public MultiEpochEcosystem(final MultiEpochConfiguration configuration) throws IOException {
-        this(configuration, null);
+    public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration) throws IOException {
+        this(universe, configuration, null);
     }
 
-    public MultiEpochEcosystem(final MultiEpochConfiguration configuration, final Map<SpatialCoordinates, String> startingPopulation) throws IOException {
-        super(configuration.getTicksPerDay(), configuration.getSize(), configuration.getType());
+    public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration, final Map<SpatialCoordinates, String> startingPopulation) throws IOException {
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe);
         this.configuration = configuration;
 
         organismFilter = new HashSet<>();
@@ -101,10 +102,9 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     }
 
 
-                    final EpochEcosystem ecosystem = new EpochEcosystem(EpochEcosystemConfiguration.builder()
+                    final EpochEcosystem ecosystem = new EpochEcosystem(getProperties(), EpochEcosystemConfiguration.builder()
                             .ticksPerDay(configuration.getTicksPerDay())
                             .size(configuration.getSize())
-                            .type(FlatFloraUniverse.ID)
                             .maxDays(configuration.getMaxDays())
                             .tickDelayMs(configuration.getTickDelayMs())
                             .name(name)

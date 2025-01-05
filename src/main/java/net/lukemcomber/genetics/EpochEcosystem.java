@@ -8,6 +8,7 @@ package net.lukemcomber.genetics;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
+import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemConfiguration;
 import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemDetails;
@@ -37,8 +38,8 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
 
     private Supplier<Boolean> cleanUpFunction;
 
-    public EpochEcosystem(final EpochEcosystemConfiguration configuration) throws IOException {
-        super(configuration.getTicksPerDay(), configuration.getSize(), configuration.getType(), configuration.getName());
+    public EpochEcosystem(final UniverseConstants universe, final EpochEcosystemConfiguration configuration) throws IOException {
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
 
         this.configuration = configuration;
 

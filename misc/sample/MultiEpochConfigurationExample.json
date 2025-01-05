@@ -1,0 +1,12 @@
+{
+    "epochs": 5,
+    "height": 400,
+    "width": 800,
+    "ticksPerDay": 10,
+    "maxDays": 10,
+    "initialPopulation": 100,
+    "reusePopulation": 50,
+    "filter": "misc/genome.filter",
+    "name": "simsim",
+    "tickDelayMs": 0
+}

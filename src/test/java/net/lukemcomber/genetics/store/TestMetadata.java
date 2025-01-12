@@ -9,6 +9,7 @@ package net.lukemcomber.genetics.store;
 public class TestMetadata implements Metadata{
 
     public static final String PROPERTY_ENABLED = "metadata.TestSearchableMetadata.enabled";
+    @Primary
     public String str;
 
     public Long longNumber;

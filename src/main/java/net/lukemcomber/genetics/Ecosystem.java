@@ -6,6 +6,7 @@ package net.lukemcomber.genetics;
  */
 
 import net.lukemcomber.genetics.biology.Organism;
+import net.lukemcomber.genetics.biology.OrganismFactory;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
@@ -15,20 +16,16 @@ import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.io.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
-import net.lukemcomber.genetics.universes.UniverseFactory;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.TerrainFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +50,7 @@ public abstract class Ecosystem {
     private final AtomicBoolean isRunning;
     private final AtomicBoolean isInitialized;
     private final AtomicBoolean isCleanedUp;
+    private final SpatialCoordinates worldSize;
 
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe) throws IOException {
         this(ticksPerDay, size, universe, null);
@@ -63,6 +61,7 @@ public abstract class Ecosystem {
 
         this.ticksPerDay = ticksPerDay;
         this.initialPopulation = new LinkedList<>();
+        this.worldSize = size;
 
         totalDays = 0;
         totalTicks = 0;
@@ -85,6 +84,10 @@ public abstract class Ecosystem {
         isCleanedUp = new AtomicBoolean(false);
     }
 
+    public TemporalCoordinates getTime() {
+        return new TemporalCoordinates(totalTicks, totalDays, currentTick);
+    }
+
     protected AtomicBoolean getIsRunning() {
         return isRunning;
     }
@@ -102,6 +105,7 @@ public abstract class Ecosystem {
      *
      * @return ticks
      */
+    @Deprecated
     public long getTotalTicks() {
         return totalTicks;
     }
@@ -111,6 +115,7 @@ public abstract class Ecosystem {
      *
      * @param totalTicks
      */
+    @Deprecated
     public void setTotalTicks(final long totalTicks) {
         this.totalTicks = totalTicks;
     }
@@ -120,6 +125,7 @@ public abstract class Ecosystem {
      *
      * @return total days
      */
+    @Deprecated
     public long getTotalDays() {
         return totalDays;
     }
@@ -129,6 +135,7 @@ public abstract class Ecosystem {
      *
      * @param totalDays
      */
+    @Deprecated
     public void setTotalDays(final long totalDays) {
         this.totalDays = totalDays;
     }
@@ -147,6 +154,7 @@ public abstract class Ecosystem {
      *
      * @return current tick
      */
+    @Deprecated
     public int getCurrentTick() {
         return currentTick;
     }
@@ -156,6 +164,7 @@ public abstract class Ecosystem {
      *
      * @param currentTick
      */
+    @Deprecated
     public void setCurrentTick(final int currentTick) {
         this.currentTick = currentTick;
     }
@@ -211,17 +220,22 @@ public abstract class Ecosystem {
         }
     }
 
-    /**
-     * Add an organism the simulation's seed populations
-     *
-     * @param organism organism to add
-     */
-    public void addOrganismToInitialPopulation(final Organism organism) {
-        if (!isInitialized.get()) {
-            initialPopulation.add(GenomeSerDe.serialize(organism.getGenome()));
-            terrain.addOrganism(organism);
-        } else {
-            throw new EvolutionException("Cannot add organism to already started simulation");
+    void setInitialOrganisms(final Map<SpatialCoordinates, String> generation) {
+
+        try {
+            final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(getId(), getProperties());
+
+            for (final Map.Entry<SpatialCoordinates, String> record : generation.entrySet()) {
+
+                final Organism organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
+                        GenomeSerDe.deserialize(record.getValue()), record.getKey(), getTime(),
+                        getProperties(), groupStore);
+
+                initialPopulation.add(record.getValue());
+                terrain.addOrganism(organism);
+            }
+        } catch (final DecoderException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -250,6 +264,10 @@ public abstract class Ecosystem {
      */
     public void isActive(final boolean active) {
         isRunning.set(active);
+    }
+
+    public SpatialCoordinates getWorldSize() {
+        return worldSize;
     }
 
 

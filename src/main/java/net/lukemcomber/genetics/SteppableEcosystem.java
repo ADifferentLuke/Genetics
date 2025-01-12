@@ -31,7 +31,12 @@ public class SteppableEcosystem extends Ecosystem {
 
     public SteppableEcosystem(final UniverseConstants universe, final SteppableEcosystemConfiguration configuration) throws IOException {
         super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
+
         this.configuration = configuration;
+
+        if( Objects.nonNull(configuration.getStartOrganisms())) {
+            setInitialOrganisms(configuration.getStartOrganisms());
+        }
     }
 
     /**

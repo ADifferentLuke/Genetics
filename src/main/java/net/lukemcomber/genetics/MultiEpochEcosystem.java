@@ -5,16 +5,14 @@ package net.lukemcomber.genetics;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
-import net.lukemcomber.genetics.biology.Organism;
-import net.lukemcomber.genetics.biology.OrganismFactory;
 import net.lukemcomber.genetics.exception.EvolutionException;
-import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
-import net.lukemcomber.genetics.model.TemporalCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochConfiguration;
+import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochDetails;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
@@ -22,7 +20,6 @@ import net.lukemcomber.genetics.store.SearchableMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import net.lukemcomber.genetics.utilities.RandomGenomeCreator;
 import net.lukemcomber.genetics.world.terrain.Terrain;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedWriter;
@@ -34,6 +31,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class MultiEpochEcosystem extends Ecosystem implements Runnable {
@@ -42,34 +40,45 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
     private final MultiEpochConfiguration configuration;
     private final Set<String> organismFilter;
     private final ConcurrentMap<String, Ecosystem> sessions;
-    private final Map<SpatialCoordinates, String> initialPopulation;
     private Callable<Void> cleanupFunction;
-
     private BufferedWriter bufferedWriter;
 
+    private final Consumer<EpochEcosystem> onEpochStart;
+    private final Consumer<EpochEcosystem> onEpochEnd;
+    private final Thread ecosystemThread;
     public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration) throws IOException {
-        this(universe, configuration, null);
+        this( universe, configuration, null,null);
     }
 
-    public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration, final Map<SpatialCoordinates, String> startingPopulation) throws IOException {
+    public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration,
+                               final Consumer<EpochEcosystem> onEpochStart, final Consumer<EpochEcosystem> onEpochEnd) throws IOException {
         super(configuration.getTicksPerDay(), configuration.getSize(), universe);
         this.configuration = configuration;
 
-        organismFilter = new HashSet<>();
+        if (Objects.nonNull(configuration.getStartOrganisms())) {
+            setInitialOrganisms(configuration.getStartOrganisms());
+        }
 
+        organismFilter = new HashSet<>();
+        this.onEpochStart = onEpochStart;
+        this.onEpochEnd = onEpochEnd;
         sessions = new ConcurrentHashMap<>();
-        this.initialPopulation = startingPopulation;
+
+        ecosystemThread = new Thread(this);
+        ecosystemThread.setDaemon(true);
+        ecosystemThread.setName( "master-%s-epoch-runner");
     }
 
     @Override
     public void run() {
+
         // we have been initialized, we haven't been clean up and we aren't running
         if (getIsInitialized().get() && !getIsCleanedUp().get() && getIsRunning().compareAndSet(false, true)) {
             Map<SpatialCoordinates, String> reincarnates = new HashMap<>();
-            if (null != initialPopulation) {
-                reincarnates.putAll(initialPopulation);
+            if (null != configuration.getStartOrganisms()) {
+                reincarnates.putAll(configuration.getStartOrganisms());
                 try {
-                    addToFilter(new HashSet<>(initialPopulation.values()));
+                    addToFilter(new HashSet<>(configuration.getStartOrganisms().values()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -104,23 +113,16 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                             .maxDays(configuration.getMaxDays())
                             .tickDelayMs(configuration.getTickDelayMs())
                             .name(name)
+                            .startOrganisms(fauna)
                             .build());
 
+                    if( Objects.nonNull(onEpochStart)) {
+                        onEpochStart.accept(ecosystem);
+                    }
+
                     final Terrain terrain = ecosystem.getTerrain();
-                    final TemporalCoordinates temporalCoordinates = new TemporalCoordinates(0, 0, 0);
                     final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(ecosystem.getId(), terrain.getProperties());
 
-                    fauna.forEach(((coordinates, genome) -> {
-                        final Organism organism;
-                        try {
-                            organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
-                                    GenomeSerDe.deserialize(genome), coordinates, temporalCoordinates,
-                                    terrain.getProperties(), groupStore);
-                        } catch (final DecoderException e) {
-                            throw new RuntimeException(e);
-                        }
-                        ecosystem.addOrganismToInitialPopulation(organism);
-                    }));
                     logger.info("Epoch started.");
                     sessions.put(ecosystem.getId(), ecosystem);
 
@@ -147,7 +149,9 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                             configuration.getSize().yAxis(),
                             survivingDna,
                             null);
-
+                    if( Objects.nonNull(this.onEpochEnd)){
+                        this.onEpochEnd.accept(ecosystem);
+                    }
                 } catch (final IOException | InterruptedException e) {
                     //Switch to unchecked because we can't change signature
                     throw new RuntimeException(e);
@@ -166,6 +170,10 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
         } else {
             logger.info("Multi Epoch simulation is already running.");
         }
+    }
+
+    public ConcurrentMap<String,Ecosystem> getEpochs(){
+        return this.sessions;
     }
 
     @Override
@@ -217,6 +225,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     }
                     return null;
                 };
+                this.ecosystemThread.start();
             }
         } catch (final IOException e) {
             throw new RuntimeException(e);
@@ -239,7 +248,30 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
 
     @Override
     public EcosystemDetails getSetupConfiguration() {
-        return null;
+        final MultiEpochDetails setupConfiguration = new MultiEpochDetails();
+
+        final Terrain terrain = getTerrain();
+        if (Objects.nonNull(terrain)) {
+            setupConfiguration.setWidth(getTerrain().getSizeOfXAxis());
+            setupConfiguration.setHeight(getTerrain().getSizeOfYAxis());
+            setupConfiguration.setDepth(getTerrain().getSizeOfZAxis());
+        }
+        setupConfiguration.setInteractive(false);
+        setupConfiguration.setActive(isActive());
+        setupConfiguration.setName(getName());
+        setupConfiguration.setId(getId());
+        setupConfiguration.setTotalDays(getTotalDays());
+        setupConfiguration.setCurrentTick(getCurrentTick());
+        setupConfiguration.setTotalTicks(getTotalTicks());
+        setupConfiguration.setCurrentOrganismCount(getTerrain().getOrganismCount());
+        setupConfiguration.setTotalOrganismCount(getTerrain().getTotalOrganismCount());
+        setupConfiguration.setProperties(getProperties().toMap());
+        setupConfiguration.setInitialPopulation(getInitialPopulation());
+
+        setupConfiguration.setMaxDays(configuration.getMaxDays());
+        setupConfiguration.setTickDelay(configuration.getTickDelayMs());
+
+        return setupConfiguration;
     }
 
 }

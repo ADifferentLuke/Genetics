@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 
+import java.util.Map;
+
 @Builder
 @Getter
 public class SteppableEcosystemConfiguration {
@@ -14,4 +16,6 @@ public class SteppableEcosystemConfiguration {
     private SpatialCoordinates size;
     private String name;
     private long ticksPerTurn;
+    private Map<SpatialCoordinates, String> startOrganisms;
+
 }

@@ -4,6 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 
+import java.util.List;
+import java.util.Map;
+
 @Builder
 @Getter
 public class EpochEcosystemConfiguration {
@@ -14,4 +17,6 @@ public class EpochEcosystemConfiguration {
     private int ticksPerDay;
     private SpatialCoordinates size;
     private String name;
+    private Map<SpatialCoordinates, String> startOrganisms;
+
 }

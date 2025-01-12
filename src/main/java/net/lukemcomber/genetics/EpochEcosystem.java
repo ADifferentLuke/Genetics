@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +42,10 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
         super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
 
         this.configuration = configuration;
+
+        if (Objects.nonNull(configuration.getStartOrganisms())) {
+            setInitialOrganisms(configuration.getStartOrganisms());
+        }
 
         ecosystemThread = new Thread(this);
         ecosystemThread.setName("World-" + getId());
@@ -130,8 +133,9 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
             if (null == getTerrain().getResourceManager()) {
                 throw new EvolutionException("Ecosystem must be initialized before running.");
             }
-            while (isActive()) {
-
+            boolean active;
+            do {
+                active = isActive();
                 final long startTimeMillis = -System.currentTimeMillis();
 
                 logger.info("Ticking world " + getId());
@@ -150,6 +154,9 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
 
                 if (getTotalDays() >= configuration.getMaxDays()) {
                     isActive(false);
+                }
+
+                if( !active ){
                     killRemainingOrganisms();
                     final Set<Class<? extends Metadata>> activeStores = metadataStoreGroup.getActiveMetadataStores();
                     activeStores.forEach(clazz -> {
@@ -158,11 +165,11 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
                         final String path = MetadataStorage.persist(storage, getName(), properties);
                         logger.info("Saved data: " + path);
                     });
-                    if( Objects.nonNull(this.cleanUpFunction)){
+                    if (Objects.nonNull(this.cleanUpFunction)) {
                         try {
                             cleanUpFunction.call();
-                        } catch (final Exception e){
-                            logger.log(Level.SEVERE,"Clean up hook failed unexpectedly.", e);
+                        } catch (final Exception e) {
+                            logger.log(Level.SEVERE, "Clean up hook failed unexpectedly.", e);
                         }
                     }
                     metadataStoreGroup.markForExpiration();
@@ -174,9 +181,8 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
                         Thread.sleep(sleepTime); //throttle
                     }
                 }
+            } while( active );
 
-
-            }
         } catch (final InterruptedException e) {
             logger.log(Level.SEVERE, String.format("World id %s failed to delay. Terminating.", getId()), e);
         }

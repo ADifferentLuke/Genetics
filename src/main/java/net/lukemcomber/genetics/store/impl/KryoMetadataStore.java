@@ -15,6 +15,7 @@ import net.lukemcomber.genetics.store.Indexed;
 import net.lukemcomber.genetics.store.Metadata;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.Primary;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -62,7 +63,8 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     private final Pool<Kryo> kryoPool;
 
     private Callable<Void> onCleanUpHook;
-    final Timer expirationTimer;
+    private final Timer expirationTimer;
+    private String primaryIndex;
 
     /**
      * Create new {@link net.lukemcomber.genetics.store.SearchableMetadataStore} of the specified type.
@@ -70,11 +72,11 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      * @param type       type of data to store
      * @param properties config properties
      */
-    public KryoMetadataStore(final Class<T> type, final UniverseConstants properties ) throws EvolutionException {
+    public KryoMetadataStore(final Class<T> type, final UniverseConstants properties) throws EvolutionException {
 
         isCleanedUp = new AtomicBoolean(false);
-        isInitialized = new AtomicBoolean( false);
-        isRunning = new AtomicBoolean( false );
+        isInitialized = new AtomicBoolean(false);
+        isRunning = new AtomicBoolean(false);
 
         onCleanUpHook = null;
 
@@ -90,6 +92,18 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
             ttl = properties.get(PROPERTY_DATASTORE_TTL, Integer.class);
         } else {
             ttl = cTtl;
+        }
+
+        for (final Field field : type.getDeclaredFields()) {
+            field.setAccessible(true);
+            if (field.isAnnotationPresent(Primary.class)) {
+                primaryIndex = field.getAnnotation(Primary.class).name();
+                break;
+            }
+        }
+
+        if (StringUtils.isEmpty(primaryIndex)) {
+            throw new EvolutionException("Metadata class " + type.getSimpleName() + " does not have a primary index.");
         }
 
         kryoPool = new Pool<>(true, false, 8) {
@@ -191,10 +205,10 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
     }
 
-    private void cleanUp(){
-        if (isRunning.compareAndSet(true,false) && isCleanedUp.compareAndSet(false, true)) {
+    private void cleanUp() {
+        if (isRunning.compareAndSet(true, false) && isCleanedUp.compareAndSet(false, true)) {
             try {
-                if( Objects.nonNull(onCleanUpHook)){
+                if (Objects.nonNull(onCleanUpHook)) {
                     try {
                         onCleanUpHook.call();
                     } catch (Exception e) {
@@ -239,11 +253,11 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      */
     @Override
     public void initialize(final Callable<Void> onCleanUpHook) {
-        if( !isCleanedUp.get() && !isRunning.get() && isInitialized.compareAndSet(false,true)){
+        if (!isCleanedUp.get() && !isRunning.get() && isInitialized.compareAndSet(false, true)) {
             this.onCleanUpHook = onCleanUpHook;
             writeThread.start();
         } else {
-            logger.warning( "Metadata store already initialized.");
+            logger.warning("Metadata store already initialized.");
         }
     }
 
@@ -285,11 +299,18 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
 
         final List<T> retVal;
 
+        final String dataIndex;
+        if (StringUtils.isBlank(index)) {
+            dataIndex = primaryIndex;
+        } else {
+            dataIndex = index;
+        }
+
         if (0 <= pageNumber && 0 < recordsPerPage) {
-            if (indexedFields.containsKey(index)) {
-                retVal = readFromIndex(index, pageNumber, recordsPerPage);
+            if (indexedFields.containsKey(dataIndex)) {
+                retVal = readFromIndex(dataIndex, pageNumber, recordsPerPage);
             } else {
-                throw new RuntimeException("Index [" + index + "] not found");
+                throw new RuntimeException("Index [" + dataIndex + "] not found");
             }
         } else {
             throw new EvolutionException("Invalid page reference.");

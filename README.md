@@ -45,11 +45,10 @@ Javadoc can be found [here.](https://www.javadoc.io/doc/net.lukemcomber/genetics
 
 #### Outstanding Items:
 * Change metabolism to gradual spend
-* Make coordinates optional in EcosystemJsonReader
 * Resource tracking
 * Morbid resource generation
-* Metadata Store Persistence
-* Simplify Metadata Store
+* Multidimensional resource gathering
+* Make Env metadata sample rate configurable
 
 
 @author: Luke McOmber  

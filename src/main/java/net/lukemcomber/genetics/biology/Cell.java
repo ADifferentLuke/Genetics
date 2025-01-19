@@ -80,6 +80,11 @@ public abstract class Cell {
         return children;
     }
 
+    public boolean changeParentCell(final Cell newParent){
+        this.parent = newParent;
+        return true;
+    }
+
     /**
      * Gets the cell's type
      *

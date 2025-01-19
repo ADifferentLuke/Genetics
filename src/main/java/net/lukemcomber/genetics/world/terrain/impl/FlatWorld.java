@@ -181,7 +181,8 @@ public class FlatWorld extends Terrain {
             mCell.organism = organism;
 
             organismMap[cell.getCoordinates().xAxis()][cell.getCoordinates().yAxis()] = mCell;
-            logger.info("Set cell " + cell.getCellType() + " at " + cell.getCoordinates());
+        } else {
+            throw new EvolutionException("Collision!!!");
         }
         return null == currentCell;
     }
@@ -193,12 +194,15 @@ public class FlatWorld extends Terrain {
      * @return true if cell is deleted
      */
     @Override
-    public boolean deleteCell(final SpatialCoordinates spatialCoordinates) {
+    public boolean deleteCell(final SpatialCoordinates spatialCoordinates, final String id) {
         checkCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis());
         final MatrixCell currentCell = organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()];
-        organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()] = null;
+        if( currentCell.organism.getUniqueID().equals(id)) {
+            organismMap[spatialCoordinates.xAxis()][spatialCoordinates.yAxis()] = null;
+        } else {
+            throw new RuntimeException("CRITICAL: Terrain has become corrupted!!");
+        }
 
-        logger.info("Deleted cell at " + spatialCoordinates + " was " + (null != currentCell));
         return null != currentCell;
     }
 
@@ -243,7 +247,8 @@ public class FlatWorld extends Terrain {
         return !(getSizeOfXAxis() > spatialCoordinates.xAxis()
                 && getSizeOfYAxis() > spatialCoordinates.yAxis()
                 && 0 <= spatialCoordinates.xAxis()
-                && 0 <= spatialCoordinates.yAxis());
+                && 0 <= spatialCoordinates.yAxis()
+                && 0 == spatialCoordinates.zAxis());
     }
 
 

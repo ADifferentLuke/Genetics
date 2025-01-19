@@ -70,12 +70,12 @@ public class EjectedSeedCell extends SeedCell implements PlantBehavior {
             final SpatialCoordinates newSpatialCoordinates = spatialTransformer.apply(getCoordinates());
 
             if ((!terrain.isOutOfBounds(newSpatialCoordinates)) && (!terrain.hasCell(newSpatialCoordinates))) {
-                if (terrain.deleteCell(getCoordinates())) {
+                if (terrain.deleteCell(getCoordinates(), organism.getUniqueID())) {
                     spatialCoordinates = newSpatialCoordinates;
                     terrain.setCell(this, organism);
                     energy = energy - getEnergyCost(properties);
                 } else {
-                    //throw new RuntimeException("This shouldn't happen");
+                    throw new RuntimeException("This shouldn't happen");
                 }
             } else {
                 super.activate();

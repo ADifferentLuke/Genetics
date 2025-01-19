@@ -299,12 +299,17 @@ public class PlantOrganism implements Organism {
 
         if (!alive) {
             performActionOnAllCells((PlantCell) getFirstCell(), cell -> {
-                terrain.deleteCell(cell.getCoordinates());
 
                 if (cell instanceof SeedCell && cell != getFirstCell()) {
                     final SeedCell seed = (SeedCell) cell;
                     //Remove the cell from the parent organism
                     cell.getParent().removeChild(cell);
+
+                    /*
+                     * To prevent collisions, delete the cell before re-adding the organism. This is so that
+                     *   the seed cell does not collide with itself.
+                     */
+                    terrain.deleteCell(seed.getCoordinates(), getUniqueID());
 
                     SeedCell activatedSeed = new SeedCell(null, seed.getGenome(), seed.getCoordinates(), terrain.getProperties());
                     final PlantOrganism plantOrganism = new PlantOrganism(getUniqueID(), activatedSeed,

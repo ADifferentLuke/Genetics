@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.world.terrain;
 
 import net.lukemcomber.genetics.biology.Cell;
 import net.lukemcomber.genetics.biology.Organism;
+import net.lukemcomber.genetics.biology.plant.cells.EjectedSeedCell;
 import net.lukemcomber.genetics.io.CellHelper;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  * A representation of the environment. The stage of life if you will.
@@ -23,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class Terrain {
 
     public static final String PROPERTY_TERRAIN_TYPE = "terrain.type";
+    private static final Logger logger = Logger.getLogger(Terrain.class.getName());
 
     private final SpatialCoordinates spatialBounds;
     private final UniverseConstants constants;
@@ -104,7 +107,7 @@ public abstract class Terrain {
      *
      * @return true if cell delete otherwise false
      */
-    public abstract boolean deleteCell(final SpatialCoordinates spatialCoordinates);
+    public abstract boolean deleteCell(final SpatialCoordinates spatialCoordinates, final String id);
 
     /**
      * Returns a reference to the cell at spatialCoordinates (x,y,z)
@@ -249,7 +252,7 @@ public abstract class Terrain {
         if (null != organism && population.containsKey(organism.getUniqueID())) {
             CellHelper.getAllOrganismsCells(organism.getFirstCell())
                     .forEach(cell -> {
-                        deleteCell(cell.getCoordinates());
+                        deleteCell(cell.getCoordinates(), organism.getUniqueID());
                     });
             retVal = population.remove(organism.getUniqueID()) != null;
 

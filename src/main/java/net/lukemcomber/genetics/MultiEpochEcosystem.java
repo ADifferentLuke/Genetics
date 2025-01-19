@@ -164,7 +164,6 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     throw new RuntimeException(e);
                 }
             } else {
-                logger.severe("Clean Up function is null!!");
                 throw new EvolutionException("Clean Up function is null!");
             }
         } else {

@@ -11,6 +11,7 @@ import net.lukemcomber.genetics.model.UniverseConstants;
 /**
  * Factory class for building new {@link UniverseConstants}
  */
+@Deprecated
 public class UniverseFactory {
 
     /**

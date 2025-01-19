@@ -14,6 +14,10 @@ public class CustomUniverse extends UniverseConstants {
         super(CustomUniverse.read(inputFile));
     }
 
+    public CustomUniverse(final Map<String,Object> properties){
+        super(properties);
+    }
+
     private static Map<String, Object> read(final File file) {
         final ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> retVal = new HashMap<>();

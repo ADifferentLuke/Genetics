@@ -311,8 +311,8 @@ public abstract class Ecosystem {
             logger.info("Ticking Organism: " + organism.getUniqueID());
             organism.performAction(getTerrain(), temporalCoordinates, ((organism1, cell) -> {
                 final ResourceManager manager = getTerrain().getResourceManager();
-                manager.renewEnvironmentResourceFromCellDeath(organism, cell);
-                logger.info("Organism " + organism.getUniqueID() + " decayed.");
+                manager.renewEnvironmentResourceFromCellDeath(organism1, cell);
+                logger.info("Organism " + organism1.getUniqueID() + " decayed.");
             }));
             organism.prettyPrint(loggerOutputStream);
 

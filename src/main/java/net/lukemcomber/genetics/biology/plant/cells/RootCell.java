@@ -71,6 +71,33 @@ public class RootCell extends PlantCell {
     @Override
     public int generateEnergy(final Terrain terrain) {
         int retVal = 0;
+
+        final SpatialCoordinates westNeighbor = new SpatialCoordinates(spatialCoordinates.xAxis()-1, spatialCoordinates.yAxis(),spatialCoordinates.zAxis());
+        final SpatialCoordinates eastNeighbor = new SpatialCoordinates(spatialCoordinates.xAxis()+1, spatialCoordinates.yAxis(),spatialCoordinates.zAxis());
+        final SpatialCoordinates northNeighbor = new SpatialCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis()+1,spatialCoordinates.zAxis());
+        final SpatialCoordinates southNeighbor = new SpatialCoordinates(spatialCoordinates.xAxis(), spatialCoordinates.yAxis()-1,spatialCoordinates.zAxis());
+
+        if( (!terrain.isOutOfBounds(westNeighbor) && !terrain.hasCell(westNeighbor))){
+            retVal += harvestEnergyFromSoil(terrain,westNeighbor);
+        }
+        if( (!terrain.isOutOfBounds(eastNeighbor) && !terrain.hasCell(eastNeighbor))){
+            retVal += harvestEnergyFromSoil(terrain,eastNeighbor);
+        }
+        if( ( !terrain.isOutOfBounds(northNeighbor) && !terrain.hasCell(northNeighbor))){
+            retVal += harvestEnergyFromSoil(terrain,northNeighbor);
+        }
+        if( ( !terrain.isOutOfBounds(southNeighbor) && !terrain.hasCell(southNeighbor))){
+            retVal += harvestEnergyFromSoil(terrain,southNeighbor);
+        }
+
+        retVal += harvestEnergyFromSoil(terrain,spatialCoordinates);
+
+        return retVal;
+    }
+
+    private int harvestEnergyFromSoil(final Terrain terrain, final SpatialCoordinates coordinates){
+
+        int retVal = 0;
         final int maxEnergyInput = terrain.getProperties().get(PROPERTY_ENERGY,Integer.class);
         final TerrainProperty property = terrain.getTerrainProperty(spatialCoordinates, SoilNutrientsTerrainProperty.ID);
         if( null != property ){

@@ -54,13 +54,10 @@ public class GrowLeaf implements PlantBehavior {
         Cell retVal = null;
         final SpatialCoordinates newSpatialCoordinates = function.apply(cell.getCoordinates());
 
-
         //The boolean logic looks weird, but we need to use AND for short circuit
         if ((!terrain.isOutOfBounds(newSpatialCoordinates)) && (!terrain.hasCell(newSpatialCoordinates))) {
             Cell parentCell = cell;
             if (cell instanceof LeafCell) {
-                //TODO what if leaf's parent is null?
-                logger.info("\tWe need to create a stem!");
                 final Cell grandParentCell = cell.getParent();
                 logger.info("Grandparent cell is: " + grandParentCell.getCellType() + " at " + grandParentCell.getCoordinates());
                 final StemCell stemCell = new StemCell(grandParentCell, cell.getCoordinates(), terrain.getProperties());
@@ -78,9 +75,11 @@ public class GrowLeaf implements PlantBehavior {
                 //Now give all the child to the stem, even though there really shouldn't be any yet
                 for (final Cell childChld : cell.getChildren()) {
                     stemCell.addChild(childChld);
+                    childChld.changeParentCell(stemCell);
+
                     logger.info("Copied child " + childChld.getCellType() + " at " + childChld.getCoordinates());
                 }
-                terrain.deleteCell(cell.getCoordinates());
+                terrain.deleteCell(cell.getCoordinates(), organism.getUniqueID());
 
                 terrain.setCell(stemCell, organism);
 

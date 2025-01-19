@@ -17,8 +17,8 @@ public class SpatialNormalizer extends SpatialCoordinateRangeParser {
                     missingLocations.add(rvi.value);
                 } else {
                     iterateRangeValue(rvi, spatialDimensions,
-                            (spatialCoordinates, v) -> {
-                                results.put(spatialDimensions, v);
+                            (coords, v) -> {
+                                results.put(coords, v);
                                 return true;
                             });
                 }

@@ -9,6 +9,7 @@ import net.lukemcomber.genetics.store.Primary;
 public class Environment implements Metadata {
 
     public static final String PROPERTY_ENVIRONMENT_ENABLE = "metadata.Environment.enabled";
+    public static final String PROPERTY_SAMPLE_RATE = "metadata.Environment.sampling-rate";
     @Primary
     private Long tickCount;
     private Long totalOrganisms;

@@ -22,6 +22,7 @@ public abstract class Genome {
      * Enum of lambdas that provide travel across SpatialCoordinates
      */
     public enum SpatialTransformation {
+        IDENTITY(c -> c),
         LEFT(c -> new SpatialCoordinates(c.xAxis() - 1, c.yAxis(), c.zAxis())),
         RIGHT(c -> new SpatialCoordinates(c.xAxis() + 1, c.yAxis(), c.zAxis())),
         UP(c -> new SpatialCoordinates(c.xAxis(), c.yAxis() + 1, c.zAxis())),

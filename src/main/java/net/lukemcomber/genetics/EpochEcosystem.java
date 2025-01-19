@@ -134,6 +134,7 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
                 throw new EvolutionException("Ecosystem must be initialized before running.");
             }
             boolean active;
+            final int environmentSampleRate = properties.get(Environment.PROPERTY_SAMPLE_RATE, Integer.class, 10);
             do {
                 active = isActive();
                 final long startTimeMillis = -System.currentTimeMillis();
@@ -142,7 +143,7 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
                 tickEnvironment();
                 tickOrganisms();
 
-                if (getTotalTicks() % 10 == 0) { // TODO make configurable
+                if (getTotalTicks() % environmentSampleRate == 0) {
 
                     final Environment environmentData = new Environment();
                     environmentData.setTickCount(getTotalTicks());

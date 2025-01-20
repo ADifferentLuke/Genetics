@@ -50,6 +50,8 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
         ecosystemThread = new Thread(this);
         ecosystemThread.setName("World-" + getId());
         ecosystemThread.setDaemon(true);
+
+        logger.severe("EpochEcosystem created: " + this);
     }
 
     public Thread getEcosystemThread() { //TODO protected
@@ -183,6 +185,7 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
                     }
                 }
             } while( active );
+            getTerrain().clear();
 
         } catch (final InterruptedException e) {
             logger.log(Level.SEVERE, String.format("World id %s failed to delay. Terminating.", getId()), e);

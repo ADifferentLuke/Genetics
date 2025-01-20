@@ -10,7 +10,6 @@ import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemConfiguration;
-import net.lukemcomber.genetics.model.ecosystem.impl.EpochEcosystemDetails;
 import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochConfiguration;
 import net.lukemcomber.genetics.model.ecosystem.impl.MultiEpochDetails;
 import net.lukemcomber.genetics.store.MetadataStore;

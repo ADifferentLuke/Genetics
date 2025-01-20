@@ -43,9 +43,11 @@ public class FlatWorld extends Terrain {
 
     }
 
-    private final MatrixCell[][] organismMap;
-    private final Map<String, TerrainProperty>[][] environmentMap;
+    private MatrixCell[][] organismMap;
+    private Map<String, TerrainProperty>[][] environmentMap;
     private final ResourceManager resourceManager;
+
+    private final SpatialCoordinates bounds;
 
     /**
      * Create a new instance from the given configuration properties and a metadata store group
@@ -57,6 +59,7 @@ public class FlatWorld extends Terrain {
     public FlatWorld(final SpatialCoordinates spatialBounds, final UniverseConstants constants, final MetadataStoreGroup store) {
         super(spatialBounds, constants, store);
         resourceManager = new FlatWorldResourceManager(this, constants);
+        bounds = spatialBounds;
 
         organismMap = new MatrixCell[spatialBounds.xAxis()][spatialBounds.yAxis()];
         environmentMap = new HashMap[spatialBounds.xAxis()][spatialBounds.yAxis()];
@@ -68,6 +71,12 @@ public class FlatWorld extends Terrain {
             }
         }
         logger.info(String.format("World %s initialized to (%d,%d,%d).", ID, spatialBounds.xAxis(), spatialBounds.yAxis(), spatialBounds.zAxis()));
+    }
+
+    @Override
+    public void clear() {
+        organismMap = new MatrixCell[bounds.xAxis()][bounds.yAxis()];
+        environmentMap = new HashMap[bounds.xAxis()][bounds.yAxis()];
     }
 
     /**

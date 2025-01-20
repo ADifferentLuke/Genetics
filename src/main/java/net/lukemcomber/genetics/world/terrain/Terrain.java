@@ -47,6 +47,8 @@ public abstract class Terrain {
 
     }
 
+    public abstract void clear();
+
     /**
      * Set a specific terrain property for the tile at coordinations of (x,y,z)
      *

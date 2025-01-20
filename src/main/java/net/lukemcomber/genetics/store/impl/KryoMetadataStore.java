@@ -63,7 +63,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     private final Pool<Kryo> kryoPool;
 
     private Callable<Void> onCleanUpHook;
-    private final Timer expirationTimer;
+    private Timer expirationTimer;
     private String primaryIndex;
 
     /**
@@ -176,7 +176,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                                 public void run() {
                                     cleanUp();
                                 }
-                            }, ttl);
+                            }, ttl * 1000);
 
 
                             synchronized (writeThread) {
@@ -219,6 +219,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                 indexedFields.clear();
                 datFile.close();
                 idxFile.close();
+                expirationTimer = null;
                 logger.info("Deleting file " + datFilePath.toAbsolutePath());
                 logger.info("Deleting file " + idxFilePath.toAbsolutePath());
                 Files.deleteIfExists(datFilePath);

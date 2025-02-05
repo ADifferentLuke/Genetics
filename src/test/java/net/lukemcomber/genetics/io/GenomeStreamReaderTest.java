@@ -52,7 +52,7 @@ public class GenomeStreamReaderTest {
         final UniverseConstants props = new FlatFloraUniverse();
         final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore("GenomeStreamReaderTest::testReader", props);
         final SpatialCoordinates dimensions = new SpatialCoordinates(90,90,90);
-        final GenomeStreamReader reader = new GenomeStreamReader( dimensions, props,groupStore );
+        //final GenomeStreamReader reader = new GenomeStreamReader( dimensions, props,groupStore );
         //final List<Organism> organisms = reader.parse( Files.newInputStream(Paths.get(url.getPath())));
 
     }

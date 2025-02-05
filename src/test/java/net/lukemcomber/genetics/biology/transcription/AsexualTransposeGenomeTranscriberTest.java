@@ -1,7 +1,10 @@
 package net.lukemcomber.genetics.biology.transcription;
 
+import com.google.common.collect.ImmutableMap;
+import net.lukemcomber.genetics.model.UniverseConstants;
 import org.testng.annotations.Test;
 
+import java.util.Map;
 import java.util.Random;
 
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
@@ -9,6 +12,16 @@ import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 @Test
 public class AsexualTransposeGenomeTranscriberTest {
 
+    public static class TestUniverse extends UniverseConstants {
+        public TestUniverse(Map<String, Object> map) {
+            super(map);
+        }
+    }
+
+    final MutationGenomeTranscriberTest.TestUniverse testUniverse = new MutationGenomeTranscriberTest.TestUniverse(ImmutableMap.of(
+            MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 1,
+            MutationGenomeTranscriber.MUTATION_RAND_SEED, 1337
+    ));
     public void test() {
 
         final byte[] b = generateRandomChromosome(16);
@@ -18,7 +31,7 @@ public class AsexualTransposeGenomeTranscriberTest {
         final byte[] copy = new byte[b.length];
         System.arraycopy(b, 0, copy, 0, b.length);
 
-        AsexualTransposGenomeTranscriber transcriber = new AsexualTransposGenomeTranscriber();
+        AsexualTransposGenomeTranscriber transcriber = new AsexualTransposGenomeTranscriber(testUniverse);
 
         System.out.println("geneT: " + geneT);
 

@@ -5,6 +5,7 @@ package net.lukemcomber.genetics;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
@@ -30,7 +31,16 @@ public class SteppableEcosystem extends Ecosystem {
     private final SteppableEcosystemConfiguration configuration;
 
     public SteppableEcosystem(final UniverseConstants universe, final SteppableEcosystemConfiguration configuration) throws IOException {
-        super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe, null, configuration.getName());
+
+        this.configuration = configuration;
+
+        if( Objects.nonNull(configuration.getStartOrganisms())) {
+            setInitialOrganisms(configuration.getStartOrganisms());
+        }
+    }
+    public SteppableEcosystem(final UniverseConstants universe, final SteppableEcosystemConfiguration configuration, final GenomeTransciber transciber) throws IOException {
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe, transciber, configuration.getName());
 
         this.configuration = configuration;
 

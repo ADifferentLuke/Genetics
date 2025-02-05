@@ -70,7 +70,7 @@ public class GrowSeed implements PlantBehavior {
                 /*
                  * DEV NOTE: This is where mutation is initiated!
                  */
-                final SeedCell newCell = new SeedCell(cell, transciber.transcribe(terrain.getProperties(),
+                final SeedCell newCell = new SeedCell(cell, transciber.transcribe(
                         organism.getGenome()), newSpatialCoordinates, terrain.getProperties());
                 logger.info("Created new seed: " + organism.getUniqueID() + " at " + newSpatialCoordinates);
                 cell.addChild(newCell);

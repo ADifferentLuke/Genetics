@@ -5,7 +5,11 @@ package net.lukemcomber.genetics;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import net.lukemcomber.genetics.biology.Genome;
+import net.lukemcomber.genetics.biology.GenomeTransciber;
+import net.lukemcomber.genetics.biology.transcription.AsexualTransposeAndMutateGeneTranscriber;
 import net.lukemcomber.genetics.exception.EvolutionException;
+import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.model.ecosystem.EcosystemDetails;
@@ -17,8 +21,10 @@ import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.SearchableMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Performance;
+import net.lukemcomber.genetics.utilities.OrganismNameFactory;
 import net.lukemcomber.genetics.utilities.RandomGenomeCreator;
 import net.lukemcomber.genetics.world.terrain.Terrain;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedWriter;
@@ -33,7 +39,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import static net.lukemcomber.genetics.biology.Organism.PROPERTY_ORGANISM_SEQUENTIAL_NAMES;
+
 public class MultiEpochEcosystem extends Ecosystem implements Runnable {
+
+    public static final String PROPERTY_RNG_SEED = "multi-epoch.population.rng.seed";
 
     private final Logger logger = Logger.getLogger(MultiEpochEcosystem.class.getName());
     private final MultiEpochConfiguration configuration;
@@ -45,18 +55,23 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
     private final Consumer<EpochEcosystem> onEpochStart;
     private final Consumer<EpochEcosystem> onEpochEnd;
     private final Thread ecosystemThread;
+    private final long seed;
+
     public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration) throws IOException {
-        this( universe, configuration, null,null);
+        this(universe, configuration, null, null);
     }
 
     public MultiEpochEcosystem(final UniverseConstants universe, final MultiEpochConfiguration configuration,
                                final Consumer<EpochEcosystem> onEpochStart, final Consumer<EpochEcosystem> onEpochEnd) throws IOException {
-        super(configuration.getTicksPerDay(), configuration.getSize(), universe);
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe, new AsexualTransposeAndMutateGeneTranscriber(universe));
         this.configuration = configuration;
 
         if (Objects.nonNull(configuration.getStartOrganisms())) {
             setInitialOrganisms(configuration.getStartOrganisms());
         }
+
+        seed = universe.get(PROPERTY_RNG_SEED, Integer.class, 0).longValue();
+
 
         organismFilter = new HashSet<>();
         this.onEpochStart = onEpochStart;
@@ -65,7 +80,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
 
         ecosystemThread = new Thread(this);
         ecosystemThread.setDaemon(true);
-        ecosystemThread.setName( "master-%s-epoch-runner");
+        ecosystemThread.setName("master-%s-epoch-runner".formatted(configuration.getName().toLowerCase()));
     }
 
     @Override
@@ -73,30 +88,26 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
 
         // we have been initialized, we haven't been clean up and we aren't running
         if (getIsInitialized().get() && !getIsCleanedUp().get() && getIsRunning().compareAndSet(false, true)) {
-            Map<SpatialCoordinates, String> reincarnates = new HashMap<>();
+            Map<SpatialCoordinates, String> firstEpochStartingPopulation = new HashMap<>();
             if (null != configuration.getStartOrganisms()) {
-                reincarnates.putAll(configuration.getStartOrganisms());
-                try {
-                    addToFilter(new HashSet<>(configuration.getStartOrganisms().values()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                firstEpochStartingPopulation.putAll(configuration.getStartOrganisms());
             }
+
+            // Just use random genomes for the rest of the initial population
+            final int randomOrganismCount = configuration.getInitialPopulation() - firstEpochStartingPopulation.size();
+            final RandomGenomeCreator genomeCreator = new RandomGenomeCreator(organismFilter, 0 < seed ? seed : null);
+            final Set<String> epochStartPopulation = genomeCreator.generateRandomGenomes("PLANT", 0 >= randomOrganismCount ? configuration.getInitialPopulation() : randomOrganismCount);
+
+            Map<SpatialCoordinates, String> fauna = genomeCreator.generateRandomLocations(
+                    configuration.getSize().xAxis(),
+                    configuration.getSize().yAxis(),
+                    epochStartPopulation,
+                    firstEpochStartingPopulation);
+
             for (int epoch = 0; epoch < configuration.getEpochs(); epoch++) {
                 try {
 
                     logger.info("Beginning epoch " + epoch);
-
-                    final int randomOrganismCount = configuration.getInitialPopulation() - reincarnates.size();
-
-                    final RandomGenomeCreator genomeCreator = new RandomGenomeCreator(organismFilter);
-                    final Set<String> initialPopulation = genomeCreator.generateRandomGenomes("PLANT", 0 >= randomOrganismCount ? configuration.getInitialPopulation() : randomOrganismCount);
-
-                    final Map<SpatialCoordinates, String> fauna = genomeCreator.generateRandomLocations(
-                            configuration.getSize().xAxis(),
-                            configuration.getSize().yAxis(),
-                            initialPopulation,
-                            reincarnates);
 
                     final String name;
                     if (StringUtils.isNotEmpty(configuration.getName())) {
@@ -105,7 +116,6 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                         name = null;
                     }
 
-
                     final EpochEcosystem ecosystem = new EpochEcosystem(getProperties(), EpochEcosystemConfiguration.builder()
                             .ticksPerDay(configuration.getTicksPerDay())
                             .size(configuration.getSize())
@@ -113,9 +123,9 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                             .tickDelayMs(configuration.getTickDelayMs())
                             .name(name)
                             .startOrganisms(fauna)
-                            .build());
+                            .build(), getGnomeTranscriber());
 
-                    if( Objects.nonNull(onEpochStart)) {
+                    if (Objects.nonNull(onEpochStart)) {
                         onEpochStart.accept(ecosystem);
                     }
 
@@ -138,17 +148,43 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                         return null;
                     });
 
-                    initialPopulation.removeAll(reincarnates.values());
-                    addToFilter(initialPopulation);
-
                     ecosystem.getEcosystemThread().join();
+                    if (survivingDna.isEmpty()) {
+                        throw new EvolutionException("Timing is wonk");
+                    }
 
-                    reincarnates = genomeCreator.generateRandomLocations(
+                    // Run that shiiiiii
+                    final int additionalOrganisms = configuration.getInitialPopulation() - survivingDna.size();
+                    final Set<String> baseDna = new HashSet<>(survivingDna);
+
+
+                    int lcv = 0;
+                    final String[] survivingDnaArray = survivingDna.toArray(new String[0]);
+                    for (int i = 0; i < additionalOrganisms; ++i) {
+
+                        final String fitGenome = survivingDnaArray[lcv];
+                        try {
+
+                            final Genome deserializedGenome = GenomeSerDe.deserialize(fitGenome);
+                            final Genome mutatedGenome = getGnomeTranscriber().transcribe(deserializedGenome);
+
+                            baseDna.add(GenomeSerDe.serialize(mutatedGenome));
+
+                        } catch (final DecoderException e) {
+                            throw new EvolutionException("Failed to deserialize genome (%s).".formatted(StringUtils.isNotEmpty(fitGenome) ? fitGenome : "null"));
+                        }
+
+                        if (survivingDnaArray.length <= ++lcv) {
+                            lcv = 0;
+                        }
+                    }
+
+                    fauna = genomeCreator.generateRandomLocations(
                             configuration.getSize().xAxis(),
                             configuration.getSize().yAxis(),
-                            survivingDna,
+                            baseDna,
                             null);
-                    if( Objects.nonNull(this.onEpochEnd)){
+                    if (Objects.nonNull(this.onEpochEnd)) {
                         this.onEpochEnd.accept(ecosystem);
                     }
                 } catch (final IOException | InterruptedException e) {
@@ -156,21 +192,24 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
-            if( Objects.nonNull(cleanupFunction)){
+            final boolean sequentialNames = properties.get(PROPERTY_ORGANISM_SEQUENTIAL_NAMES, boolean.class, false);
+
+            if (sequentialNames) {
+                OrganismNameFactory.reset();
+            }
+            if (Objects.nonNull(cleanupFunction)) {
                 try {
                     cleanupFunction.call();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            } else {
-                throw new EvolutionException("Clean Up function is null!");
             }
         } else {
             logger.info("Multi Epoch simulation is already running.");
         }
     }
 
-    public ConcurrentMap<String,Ecosystem> getEpochs(){
+    public ConcurrentMap<String, Ecosystem> getEpochs() {
         return this.sessions;
     }
 
@@ -228,20 +267,6 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void addToFilter(final Set<String> organisms) throws IOException {
-        organismFilter.addAll(organisms);
-
-        organisms.forEach(organism -> {
-            try {
-                bufferedWriter.write(organism);
-                bufferedWriter.newLine();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        bufferedWriter.flush();
     }
 
     @Override

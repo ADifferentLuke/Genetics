@@ -19,5 +19,5 @@ public interface GenomeTransciber {
      * @param genome     source genome
      * @return destination genome
      */
-    Genome transcribe(final UniverseConstants properties, final Genome genome);
+    Genome transcribe(final Genome genome);
 }

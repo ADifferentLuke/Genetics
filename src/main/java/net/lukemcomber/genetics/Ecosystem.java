@@ -5,8 +5,10 @@ package net.lukemcomber.genetics;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.OrganismFactory;
+import net.lukemcomber.genetics.biology.transcription.AsexualTransposeAndMutateGeneTranscriber;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.SpatialCoordinates;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
@@ -16,6 +18,7 @@ import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.io.LoggerOutputStream;
 import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
+import net.lukemcomber.genetics.store.Primary;
 import net.lukemcomber.genetics.world.ResourceManager;
 import net.lukemcomber.genetics.world.TerrainFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
@@ -42,7 +45,7 @@ public abstract class Ecosystem {
     private Terrain terrain;
     private final int ticksPerDay;
     private final String uuid;
-    private final List<String> initialPopulation;
+    private final Map<SpatialCoordinates,String> initialPopulation;
     private long totalTicks;
     private long totalDays;
     private int currentTick;
@@ -51,16 +54,20 @@ public abstract class Ecosystem {
     private final AtomicBoolean isInitialized;
     private final AtomicBoolean isCleanedUp;
     private final SpatialCoordinates worldSize;
+    private final GenomeTransciber transciber;
 
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe) throws IOException {
         this(ticksPerDay, size, universe, null);
     }
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe, final GenomeTransciber transciber) throws IOException {
+        this(ticksPerDay, size, universe, transciber, null);
+    }
 
-    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe, final String name) throws IOException {
+    public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe, final GenomeTransciber transciber, final String name) throws IOException {
 
 
         this.ticksPerDay = ticksPerDay;
-        this.initialPopulation = new LinkedList<>();
+        this.initialPopulation = new HashMap<>();
         this.worldSize = size;
 
         totalDays = 0;
@@ -77,11 +84,21 @@ public abstract class Ecosystem {
 
         metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid, properties);
 
+        if( Objects.isNull(transciber)) {
+           this.transciber = new AsexualTransposeAndMutateGeneTranscriber(universe);
+        } else {
+           this.transciber = transciber;
+        }
+
         terrain = TerrainFactory.create(size, properties, metadataStoreGroup);
 
         isRunning = new AtomicBoolean(false);
         isInitialized = new AtomicBoolean(false);
         isCleanedUp = new AtomicBoolean(false);
+    }
+
+    protected GenomeTransciber getGnomeTranscriber(){
+        return transciber;
     }
 
     public TemporalCoordinates getTime() {
@@ -224,14 +241,14 @@ public abstract class Ecosystem {
 
         try {
             final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(getId(), getProperties());
+            initialPopulation.putAll(generation);
 
             for (final Map.Entry<SpatialCoordinates, String> record : generation.entrySet()) {
 
                 final Organism organism = OrganismFactory.create(Organism.DEFAULT_PARENT,
                         GenomeSerDe.deserialize(record.getValue()), record.getKey(), getTime(),
-                        getProperties(), groupStore);
+                        getProperties(), groupStore, transciber);
 
-                initialPopulation.add(record.getValue());
                 terrain.addOrganism(organism);
             }
         } catch (final DecoderException | IOException e) {
@@ -244,7 +261,7 @@ public abstract class Ecosystem {
      *
      * @return list of genome strings
      */
-    public List<String> getInitialPopulation() {
+    public Map<SpatialCoordinates,String> getInitialPopulation() {
         return initialPopulation;
     }
 

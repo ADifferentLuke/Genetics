@@ -21,23 +21,22 @@ public class AsexualTransposeAndMutateGeneTranscriber implements GenomeTranscibe
     /**
      * Creates a new instance
      */
-    public AsexualTransposeAndMutateGeneTranscriber() {
-        asexualTransposGenomeTranscriber = new AsexualTransposGenomeTranscriber();
-        mutationGenomeTranscriber = new MutationGenomeTranscriber();
+    public AsexualTransposeAndMutateGeneTranscriber(final UniverseConstants configuration) {
+        asexualTransposGenomeTranscriber = new AsexualTransposGenomeTranscriber(configuration);
+        mutationGenomeTranscriber = new MutationGenomeTranscriber(configuration);
     }
 
     /**
      * Transcribe genome while randomly mutating and transposing
      *
-     * @param properties configuration properties
      * @param genome     source genome
      * @return modified genome
      */
     @Override
-    public Genome transcribe(final UniverseConstants properties, final Genome genome) {
+    public Genome transcribe(final Genome genome) {
 
-        final Genome transposedGenome = asexualTransposGenomeTranscriber.transcribe(properties, genome);
-        final Genome mutatedGenome = mutationGenomeTranscriber.transcribe(properties, transposedGenome);
+        final Genome transposedGenome = asexualTransposGenomeTranscriber.transcribe(genome);
+        final Genome mutatedGenome = mutationGenomeTranscriber.transcribe(transposedGenome);
 
         return mutatedGenome;
     }

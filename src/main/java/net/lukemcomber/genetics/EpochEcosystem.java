@@ -5,6 +5,7 @@ package net.lukemcomber.genetics;
  * This code is licensed under MIT license (see LICENSE.txt for details)
  */
 
+import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
@@ -39,7 +40,12 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
     private Callable<Void> cleanUpFunction;
 
     public EpochEcosystem(final UniverseConstants universe, final EpochEcosystemConfiguration configuration) throws IOException {
-        super(configuration.getTicksPerDay(), configuration.getSize(), universe, configuration.getName());
+        this( universe, configuration, null);
+
+    }
+
+    public EpochEcosystem(final UniverseConstants universe, final EpochEcosystemConfiguration configuration, final GenomeTransciber transcriber) throws IOException {
+        super(configuration.getTicksPerDay(), configuration.getSize(), universe, transcriber, configuration.getName());
 
         this.configuration = configuration;
 
@@ -51,7 +57,6 @@ public class EpochEcosystem extends Ecosystem implements Runnable {
         ecosystemThread.setName("World-" + getId());
         ecosystemThread.setDaemon(true);
 
-        logger.severe("EpochEcosystem created: " + this);
     }
 
     public Thread getEcosystemThread() { //TODO protected

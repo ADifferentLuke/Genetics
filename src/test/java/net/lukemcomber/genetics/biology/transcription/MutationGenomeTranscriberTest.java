@@ -24,11 +24,12 @@ public class MutationGenomeTranscriberTest {
         }
     }
 
+    final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
+            MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 1,
+            MutationGenomeTranscriber.MUTATION_RAND_SEED, 123
+    ));
 
     public void testMutatesGenome() {
-        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
-                MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 1
-        ));
         // Create a mock implementation of Genome for testing
         Genome genome = new TestGenome(3);
 
@@ -54,9 +55,9 @@ public class MutationGenomeTranscriberTest {
          * bitToFlip matches the results of random.nextInt(32) inside MutationGenomeTranscriber
          *  when using seed 123
          */
-        MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber();
+        MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber(testUniverse);
 
-        transcriber.mutate(genome, 1.0f, seed);
+        transcriber.mutate(genome, 1.0f);
 
         byte newValue = genome.getGeneNumber(0).nucleotideA;
 
@@ -78,7 +79,7 @@ public class MutationGenomeTranscriberTest {
         // Set the random seed to ensure consistent test results
         // In a real scenario, you might not want to set the seed to allow for true randomness
         seed = 456;
-        transcriber.mutate(genome, 0.0f, seed); // Mutate with 0% probability for testing
+        transcriber.mutate(genome, 0.0f); // Mutate with 0% probability for testing
         assertEquals(0, getBitValue(genome.getGeneNumber(0), bitToFlip));
 
         // ensuring we don't modify the original genome
@@ -92,7 +93,7 @@ public class MutationGenomeTranscriberTest {
 
         final String originalGenome = GenomeSerDe.serialize(genome);
         logger.info( "Start genome: " + originalGenome);
-        final Genome newGenome = transcriber.transcribe(testUniverse, genome);
+        final Genome newGenome = transcriber.transcribe(genome);
         logger.info("Original genome: " + GenomeSerDe.serialize(genome));
         logger.info( "End genome: " + GenomeSerDe.serialize(newGenome));
         boolean theSame = true;
@@ -111,7 +112,7 @@ public class MutationGenomeTranscriberTest {
 
     public void testBitFlip() {
         logger.info("Testing raw bitFlip logic in mutations ...... ");
-        MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber();
+        MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber(testUniverse);
         byte TWO = 0b10;
         byte THREE = 0b11;
         byte shouldBeThree = transcriber.flipBit(TWO, 0);
@@ -121,7 +122,7 @@ public class MutationGenomeTranscriberTest {
 
     public void testGeneFlip() {
         logger.info("Testing gene bitFlip logic in mutations ...... ");
-        MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber();
+        MutationGenomeTranscriber transcriber = new MutationGenomeTranscriber(testUniverse);
 
         Genome genome = new TestGenome(3);
         byte TWO = 0b10;

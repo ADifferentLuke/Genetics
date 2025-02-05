@@ -41,12 +41,11 @@ public class OrganismFactory {
      */
     public static Organism create(final String parentId, final Genome genome, final SpatialCoordinates spatialCoordinates,
                                   final TemporalCoordinates temporalCoordinates, final UniverseConstants properties,
-                                  final MetadataStoreGroup groupStore) {
+                                  final MetadataStoreGroup groupStore, final GenomeTransciber transciber ) {
         final Organism retVal;
         if (genome instanceof PlantGenome) {
 
             final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates, properties);
-            final GenomeTransciber transciber = new AsexualTransposeAndMutateGeneTranscriber();
             final FitnessFunction fitnessFunction = new BasicFitnessFunction(properties);
 
             retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, fitnessFunction, groupStore);

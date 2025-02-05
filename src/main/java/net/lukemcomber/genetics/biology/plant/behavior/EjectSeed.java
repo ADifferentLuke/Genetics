@@ -78,7 +78,7 @@ public class EjectSeed implements PlantBehavior {
                 /*
                  * DEV NOTE: This is where mutation is initiated!
                  */
-                retVal = new EjectedSeedCell(transciber.transcribe(terrain.getProperties(),
+                retVal = new EjectedSeedCell(transciber.transcribe(
                         organism.getGenome()), newSpatialCoordinates, terrain.getProperties(), throwDistance,
                         function);
 

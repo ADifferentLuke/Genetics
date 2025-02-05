@@ -29,30 +29,34 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
     //Optional for determinism
     public static final String GENOME_TRANSPOSE_SEED = "genome.transpose.seed";
 
-    private Random rng;
+    private final UniverseConstants configuration;
+    private final Random rng;
+
+    public AsexualTransposGenomeTranscriber(final UniverseConstants configuraion) {
+        this.configuration = configuraion;
+        final int randomSeed = configuraion.get(GENOME_TRANSPOSE_SEED, Integer.class, 0);
+
+        if (0 < randomSeed) {
+            logger.severe("Creating transpos rng created with seed: " + randomSeed);
+            rng = new Random(randomSeed);
+        } else {
+            logger.severe("Creating transpos rng created without seed.");
+            rng = new Random();
+        }
+    }
 
     /**
      * Transcribe genome while randomly transposing genes
      *
-     * @param properties     configuration properties
      * @param originalGenome source genome
      * @return modified genome
      */
     @Override
-    public Genome transcribe(final UniverseConstants properties, final Genome originalGenome) {
-        final float probability = 1 / properties.get(GENOME_TRANSPOSE_PROBABILITY, Integer.class);
-        final int flankLength = properties.get(GENOME_TRANSPOSE_FLANK_LENGTH, Integer.class, 2);
-        final int randomSeed = properties.get(GENOME_TRANSPOSE_SEED, Integer.class, 0);
+    public Genome transcribe(final Genome originalGenome) {
+        final float probability = 1 / configuration.get(GENOME_TRANSPOSE_PROBABILITY, Integer.class).floatValue();
+        final int flankLength = configuration.get(GENOME_TRANSPOSE_FLANK_LENGTH, Integer.class, 2);
 
         final Genome genome = originalGenome.clone();
-
-        if (null == rng) {
-            if (0 < randomSeed) {
-                rng = new Random(randomSeed);
-            } else {
-                rng = new Random();
-            }
-        }
 
         if (rng.nextFloat() <= probability) {
             /*

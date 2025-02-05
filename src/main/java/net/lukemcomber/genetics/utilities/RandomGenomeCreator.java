@@ -21,14 +21,23 @@ public class RandomGenomeCreator {
     public static final String filterFilePath = dataDir + File.separator + "genomes.filter";
     public static final String genomeFilePath = dataDir + File.separator + "genomes.txt";
 
-    private Set<String> filter;
-
+    private final Set<String> filter;
+    private final Random rng;
     /**
      * Create a new instance with a genome filter
      * @param filter set of genomes to avoid
      */
     public RandomGenomeCreator(final Set<String> filter) {
+        this(filter,100L);
+    }
+    public RandomGenomeCreator(final Set<String> filter, final Long seed) {
         this.filter = filter;
+        if( Objects.isNull(seed)){
+            rng = new Random();
+        } else {
+            rng = new Random(seed);
+        }
+
     }
 
     /**
@@ -68,7 +77,6 @@ public class RandomGenomeCreator {
                                                                    final Map<SpatialCoordinates, String> preexisting) {
 
         final HashSet<String> simpleCollisionDetection = new HashSet<>();
-        final Random r = new Random();
         final Map<SpatialCoordinates, String> result = new HashMap<>();
 
         if (null != preexisting) {
@@ -87,8 +95,8 @@ public class RandomGenomeCreator {
         result.putAll(genomes.stream().collect(Collectors.toMap(genome -> {
             int x, y = 0;
             do {
-                x = r.nextInt(width);
-                y = r.nextInt(height);
+                x = rng.nextInt(width);
+                y = rng.nextInt(height);
             } while (simpleCollisionDetection.contains(String.format("%d-%d", x, y)));
             simpleCollisionDetection.add(String.format("%d-%d", x, y));
 
@@ -161,10 +169,9 @@ public class RandomGenomeCreator {
     }
 
     private String getRandomHexString(int numchars) {
-        Random r = new Random();
         StringBuffer sb = new StringBuffer();
         while (sb.length() < (numchars)) {
-            sb.append(Integer.toHexString(r.nextInt(255)));
+            sb.append(Integer.toHexString(rng.nextInt(255)));
         }
 
         return sb.toString().substring(0, numchars);

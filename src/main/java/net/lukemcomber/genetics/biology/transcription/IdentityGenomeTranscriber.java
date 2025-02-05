@@ -26,7 +26,7 @@ public class IdentityGenomeTranscriber implements GenomeTransciber {
      * @return destination genome
      */
     @Override
-    public Genome transcribe(final UniverseConstants properties, final Genome genome) {
+    public Genome transcribe( final Genome genome) {
         final Genome newGenome = genome.clone();
         for (int i = 0; genome.getNumberOfGenes() > i; ++i) {
             final Gene originalGene = genome.getGeneNumber(i);

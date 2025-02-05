@@ -18,6 +18,7 @@ import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.metadata.Performance;
+import net.lukemcomber.genetics.utilities.OrganismNameFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 
 import java.io.OutputStream;
@@ -102,7 +103,14 @@ public class PlantOrganism implements Organism {
         this.germinationCountDown = properties.get(PROPERTY_GERMINATION_LIMIT, Integer.class, 10);
         this.activeCells = new LinkedList<>();
         this.activeCells.add(seed);
-        this.uuid = UUID.randomUUID().toString();
+
+        final boolean sequentialNames = properties.get(PROPERTY_ORGANISM_SEQUENTIAL_NAMES, boolean.class, false);
+        if( sequentialNames ) {
+            this.uuid = OrganismNameFactory.nextName(); //UUID.randomUUID().toString();
+        } else {
+            this.uuid = UUID.randomUUID().toString();
+        }
+
         this.birthTime = temporalCoordinates;
         this.lastUpdateTime = temporalCoordinates;
         this.transciber = transciber;

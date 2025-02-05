@@ -8,6 +8,7 @@ package net.lukemcomber.genetics.model.ecosystem;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import net.lukemcomber.genetics.model.SpatialCoordinates;
 
 import java.util.List;
 import java.util.Map;
@@ -259,7 +260,7 @@ public abstract class EcosystemDetails {
      *
      * @return list of genomes
      */
-    public List<String> getInitialPopulation() {
+    public Map<SpatialCoordinates,String> getInitialPopulation() {
         return initialPopulation;
     }
 
@@ -268,7 +269,7 @@ public abstract class EcosystemDetails {
      *
      * @param initialPopulation list of genomes
      */
-    public void setInitialPopulation(List<String> initialPopulation) {
+    public void setInitialPopulation(Map<SpatialCoordinates,String> initialPopulation) {
         this.initialPopulation = initialPopulation;
     }
 
@@ -300,6 +301,6 @@ public abstract class EcosystemDetails {
     @JsonProperty("properties")
     private Map<String, String> properties;
     @JsonProperty("initialPopulation")
-    private List<String> initialPopulation;
+    private Map<SpatialCoordinates,String> initialPopulation;
 
 }

@@ -18,7 +18,6 @@ import net.lukemcomber.genetics.io.GenomeSerDe;
 import net.lukemcomber.genetics.store.MetadataStore;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.metadata.Performance;
-import net.lukemcomber.genetics.utilities.OrganismNameFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -26,8 +25,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;

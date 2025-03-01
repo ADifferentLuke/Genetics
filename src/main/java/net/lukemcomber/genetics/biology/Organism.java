@@ -21,8 +21,6 @@ import static java.util.logging.Logger.getLogger;
  */
 public interface Organism {
 
-    public final static String PROPERTY_ORGANISM_SEQUENTIAL_NAMES = "organism.name.sequential";
-
     String DEFAULT_PARENT = "GOD";
 
     enum CauseOfDeath {

@@ -21,7 +21,6 @@ import net.lukemcomber.genetics.store.MetadataStoreFactory;
 import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.SearchableMetadataStore;
 import net.lukemcomber.genetics.store.metadata.Performance;
-import net.lukemcomber.genetics.utilities.OrganismNameFactory;
 import net.lukemcomber.genetics.utilities.RandomGenomeCreator;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import org.apache.commons.codec.DecoderException;
@@ -39,7 +38,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import static net.lukemcomber.genetics.biology.Organism.PROPERTY_ORGANISM_SEQUENTIAL_NAMES;
 
 public class MultiEpochEcosystem extends Ecosystem implements Runnable {
 
@@ -192,11 +190,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
-            final Boolean sequentialNames = properties.get(PROPERTY_ORGANISM_SEQUENTIAL_NAMES, Boolean.class, false);
 
-            if (sequentialNames) {
-                OrganismNameFactory.reset();
-            }
             if (Objects.nonNull(cleanupFunction)) {
                 try {
                     cleanupFunction.call();

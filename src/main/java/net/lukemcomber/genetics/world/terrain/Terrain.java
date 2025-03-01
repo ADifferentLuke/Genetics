@@ -17,6 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Logger;
 
 /**
@@ -40,7 +42,7 @@ public abstract class Terrain {
     public Terrain(final SpatialCoordinates spatialBounds, final UniverseConstants constants, final MetadataStoreGroup store ){
         this.spatialBounds = spatialBounds;
         this.constants = constants;
-        this.population = new ConcurrentHashMap<>();
+        this.population = new ConcurrentSkipListMap<>();
         this.uuid = UUID.randomUUID();
         this.totalOrganisms = 0;
         this.metadataStoreGroup = store;

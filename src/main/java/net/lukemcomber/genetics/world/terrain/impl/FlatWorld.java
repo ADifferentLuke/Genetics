@@ -212,7 +212,7 @@ public class FlatWorld extends Terrain {
             throw new RuntimeException("CRITICAL: Terrain has become corrupted!!");
         }
 
-        return null != currentCell;
+        return true;
     }
 
     /**

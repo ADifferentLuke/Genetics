@@ -141,7 +141,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     ecosystem.initialize(() -> {
 
                         if (metadataStore instanceof SearchableMetadataStore<Performance>) {
-                            ((SearchableMetadataStore<Performance>) metadataStore).page("fitness", 0, configuration.getReusePopulation()).forEach(performance -> {
+                            ((SearchableMetadataStore<Performance>) metadataStore).page( 0, configuration.getReusePopulation()).forEach(performance -> {
                                 survivingDna.add(performance.getDna());
                             });
                         }
@@ -192,7 +192,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
-            final boolean sequentialNames = properties.get(PROPERTY_ORGANISM_SEQUENTIAL_NAMES, boolean.class, false);
+            final Boolean sequentialNames = properties.get(PROPERTY_ORGANISM_SEQUENTIAL_NAMES, Boolean.class, false);
 
             if (sequentialNames) {
                 OrganismNameFactory.reset();

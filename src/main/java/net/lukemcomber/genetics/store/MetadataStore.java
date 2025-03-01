@@ -38,7 +38,7 @@ public abstract class MetadataStore<T extends Metadata> {
      * @return list of records
      * @throws FileNotFoundException
      */
-    public abstract List<T> page(final String namespace, final int pageNumber, final int countPerPage) throws FileNotFoundException;
+    public abstract List<T> page(final int pageNumber, final int countPerPage) throws FileNotFoundException;
 
     /**
      * Expire the data store. If blocked is true, wait until thread shutdown to return

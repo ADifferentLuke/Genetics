@@ -37,10 +37,9 @@ public class AsexualTransposGenomeTranscriber implements GenomeTransciber {
         final int randomSeed = configuraion.get(GENOME_TRANSPOSE_SEED, Integer.class, 0);
 
         if (0 < randomSeed) {
-            logger.severe("Creating transpos rng created with seed: " + randomSeed);
+            logger.info("RNG created with seed: " + randomSeed);
             rng = new Random(randomSeed);
         } else {
-            logger.severe("Creating transpos rng created without seed.");
             rng = new Random();
         }
     }

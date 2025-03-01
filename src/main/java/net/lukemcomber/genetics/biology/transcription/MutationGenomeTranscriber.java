@@ -34,10 +34,9 @@ public class MutationGenomeTranscriber implements GenomeTransciber {
         final long randomSeed = configuration.get(MUTATION_RAND_SEED, Integer.class, 0).longValue();
 
         if (0 < randomSeed) {
-            logger.severe("Creating mutation rng with seed: " + randomSeed);
+            logger.info("RNG created with seed: " + randomSeed);
             rng = new Random(randomSeed);
         } else {
-            logger.severe("Creating mutation rng without seed.");
             rng = new Random();
         }
     }

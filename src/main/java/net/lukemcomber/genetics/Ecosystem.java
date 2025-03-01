@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,10 +47,10 @@ public abstract class Ecosystem {
     private Terrain terrain;
     private final int ticksPerDay;
     private final String uuid;
-    private final Map<SpatialCoordinates,String> initialPopulation;
-    private long totalTicks;
-    private long totalDays;
-    private int currentTick;
+    private final Map<SpatialCoordinates, String> initialPopulation;
+    private AtomicLong totalTicks;
+    private AtomicLong totalDays;
+    private AtomicInteger currentTick;
     private final String name;
     private final AtomicBoolean isRunning;
     private final AtomicBoolean isInitialized;
@@ -59,6 +61,7 @@ public abstract class Ecosystem {
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe) throws IOException {
         this(ticksPerDay, size, universe, null);
     }
+
     public Ecosystem(final int ticksPerDay, final SpatialCoordinates size, final UniverseConstants universe, final GenomeTransciber transciber) throws IOException {
         this(ticksPerDay, size, universe, transciber, null);
     }
@@ -70,9 +73,9 @@ public abstract class Ecosystem {
         this.initialPopulation = new HashMap<>();
         this.worldSize = size;
 
-        totalDays = 0;
-        totalTicks = 0;
-        currentTick = 0;
+        totalDays = new AtomicLong(0);
+        totalTicks = new AtomicLong(0);
+        currentTick = new AtomicInteger(0);
 
         properties = universe;
         uuid = UUID.randomUUID().toString();
@@ -84,10 +87,10 @@ public abstract class Ecosystem {
 
         metadataStoreGroup = MetadataStoreFactory.getMetadataStore(uuid, properties);
 
-        if( Objects.isNull(transciber)) {
-           this.transciber = new AsexualTransposeAndMutateGeneTranscriber(universe);
+        if (Objects.isNull(transciber)) {
+            this.transciber = new AsexualTransposeAndMutateGeneTranscriber(universe);
         } else {
-           this.transciber = transciber;
+            this.transciber = transciber;
         }
 
         terrain = TerrainFactory.create(size, properties, metadataStoreGroup);
@@ -97,11 +100,20 @@ public abstract class Ecosystem {
         isCleanedUp = new AtomicBoolean(false);
     }
 
-    protected GenomeTransciber getGnomeTranscriber(){
+    protected GenomeTransciber getGnomeTranscriber() {
         return transciber;
     }
 
     public TemporalCoordinates getTime() {
+        final long totalTicks;
+        final long totalDays;
+        final int currentTick;
+
+        synchronized (Ecosystem.class) {
+            totalTicks = this.totalTicks.get();
+            totalDays = this.totalDays.get();
+            currentTick = this.currentTick.get();
+        }
         return new TemporalCoordinates(totalTicks, totalDays, currentTick);
     }
 
@@ -124,7 +136,7 @@ public abstract class Ecosystem {
      */
     @Deprecated
     public long getTotalTicks() {
-        return totalTicks;
+        return totalTicks.get();
     }
 
     /**
@@ -134,7 +146,7 @@ public abstract class Ecosystem {
      */
     @Deprecated
     public void setTotalTicks(final long totalTicks) {
-        this.totalTicks = totalTicks;
+        this.totalTicks.set(totalTicks);
     }
 
     /**
@@ -144,7 +156,7 @@ public abstract class Ecosystem {
      */
     @Deprecated
     public long getTotalDays() {
-        return totalDays;
+        return totalDays.get();
     }
 
     /**
@@ -154,7 +166,7 @@ public abstract class Ecosystem {
      */
     @Deprecated
     public void setTotalDays(final long totalDays) {
-        this.totalDays = totalDays;
+        this.totalDays.set(totalDays);
     }
 
     /**
@@ -173,7 +185,7 @@ public abstract class Ecosystem {
      */
     @Deprecated
     public int getCurrentTick() {
-        return currentTick;
+        return currentTick.get();
     }
 
     /**
@@ -183,7 +195,7 @@ public abstract class Ecosystem {
      */
     @Deprecated
     public void setCurrentTick(final int currentTick) {
-        this.currentTick = currentTick;
+        this.currentTick.set(currentTick);
     }
 
     /**
@@ -261,7 +273,7 @@ public abstract class Ecosystem {
      *
      * @return list of genome strings
      */
-    public Map<SpatialCoordinates,String> getInitialPopulation() {
+    public Map<SpatialCoordinates, String> getInitialPopulation() {
         return initialPopulation;
     }
 
@@ -324,7 +336,7 @@ public abstract class Ecosystem {
          * More thought should be given to making this purely asynchronous
          */
         for (final Iterator<Organism> it = getTerrain().getOrganisms(); it.hasNext(); ) {
-            Organism organism = it.next();
+            final Organism organism = it.next();
             logger.info("Ticking Organism: " + organism.getUniqueID());
             organism.performAction(getTerrain(), temporalCoordinates, ((organism1, cell) -> {
                 final ResourceManager manager = getTerrain().getResourceManager();
@@ -340,12 +352,15 @@ public abstract class Ecosystem {
     }
 
     private void tick(final int steps) {
-        this.totalTicks += steps;
-        this.currentTick += steps;
+        synchronized (Ecosystem.class) {
+            //TODO there is a bug here if step is larger than 1 day
+            totalTicks.addAndGet(steps);
+            currentTick.addAndGet(steps);
 
-        if (this.currentTick >= ticksPerDay) {
-            totalDays++;
-            this.currentTick = 0;
+            if (currentTick.get() >= ticksPerDay) {
+                totalDays.incrementAndGet();
+                currentTick.set(0);
+            }
         }
     }
 }

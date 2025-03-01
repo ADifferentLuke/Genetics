@@ -20,6 +20,7 @@ import net.lukemcomber.genetics.store.MetadataStoreGroup;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import net.lukemcomber.genetics.utilities.OrganismNameFactory;
 import net.lukemcomber.genetics.world.terrain.Terrain;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -79,12 +80,12 @@ public class PlantOrganism implements Organism {
      * @param seed                source seed
      * @param temporalCoordinates time
      * @param properties          configuration properties
-     * @param transciber          genome transcriber
+     * @param transcriber          genome transcriber
      * @param fitnessFunction     fitness function
      * @param metadataStoreGroup  metadata store cache
      */
     public PlantOrganism(final String parentUuid, final SeedCell seed, final TemporalCoordinates temporalCoordinates,
-                         final UniverseConstants properties, final GenomeTransciber transciber,
+                         final UniverseConstants properties, final GenomeTransciber transcriber,
                          final FitnessFunction fitnessFunction,
                          final MetadataStoreGroup metadataStoreGroup) {
 
@@ -104,16 +105,14 @@ public class PlantOrganism implements Organism {
         this.activeCells = new LinkedList<>();
         this.activeCells.add(seed);
 
-        final boolean sequentialNames = properties.get(PROPERTY_ORGANISM_SEQUENTIAL_NAMES, boolean.class, false);
-        if( sequentialNames ) {
-            this.uuid = OrganismNameFactory.nextName(); //UUID.randomUUID().toString();
-        } else {
-            this.uuid = UUID.randomUUID().toString();
-        }
+        final String dnaString = GenomeSerDe.serialize(genome);
+
+        this.uuid = DigestUtils.sha1Hex("%d-%d|%d-%s".formatted(temporalCoordinates.totalTicks(),seed.getCoordinates().xAxis(),
+                seed.getCoordinates().yAxis(),dnaString ));
 
         this.birthTime = temporalCoordinates;
         this.lastUpdateTime = temporalCoordinates;
-        this.transciber = transciber;
+        this.transciber = transcriber;
 
         alive = true; //It's allliiiiiiiivvvvveeee!
     }

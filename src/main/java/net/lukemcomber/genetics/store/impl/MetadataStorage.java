@@ -81,7 +81,7 @@ public class MetadataStorage {
 
                     do {
                         // we got the records, now write them out!!!
-                        page = store.page(primaryIndex, pageNumber++, chunkSize);
+                        page = store.page(pageNumber++, chunkSize);
                         if(Objects.nonNull(page)) {
                             page.forEach(metadata -> {
                                 try {

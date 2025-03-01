@@ -15,15 +15,6 @@ import java.util.List;
  */
 public abstract class SearchableMetadataStore<T extends Metadata> extends MetadataStore<T> {
 
-    /**
-     * Returns the requested page as a list of records
-     *
-     * @param index          name of the index to use
-     * @param pageNumber     the page number to return
-     * @param recordsPerPage the number of records in each page
-     * @return list of records
-     */
-    public abstract List<T> page(final String index, final int pageNumber, final int recordsPerPage);
 
     /**
      * Search the {@link MetadataStore} at the provided index for the specified value.

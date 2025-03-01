@@ -24,6 +24,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -37,15 +39,78 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
     private static final Logger logger = Logger.getLogger(KryoMetadataStore.class.getName());
 
 
-    class CachePosition {
-        long startByte;
-        int length;
+    static class CachePosition {
+        public AtomicLong startByte;
+        public AtomicInteger length;
+    }
+
+    class MetadataComparator implements Comparator<T> {
+
+        @Override
+        public int compare(final T o1, final T o2) {
+            if (o1 == null && o2 == null) return 0;
+            if (o1 == null) return -1;
+            if (o2 == null) return 1;
+
+            final Field[] fields = o1.getClass().getDeclaredFields(); //o1.getClass().getFields();
+
+            // Sort fields by annotation priority, then by name for determinism
+            Arrays.sort(fields, Comparator
+                    .comparingInt(this::getFieldPriority)
+                    .thenComparing(Field::getName));
+
+            for (final Field field : fields) {
+                field.setAccessible(true);
+                try {
+                    final Object value1 = field.get(o1);
+                    final Object value2 = field.get(o2);
+
+                    final int result = compareValues(value1, value2);
+                    if (result != 0){
+                        return result;
+                    }
+
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to access field: " + field.getName(), e);
+                }
+            }
+            return 0;
+        }
+
+        private int getFieldPriority(final Field field) {
+            if (field.isAnnotationPresent(Primary.class)) return 0; // Highest priority
+            if (field.isAnnotationPresent(Indexed.class)) return 1;   // Medium priority
+            return 2;  // Lowest priority (no annotation)
+        }
+
+        @SuppressWarnings("unchecked")
+        private int compareValues(final Object v1, final Object v2) {
+            if (v1 == v2) return 0;
+            if (v1 == null) return -1;
+            if (v2 == null) return 1;
+
+            if (v1 instanceof Comparable<?> && v2 instanceof Comparable<?>) {
+                return ((Comparable<Object>) v1).compareTo(v2);
+            }
+            return v1.toString().compareTo(v2.toString());
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            return obj != null && obj.getClass() == this.getClass();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(MetadataComparator.class);
+        }
     }
 
     public static final String PROPERTY_TYPE_TTL = "metadata.%s.ttl";
 
+    private final ConcurrentSkipListMap<T, CachePosition> sortedMetadata;
     private final Map<String, ConcurrentSkipListMap<Object, LinkedBlockingQueue<CachePosition>>> indexedFields;
-    private long recordCount;
+    private AtomicLong recordCount;
     private boolean enabled; //RW is atomic
     private final Thread writeThread;
     private final BlockingQueue<T> outputQueue;
@@ -78,13 +143,15 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
         isInitialized = new AtomicBoolean(false);
         isRunning = new AtomicBoolean(false);
 
+        sortedMetadata = new ConcurrentSkipListMap<>(new MetadataComparator().reversed());
+
         onCleanUpHook = null;
 
         expirationTimer = new Timer(true);
         //Using custom property first, but don't barf if it's not defined
         final long ttl;
         indexedFields = new ConcurrentSkipListMap<>();
-        recordCount = 0;
+        recordCount = new AtomicLong(0);
         final Integer cTtl = properties.get(String.format(PROPERTY_TYPE_TTL, type.getSimpleName()), Integer.class, -1);
         this.type = type;
         if (0 >= cTtl) {
@@ -217,6 +284,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                 }
                 ioSystemLock.writeLock().lock();
                 indexedFields.clear();
+                sortedMetadata.clear();
                 datFile.close();
                 idxFile.close();
                 expirationTimer = null;
@@ -280,7 +348,7 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      */
     @Override
     public long count() {
-        return recordCount;
+        return recordCount.get();
     }
 
     @Override
@@ -296,23 +364,12 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
      * @return list of records
      */
     @Override
-    public List<T> page(final String index, final int pageNumber, final int recordsPerPage) {
+    public List<T> page(final int pageNumber, final int recordsPerPage) {
 
         final List<T> retVal;
 
-        final String dataIndex;
-        if (StringUtils.isBlank(index)) {
-            dataIndex = primaryIndex;
-        } else {
-            dataIndex = index;
-        }
-
         if (0 <= pageNumber && 0 < recordsPerPage) {
-            if (indexedFields.containsKey(dataIndex)) {
-                retVal = readFromIndex(dataIndex, pageNumber, recordsPerPage);
-            } else {
-                throw new RuntimeException("Index [" + dataIndex + "] not found");
-            }
+            retVal = readFromIndex(pageNumber, recordsPerPage);
         } else {
             throw new EvolutionException("Invalid page reference.");
         }
@@ -437,14 +494,14 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
         datFile.seek(currentPosition);
         datFile.write(data);
 
-        recordCount++;
+        recordCount.incrementAndGet();
 
         final CachePosition cachePosition = new CachePosition();
-        cachePosition.length = data.length;
-        cachePosition.startByte = currentPosition;
+        cachePosition.length = new AtomicInteger(data.length);
+        cachePosition.startByte = new AtomicLong(currentPosition);
 
-        idxFile.writeLong(cachePosition.startByte);
-        idxFile.writeInt(cachePosition.length);
+        idxFile.writeLong(currentPosition);
+        idxFile.writeInt(data.length);
 
         final Class<?> clazz = metadata.getClass();
         for (final Field field : clazz.getDeclaredFields()) {
@@ -462,6 +519,8 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
                     indexedFields.put(key, indexList);
                 }
                 final Object val = field.get(metadata);
+
+                sortedMetadata.put(metadata, cachePosition);
 
                 if (!Objects.isNull(val)) {
                     final LinkedBlockingQueue<CachePosition> records;
@@ -485,26 +544,22 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
         return currentPosition + data.length;
     }
 
-    private List<T> readFromIndex(final String index, final int page, final long recordCount) {
+    private List<T> readFromIndex(final int page, final long recordCount) {
 
         final List<T> results;
-        if (indexedFields.containsKey(index)) {
-            final ConcurrentSkipListMap<Object, LinkedBlockingQueue<CachePosition>> indexes = indexedFields.get(index);
-            results = indexes.descendingMap().entrySet().stream().flatMap(entry -> entry.getValue().stream())
-                    .skip((long) page * recordCount)
-                    .limit(recordCount)
-                    .map(pos -> {
-                        try {
-                            return readDataFromFile(pos, datFile);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .toList();
 
-        } else {
-            results = null;
-        }
+        results = sortedMetadata.entrySet().stream()
+                .skip((long) page * recordCount)
+                .limit(recordCount)
+                .map(pos -> {
+                    try {
+                        return readDataFromFile(pos.getValue(), datFile);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
         return results;
 
     }
@@ -514,8 +569,8 @@ public class KryoMetadataStore<T extends Metadata> extends net.lukemcomber.genet
         final ReentrantReadWriteLock.ReadLock readLock = ioSystemLock.readLock();
         final T retVal;
 
-        final long startPosition = position.startByte;
-        final byte[] data = new byte[position.length];
+        final long startPosition = position.startByte.get();
+        final byte[] data = new byte[position.length.get()];
         int readCount = 0;
         boolean seeked = false;
         try {

@@ -71,20 +71,20 @@ public class TestKryoMetadataStore {
         // 1 second sleep
         Thread.sleep(1000);
 
-        Collections.sort(checkList, Collections.reverseOrder());
+        checkList.sort(Collections.reverseOrder());
 
         logger.info("Validating sorted data order.");
         int pageNo = 1;
         int countPerPage = 12;
 
         //Get top 25
-        final List<TestSearchableMetadata> page = testMetaStore.page("int", pageNo, countPerPage);
+        final List<TestSearchableMetadata> page = testMetaStore.page(pageNo, countPerPage);
         logger.severe("List size: " + page.size());
-        logger.severe( "Total size: " + testMetaStore.count());
+        logger.severe("Total size: " + testMetaStore.count());
         for (int i = 0; i < page.size(); ++i) {
             try {
                 assertEquals(page.get(i).intNumber, checkList.get((pageNo * countPerPage) + i));
-            } catch( final Exception e ){
+            } catch (final Exception e) {
                 logger.severe(e.getMessage());
                 throw e;
             }

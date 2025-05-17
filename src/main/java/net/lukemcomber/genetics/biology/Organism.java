@@ -21,6 +21,9 @@ import static java.util.logging.Logger.getLogger;
  */
 public interface Organism {
 
+    String PROPERTY_OLD_AGE_LIMIT = "death.plant.age.limit.days";
+
+
     String DEFAULT_PARENT = "GOD";
 
     enum CauseOfDeath {

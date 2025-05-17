@@ -1,6 +1,7 @@
 package net.lukemcomber.genetics.store;
 
 import com.google.common.collect.ImmutableMap;
+import net.lukemcomber.genetics.TestUniverse;
 import net.lukemcomber.genetics.store.impl.MetadataStorage;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
@@ -26,7 +27,7 @@ public class TestExportedMetadataStore {
     }
 
     public void test() throws IOException, InterruptedException {
-        final TestMetadataStore.TestUniverse testUniverse = new TestMetadataStore.TestUniverse(ImmutableMap.<String,Object>builder()
+        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.<String,Object>builder()
                 .put(Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID)
                 .put(TestSearchableMetadata.PROPERTY_ENABLED, true)
                 .put(MetadataStore.PROPERTY_DATASTORE_TTL, 1000000)

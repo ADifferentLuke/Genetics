@@ -2,6 +2,7 @@ package net.lukemcomber.genetics.biology.transcription;
 
 
 import com.google.common.collect.ImmutableMap;
+import net.lukemcomber.genetics.TestUniverse;
 import net.lukemcomber.genetics.biology.Gene;
 import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.TestGenome;
@@ -18,11 +19,6 @@ import static org.testng.AssertJUnit.assertEquals;
 public class MutationGenomeTranscriberTest {
     private static final Logger logger = Logger.getLogger(MutationGenomeTranscriber.class.getName());
 
-    public static class TestUniverse extends UniverseConstants {
-        public TestUniverse(Map<String, Object> map) {
-            super(map);
-        }
-    }
 
     final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
             MutationGenomeTranscriber.GENOME_MUTATE_PROBABILITY, 1,

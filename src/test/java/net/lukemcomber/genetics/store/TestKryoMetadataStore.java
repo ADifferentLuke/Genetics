@@ -6,6 +6,7 @@ package net.lukemcomber.genetics.store;
  */
 
 import com.google.common.collect.ImmutableMap;
+import net.lukemcomber.genetics.TestUniverse;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
@@ -26,14 +27,9 @@ public class TestKryoMetadataStore {
 
     private static final Logger logger = Logger.getLogger(TestKryoMetadataStore.class.getName());
 
-    public static class TestUniverse extends UniverseConstants {
-        public TestUniverse(Map<String, Object> map) {
-            super(map);
-        }
-    }
 
     public void test() throws IOException, InterruptedException {
-        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
+        final var testUniverse = new TestUniverse(ImmutableMap.of(
                 Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
                 "metadata.TestSearchableMetadata.enabled", true,
                 MetadataStore.PROPERTY_DATASTORE_TTL, 1000000

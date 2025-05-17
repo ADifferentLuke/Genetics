@@ -37,7 +37,6 @@ public class PlantOrganism implements Organism {
     private static final Logger logger = Logger.getLogger(PlantOrganism.class.getName());
 
     public static final String PROPERTY_STARTING_ENERGY = "initial.plant.energy";
-    public static final String PROPERTY_OLD_AGE_LIMIT = "death.plant.age.limit.days";
     public static final String PROPERTY_STAGNATION_LIMIT = "death.plant.stagnation.limit.days";
     public static final String PROPERTY_STARVATION_LIMIT = "death.plant.starvation.limit.energy";
     public static final String PROPERTY_GERMINATION_LIMIT = "death.plant.germination.limit.ticks";

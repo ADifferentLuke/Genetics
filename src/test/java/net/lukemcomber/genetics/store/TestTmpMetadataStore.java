@@ -6,6 +6,7 @@ package net.lukemcomber.genetics.store;
  */
 
 import com.google.common.collect.ImmutableMap;
+import net.lukemcomber.genetics.TestUniverse;
 import net.lukemcomber.genetics.world.terrain.Terrain;
 import net.lukemcomber.genetics.world.terrain.impl.FlatWorld;
 import org.testng.annotations.Test;
@@ -23,7 +24,7 @@ public class TestTmpMetadataStore {
     private static final Logger logger = Logger.getLogger(TestTmpMetadataStore.class.getName());
 
     public void test() throws IOException, InterruptedException {
-        final TestMetadataStore.TestUniverse testUniverse = new TestMetadataStore.TestUniverse(ImmutableMap.of(
+        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
                 Terrain.PROPERTY_TERRAIN_TYPE, FlatWorld.ID,
                 "metadata.TestMetadata.enabled", true,
                 MetadataStore.PROPERTY_DATASTORE_TTL, 1000000

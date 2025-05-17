@@ -1,5 +1,8 @@
 package net.lukemcomber.genetics.biology.fitness;
 
+import com.google.common.collect.ImmutableMap;
+import net.lukemcomber.genetics.TestUniverse;
+import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.fitness.impl.BasicFitnessFunction;
 import net.lukemcomber.genetics.store.metadata.Performance;
 import org.testng.annotations.Test;
@@ -13,6 +16,9 @@ public class TestBasicFitnessFunction {
 
     @Test
     public void doFitnessCalculation() {
+        final TestUniverse testUniverse = new TestUniverse(ImmutableMap.of(
+                Organism.PROPERTY_OLD_AGE_LIMIT, 1000
+        ));
         final Performance performance = new Performance();
         performance.setAge(1010l);
         performance.setOffspring(9);
@@ -22,7 +28,7 @@ public class TestBasicFitnessFunction {
         performance.setTotalEnergyMetabolized(482016);
         performance.setCauseOfDeath(1);
 
-        final BasicFitnessFunction fitnessFunction = new BasicFitnessFunction();
+        final BasicFitnessFunction fitnessFunction = new BasicFitnessFunction(testUniverse);
         performance.setFitness(fitnessFunction.apply(performance));
 
         logger.info("Fitness: " + performance.getFitness());

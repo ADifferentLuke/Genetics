@@ -7,6 +7,7 @@ package net.lukemcomber.genetics.biology;
 
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.biology.fitness.impl.BasicFitnessFunction;
+import net.lukemcomber.genetics.biology.fitness.impl.BasicV2FitnessFunction;
 import net.lukemcomber.genetics.biology.plant.PlantGenome;
 import net.lukemcomber.genetics.biology.plant.PlantOrganism;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
@@ -46,7 +47,7 @@ public class OrganismFactory {
         if (genome instanceof PlantGenome) {
 
             final SeedCell seedCell = new SeedCell(null, genome, spatialCoordinates, properties);
-            final FitnessFunction fitnessFunction = new BasicFitnessFunction(properties);
+            final FitnessFunction fitnessFunction = new BasicV2FitnessFunction(properties);  //new BasicFitnessFunction(properties);
 
             retVal = new PlantOrganism(parentId, seedCell, temporalCoordinates, properties, transciber, fitnessFunction, groupStore);
             logger.info(String.format("Created %s at %s from OrganismFactory", retVal.getUniqueID(), spatialCoordinates));

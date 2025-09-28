@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>net.lukemcomber</groupId>
-  <artifactId>genetics</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.lukemcomber</groupId>
+    <artifactId>genetics</artifactId>
+    <version>1.0.4-SNAPSHOT</version>
 
     <description>
         Genetics is a genetic algorithm simulator using asexual reproduction.
@@ -113,49 +113,49 @@
             </build>
         </profile>
     </profiles>
-  <build>
+    <build>
 
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
 
-        <configuration>
-            <annotationProcessorPaths>
-                <path>
-                    <groupId>org.projectlombok</groupId>
-                    <artifactId>lombok</artifactId>
-                    <version>1.18.30</version>
-                </path>
-            </annotationProcessorPaths>
-          <source>16</source>
-          <target>16</target>
-        </configuration>
-      </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>shade</goal>
-                    </goals>
-                    <phase>package</phase>
-                    <configuration>
-                        <shadedArtifactAttached>true</shadedArtifactAttached>
-                        <transformers>
-                            <transformer implementation=
-                                                 "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                <mainClass>net.lukemcomber.genetics.utilities.SimpleSimulator</mainClass>
-                            </transformer>
-                        </transformers>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.30</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <transformers>
+                                <transformer implementation=
+                                                     "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>net.lukemcomber.genetics.utilities.SimpleSimulator</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-    </plugins>
-  </build>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.testng</groupId>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.36</version>
+            <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

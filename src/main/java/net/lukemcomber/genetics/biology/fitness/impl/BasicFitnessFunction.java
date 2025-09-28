@@ -48,7 +48,7 @@ public class BasicFitnessFunction implements FitnessFunction {
      * @return fitness
      */
     @Override
-    public Double apply(final Performance performance) {
+    public double calculate(final Performance performance, final Organism organism) {
 
         // larger is better, but not a huge advantage.
         final double cellsValue = cellsWeight * Math.log(Math.sqrt(performance.getCells()));

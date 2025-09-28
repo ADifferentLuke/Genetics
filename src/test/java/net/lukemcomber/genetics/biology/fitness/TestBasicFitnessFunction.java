@@ -29,7 +29,7 @@ public class TestBasicFitnessFunction {
         performance.setCauseOfDeath(1);
 
         final BasicFitnessFunction fitnessFunction = new BasicFitnessFunction(testUniverse);
-        performance.setFitness(fitnessFunction.apply(performance));
+        performance.setFitness(fitnessFunction.calculate(performance,null));
 
         logger.info("Fitness: " + performance.getFitness());
 

@@ -6,6 +6,7 @@ package net.lukemcomber.genetics.biology.plant.behavior;
  */
 
 import net.lukemcomber.genetics.biology.Cell;
+import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.plant.PlantBehavior;

@@ -9,6 +9,8 @@ import net.lukemcomber.genetics.biology.Cell;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.ArrayDeque;
 
 /**
  * Helper class for cell operations
@@ -22,15 +24,30 @@ public class CellHelper {
      * @return list of cells in the tree
      */
     public static List<Cell> getAllOrganismsCells(final Cell rootCell) {
+        // Breadth-first snapshot of the cell tree. Safe against concurrent edits to child lists.
         final List<Cell> retVal = new LinkedList<>();
-        final List<Cell> stack = new LinkedList<>();
-        stack.add(rootCell);
-        do {
-            final Cell currentCell = stack.remove(0);
-            retVal.add(currentCell);
-            stack.addAll(currentCell.getChildren());
+        final ArrayDeque<Cell> stack = new ArrayDeque<>();
 
-        } while (0 < stack.size());
+        if (rootCell == null) return retVal;
+        stack.add(rootCell);
+
+        while (!stack.isEmpty()) {
+            final Cell currentCell = stack.removeFirst();
+            retVal.add(currentCell);
+
+            // Snapshot children defensively in case another thread mutates the list while we traverse.
+            final List<Cell> children = currentCell.getChildren();
+            if (children == null || children.isEmpty()) continue;
+
+            // Synchronize on the list object to prevent races during the snapshot.
+            List<Cell> snapshot;
+            synchronized (children) {
+                snapshot = new ArrayList<>(children); // iterate a stable copy
+            }
+            for (Cell c : snapshot) {
+                if (c != null) stack.addLast(c);
+            }
+        }
         return retVal;
     }
 }

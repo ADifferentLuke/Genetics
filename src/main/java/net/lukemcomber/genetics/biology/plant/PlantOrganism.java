@@ -10,6 +10,7 @@ import net.lukemcomber.genetics.biology.Genome;
 import net.lukemcomber.genetics.biology.GenomeTransciber;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
+import net.lukemcomber.genetics.biology.plant.behavior.EjectSeed;
 import net.lukemcomber.genetics.biology.plant.cells.SeedCell;
 import net.lukemcomber.genetics.exception.EvolutionException;
 import net.lukemcomber.genetics.model.TemporalCoordinates;
@@ -55,7 +56,10 @@ public class PlantOrganism implements Organism {
 
     private final TemporalCoordinates birthTime;
     private TemporalCoordinates lastUpdateTime;
+
     private boolean alive;
+    private CauseOfDeath causeOfDeath;
+    private String deathDetails;
 
     private int germinationCountDown;
     private int totalResourcesGathered;
@@ -174,29 +178,13 @@ public class PlantOrganism implements Organism {
      */
     @Override
     public void kill(final TemporalCoordinates temporalCoordinates, final CauseOfDeath causeOfDeath, final String reason) {
+
         alive = false;
-        final Performance performance = new Performance();
-        performance.setName(this.uuid);
-        performance.setParentId(this.parentUuid);
-        performance.setDna(GenomeSerDe.serialize(getGenome()));
-        performance.setOffspring(seedCount);
-        performance.setBirthTick(this.birthTime.totalTicks());
-        performance.setDeathEnergy(this.energy);
-        performance.setDeathTick(temporalCoordinates.totalTicks());
-        performance.setCauseOfDeathStr(reason);
-        performance.setCauseOfDeath(causeOfDeath.ordinal());
-        performance.setAge(performance.getDeathTick() - performance.getBirthTick());
-        performance.setTotalEnergyHarvested(totalResourcesGathered);
-        performance.setTotalEnergyMetabolized(totalEnergyMetabolized);
+        this.causeOfDeath = causeOfDeath;
+        this.deathDetails = reason;
 
-        performance.setCells(childCount + 1); // Added 1 for current cell that's not a child
 
-        if (null != fitnessFunction) {
-            performance.setFitness(fitnessFunction.apply(performance));
-        } else {
-            performance.setFitness(0d);
-        }
-
+        final Performance performance = fitnessFunction.apply(this);
         try {
             final MetadataStore<Performance> performanceStore = metadataStoreGroup.get(Performance.class);
             performanceStore.store(performance);
@@ -276,6 +264,36 @@ public class PlantOrganism implements Organism {
         return birthTime.totalTicks();
     }
 
+    @Override
+    public int getOffspringCount() {
+        return seedCount;
+    }
+
+    @Override
+    public long getTotalEnergyMetabolized() {
+        return totalEnergyMetabolized;
+    }
+
+    @Override
+    public long getTotalEnergyHarvested() {
+        return totalResourcesGathered;
+    }
+
+    @Override
+    public int getCellCount() {
+        return childCount;
+    }
+
+    @Override
+    public CauseOfDeath getCauseOfDeath() {
+        return causeOfDeath;
+    }
+
+    @Override
+    public String getDeathDetails() {
+        return deathDetails;
+    }
+
     /**
      * Get the last updated tick of the organism
      *
@@ -350,13 +368,10 @@ public class PlantOrganism implements Organism {
 
 
                     if (cell.canCellSupport(plantBehavior) && plantBehavior.getEnergyCost(terrain.getProperties()) <= energy) {
-                        logger.info("Attempting " + plantBehavior);
                         try {
-                            logger.info("Start newCell");
                             final Cell newCell = plantBehavior.performAction(properties, terrain, this,
                                     cell, temporalCoordinates, metadataStoreGroup);
 
-                            logger.info("Start endCell");
                             if (null != newCell) {
                                 //Update last updated time
                                 lastUpdateTime = temporalCoordinates;

@@ -1,5 +1,6 @@
 package net.lukemcomber.genetics.biology.fitness.impl;
 
+import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
 import net.lukemcomber.genetics.store.metadata.Performance;
 
@@ -26,7 +27,7 @@ public class RandomFitnessFunction implements FitnessFunction {
      * @return fitness
      */
     @Override
-    public Double apply(final Performance performance) {
+    public double calculate(final Performance performance, final Organism organism) {
         return rng.nextDouble();
     }
 }

@@ -1,10 +1,17 @@
 package net.lukemcomber.genetics.biology.fitness.impl;
 
+import net.lukemcomber.genetics.biology.Cell;
 import net.lukemcomber.genetics.biology.Organism;
 import net.lukemcomber.genetics.biology.fitness.FitnessFunction;
+import net.lukemcomber.genetics.biology.plant.cells.LeafCell;
+import net.lukemcomber.genetics.biology.plant.cells.RootCell;
+import net.lukemcomber.genetics.biology.plant.cells.StemCell;
+import net.lukemcomber.genetics.io.CellHelper;
 import net.lukemcomber.genetics.model.UniverseConstants;
 import net.lukemcomber.genetics.store.metadata.Performance;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -13,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class BasicV2FitnessFunction implements FitnessFunction {
 
-    private static final Logger logger = Logger.getLogger( BasicV2FitnessFunction.class.getName());
+    private static final Logger logger = Logger.getLogger(BasicV2FitnessFunction.class.getName());
     public static final double DEFAULT_AGE_WEIGHT = 1;
     public static final double DEFAULT_CELLS_WEIGHT = 0.5;
     public static final double DEFAULT_UNUSED_ENERGY_WEIGHT = 0.2;
@@ -27,7 +34,15 @@ public class BasicV2FitnessFunction implements FitnessFunction {
     private final double unusedEnergyWeight;
     private final double energyEfficiencyWeight;
     private final double childrenWeight;
+
     private final int maximumAge;
+
+    private final double BETA = 1.2;
+    private final int k = 50;
+    private final double SYMMETRY_WEIGHT = 1;
+    private final double SIZE_WEIGHT = 1;
+    private final double AGE_WEIGHT = 1;
+    private final double OFFSPRING_WEIGHT = 1;
 
 
     /**
@@ -54,27 +69,55 @@ public class BasicV2FitnessFunction implements FitnessFunction {
      * @return fitness
      */
     @Override
-    public Double apply(final Performance performance) {
+    public double calculate(final Performance performance, final Organism organism) {
 
         // larger is better, but not a huge advantage.
         double fitness = 0;
 
-        final double ageFactor = ageWeight * ( (double) performance.getAge() / maximumAge );
-        //final double reproductionFactor = (1- Math.pow(0.5, performance.getOffspring()));
-        final double reproductionFactor = 1 - Math.exp( -performance.getOffspring() );
-        final double sizeFactor = 1 - Math.exp( -performance.getCells() );
+        final List<Cell> flattenBody = CellHelper.getAllOrganismsCells(organism.getFirstCell());
 
-        final double deathValue = (double) performance.getCauseOfDeath() / Organism.CauseOfDeath.count;
+        long size = performance.getCells();
+        double sizeScore = (double) size / (size + k);
 
-        if( 0 < performance.getOffspring()){
-            fitness = sizeFactor + reproductionFactor;
+        int underGroundCell = 1;
+        int aboveGroundCell = 1;
+        double symmetryScore = 0;
+
+        for (final Cell cell : flattenBody) {
+            if (Objects.nonNull(cell)) {
+                switch (cell.getCellType()) {
+                    case StemCell.TYPE, LeafCell.TYPE -> aboveGroundCell++;
+                    case RootCell.TYPE -> underGroundCell++;
+                }
+            }
         }
 
-        logger.info( "%s - Reproduction Factor: %f Size Factor: %f Fitness: %f".formatted( performance.getName(), reproductionFactor, sizeFactor, fitness));
+        if (1 < flattenBody.size()) {
+            if (underGroundCell < aboveGroundCell) {
+                symmetryScore = (double) underGroundCell / aboveGroundCell;
+            } else {
+                symmetryScore = (double) aboveGroundCell / underGroundCell;
+            }
+        }
 
-        //TODO how to determine organism symmatry
+        // relative age calculation
+        long birth = performance.getBirthTick();
+        long now = Math.min(performance.getDeathTick(), maximumAge); // or sim clock
+        long denom = Math.max(1, (maximumAge - birth));       // avoid /0 if born at end
+        double ageScore = Math.max(0.0, Math.min(1.0, (now - birth) / (double) denom));
 
-        return fitness;
+        int offspringCount = performance.getOffspring();
+        double offspringScore;
+        if (offspringCount < 1) {
+            offspringScore = Math.exp(-BETA * (1 - offspringCount));
+        } else if (offspringCount <= 2) {
+            offspringScore = 1.0;
+        } else {
+            offspringScore = Math.exp(-BETA * (offspringCount - 2));
+        }
 
+        logger.info("%s - Symmetry Factor: %f Age Factor: %f Fitness: %f".formatted(performance.getName(), symmetryScore, ageScore, fitness));
+
+        return Math.pow(symmetryScore, SYMMETRY_WEIGHT) * Math.pow(ageScore, AGE_WEIGHT) * Math.pow(offspringScore, OFFSPRING_WEIGHT) * Math.pow(sizeScore, SIZE_WEIGHT);
     }
 }

@@ -123,6 +123,43 @@ public interface Organism {
     long getBirthTick();
 
     /**
+     * Number of offspring of the organism
+     * @return offspring
+     */
+    int getOffspringCount();
+
+    /**
+     * Total amount of energy the organism has metabolized
+     * @return energy count
+     */
+    long getTotalEnergyMetabolized();
+
+    /**
+     * Get total amount of energy harvested by the organism
+     * @return energy count
+     */
+    long getTotalEnergyHarvested();
+
+    /**
+     * Get count of all cells in organism
+     * @return cell count
+     */
+    int getCellCount();
+
+    /**
+     * Get the cause of death or null if still alive
+     * @return cause of death or null
+     */
+    CauseOfDeath getCauseOfDeath();
+
+    /**
+     * Addition details about organism death if dead
+     *   otherwise null
+     * @return str or null
+     */
+    String getDeathDetails();
+
+    /**
      * Get the last updated tick of the organism
      *
      * @return tick

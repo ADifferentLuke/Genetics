@@ -32,9 +32,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -46,7 +44,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
     private final Logger logger = Logger.getLogger(MultiEpochEcosystem.class.getName());
     private final MultiEpochConfiguration configuration;
     private final Set<String> organismFilter;
-    private final ConcurrentMap<String, Ecosystem> sessions;
+    private final ConcurrentLinkedDeque<Ecosystem> sessions;
     private Callable<Void> cleanupFunction;
     private BufferedWriter bufferedWriter;
 
@@ -74,7 +72,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
         organismFilter = new HashSet<>();
         this.onEpochStart = onEpochStart;
         this.onEpochEnd = onEpochEnd;
-        sessions = new ConcurrentHashMap<>();
+        sessions = new ConcurrentLinkedDeque<>();
 
         ecosystemThread = new Thread(this);
         ecosystemThread.setDaemon(true);
@@ -131,7 +129,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
                     final MetadataStoreGroup groupStore = MetadataStoreFactory.getMetadataStore(ecosystem.getId(), terrain.getProperties());
 
                     logger.info("Epoch started.");
-                    sessions.put(ecosystem.getId(), ecosystem);
+                    sessions.add(ecosystem);
 
                     final Set<String> survivingDna = new HashSet<>();
                     final MetadataStore<Performance> metadataStore = groupStore.get(Performance.class);
@@ -203,7 +201,7 @@ public class MultiEpochEcosystem extends Ecosystem implements Runnable {
         }
     }
 
-    public ConcurrentMap<String, Ecosystem> getEpochs() {
+    public ConcurrentLinkedDeque<Ecosystem> getEpochs() {
         return this.sessions;
     }
 

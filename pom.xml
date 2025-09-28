@@ -5,9 +5,10 @@
     <artifactId>genetics</artifactId>
     <version>1.0.4-SNAPSHOT</version>
 
+    <name>Genetics</name>
     <description>
         Genetics is a genetic algorithm simulator using asexual reproduction.
-    </description>
+        </description>
     <url>https://github.com/ADifferentLuke/Genetics/</url>
 
     <licenses>

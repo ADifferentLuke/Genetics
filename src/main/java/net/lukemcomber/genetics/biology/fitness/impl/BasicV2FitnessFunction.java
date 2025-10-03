@@ -37,7 +37,7 @@ public class BasicV2FitnessFunction implements FitnessFunction {
 
     private final int maximumAge;
 
-    private final double BETA = 1.2;
+    private final double BETA = 3;
     private final int k = 50;
     private final double SYMMETRY_WEIGHT = 1;
     private final double SIZE_WEIGHT = 1;

@@ -97,4 +97,17 @@ public final class Gene {
     public String toString() {
         return String.format("[%d,%d,%d,%d]", nucleotideA, nucleotideB, nucleotideC, nucleotideD);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Gene gene = (Gene) o;
+        return this.nucleotideA == gene.nucleotideA
+                && this.nucleotideB == gene.nucleotideB
+                && this.nucleotideC == gene.nucleotideC
+                && this.nucleotideD == gene.nucleotideD;
+    }
+
+
 }

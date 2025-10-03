@@ -256,8 +256,7 @@ public class FlatWorld extends Terrain {
         return !(getSizeOfXAxis() > spatialCoordinates.xAxis()
                 && getSizeOfYAxis() > spatialCoordinates.yAxis()
                 && 0 <= spatialCoordinates.xAxis()
-                && 0 <= spatialCoordinates.yAxis()
-                && 0 == spatialCoordinates.zAxis());
+                && 0 <= spatialCoordinates.yAxis() );
     }
 
 

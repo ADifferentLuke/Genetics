@@ -99,12 +99,12 @@ public class RootCell extends PlantCell {
 
         int retVal = 0;
         final int maxEnergyInput = terrain.getProperties().get(PROPERTY_ENERGY,Integer.class);
-        final TerrainProperty property = terrain.getTerrainProperty(spatialCoordinates, SoilNutrientsTerrainProperty.ID);
+        final TerrainProperty property = terrain.getTerrainProperty(coordinates, SoilNutrientsTerrainProperty.ID);
         if( null != property ){
             final SoilNutrientsTerrainProperty soil = (SoilNutrientsTerrainProperty) property;
             int val = soil.getValue();
             logger.info( String.format("RootNode - Current Soil %d at (%d,%d)", val,
-                    spatialCoordinates.xAxis(), spatialCoordinates.yAxis()));
+                    coordinates.xAxis(), coordinates.yAxis()));
             if( maxEnergyInput < val ){
                 retVal = maxEnergyInput;
                 soil.setValue(val-maxEnergyInput);

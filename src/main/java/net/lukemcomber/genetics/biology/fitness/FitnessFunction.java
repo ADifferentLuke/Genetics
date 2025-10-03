@@ -38,8 +38,8 @@ public interface FitnessFunction extends Function<Organism, Performance> {
         performance.setCauseOfDeath(organism.getCauseOfDeath().ordinal());
         performance.setAge(performance.getDeathTick() - performance.getBirthTick());
 
-        performance.setTotalEnergyHarvested(performance.getTotalEnergyHarvested());
-        performance.setTotalEnergyMetabolized(performance.getTotalEnergyMetabolized());
+        performance.setTotalEnergyHarvested(organism.getTotalEnergyHarvested());
+        performance.setTotalEnergyMetabolized(organism.getTotalEnergyMetabolized());
 
         performance.setCells(organism.getCellCount());
         performance.setFitness(calculate(performance, organism));

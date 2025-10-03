@@ -270,12 +270,12 @@ public class PlantOrganism implements Organism {
     }
 
     @Override
-    public long getTotalEnergyMetabolized() {
+    public int getTotalEnergyMetabolized() {
         return totalEnergyMetabolized;
     }
 
     @Override
-    public long getTotalEnergyHarvested() {
+    public int getTotalEnergyHarvested() {
         return totalResourcesGathered;
     }
 
@@ -363,6 +363,7 @@ public class PlantOrganism implements Organism {
                 logger.info("Leeching resources..");
                 addEnergyFromEcosystem(cell.generateEnergy(terrain));
                 logger.info("Actioning cell " + cell);
+
                 final PlantBehavior plantBehavior = genome.getNextAct();
                 if (null != plantBehavior) {
 
@@ -371,6 +372,7 @@ public class PlantOrganism implements Organism {
                         try {
                             final Cell newCell = plantBehavior.performAction(properties, terrain, this,
                                     cell, temporalCoordinates, metadataStoreGroup);
+
 
                             if (null != newCell) {
                                 //Update last updated time
@@ -384,7 +386,8 @@ public class PlantOrganism implements Organism {
                                 logger.info("Action " + plantBehavior + " returned no cells");
                             }
                         } catch (final EvolutionException e) {
-                            // logger.warning(e.getMessage());
+                            // Collisions
+                             //logger.warning(e.getMessage());
                         }
                     } else if (!cell.canCellSupport(plantBehavior)) {
                         logger.info("Cell " + cell + " Behavior not allowed: " + plantBehavior);

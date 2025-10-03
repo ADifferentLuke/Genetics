@@ -132,13 +132,13 @@ public interface Organism {
      * Total amount of energy the organism has metabolized
      * @return energy count
      */
-    long getTotalEnergyMetabolized();
+    int getTotalEnergyMetabolized();
 
     /**
      * Get total amount of energy harvested by the organism
      * @return energy count
      */
-    long getTotalEnergyHarvested();
+    int getTotalEnergyHarvested();
 
     /**
      * Get count of all cells in organism

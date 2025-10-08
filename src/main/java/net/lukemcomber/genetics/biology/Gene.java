@@ -110,4 +110,31 @@ public final class Gene {
     }
 
 
+    /**
+     * Converts four bytes into an 8-character uppercase hex string.
+     */
+    public String toHexString() {
+        return String.format("%02X%02X%02X%02X", nucleotideA, nucleotideB, nucleotideC, nucleotideD);
+    }
+
+
+    /**
+     * Converts an 8-character hex string back into four bytes.
+     * Returns an array of 4 bytes.
+     */
+    public static Gene fromHexString(String hex) {
+        if (hex == null || hex.length() != 8) {
+            throw new IllegalArgumentException("Hex string must be exactly 8 characters long.");
+        }
+
+        byte[] bytes = new byte[4];
+        for (int i = 0; i < 4; i++) {
+            int index = i * 2;
+            bytes[i] = (byte) Integer.parseInt(hex.substring(index, index + 2), 16);
+        }
+
+        return new Gene(bytes[0], bytes[1], bytes[2], bytes[3]);
+    }
+
+
 }

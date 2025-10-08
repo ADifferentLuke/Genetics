@@ -22,6 +22,8 @@ public abstract class Cell {
     private Cell parent = null;
 
 
+    private int totalEnergySpent;
+
     /**
      * Creates a new cell with no children but with a parent
      *
@@ -30,6 +32,7 @@ public abstract class Cell {
     public Cell(final Cell parent) {
         children = new LinkedList<>();
         this.parent = parent;
+        this.totalEnergySpent = 0;
     }
 
     /**
@@ -80,7 +83,7 @@ public abstract class Cell {
         return children;
     }
 
-    public boolean changeParentCell(final Cell newParent){
+    public boolean changeParentCell(final Cell newParent) {
         this.parent = newParent;
         return true;
     }
@@ -108,10 +111,39 @@ public abstract class Cell {
     public abstract int generateEnergy(final Terrain terrain);
 
     /**
+     * Spends energy for metabolism
+     * @return
+     */
+    public int spendEnergy() {
+        final int spendAmount = getMetabolismCost();
+        totalEnergySpent += getMetabolismCost();
+
+        return spendAmount;
+    }
+
+    /**
      * Get the cost of being alive besides existentialism
      *
      * @return cost
      */
     public abstract int getMetabolismCost();
+
+
+    /**
+     * Get the total amount of energy the cell has collected
+     *
+     * @return int
+     */
+    public abstract int getTotalEnergyGenerated();
+
+
+    /**
+     * Returns the total amount of energy metabolized
+     * @return int
+     */
+    public int getTotalEnergySpent(){
+        return totalEnergySpent;
+    }
+
 
 }

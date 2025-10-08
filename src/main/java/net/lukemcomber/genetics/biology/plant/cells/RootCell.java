@@ -29,6 +29,7 @@ public class RootCell extends PlantCell {
     private static final Logger logger = Logger.getLogger(RootCell.class.getName());
     private final SpatialCoordinates spatialCoordinates;
     private final int metabolicCost;
+    private int totalEnergyCollected;
 
     /**
      * Creates a new root cell
@@ -40,6 +41,7 @@ public class RootCell extends PlantCell {
         super(parent);
         this.spatialCoordinates = spatialCoordinates;
         this.metabolicCost = properties.get(PROPERTY_METACOST, Integer.class);
+        this.totalEnergyCollected = 0;
     }
 
     /**
@@ -92,6 +94,8 @@ public class RootCell extends PlantCell {
 
         retVal += harvestEnergyFromSoil(terrain,spatialCoordinates);
 
+        totalEnergyCollected += retVal;
+
         return retVal;
     }
 
@@ -124,6 +128,11 @@ public class RootCell extends PlantCell {
     @Override
     public int getMetabolismCost() {
         return metabolicCost;
+    }
+
+    @Override
+    public int getTotalEnergyGenerated() {
+        return totalEnergyCollected;
     }
 
     /**

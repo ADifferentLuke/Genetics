@@ -359,7 +359,7 @@ public class PlantOrganism implements Organism {
             performActionOnAllCells((PlantCell) getFirstCell(), cell -> {
 
                 logger.info("Burning calories for cell " + cell);
-                removeEnergyFromMetabolism(cell.getMetabolismCost());
+                removeEnergyFromMetabolism(cell.spendEnergy());
                 logger.info("Leeching resources..");
                 addEnergyFromEcosystem(cell.generateEnergy(terrain));
                 logger.info("Actioning cell " + cell);

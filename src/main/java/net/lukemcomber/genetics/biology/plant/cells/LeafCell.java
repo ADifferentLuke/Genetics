@@ -30,6 +30,7 @@ public class LeafCell extends PlantCell {
     public static final String PROPERTY_ENERGY = "cell.leaf.max-energy-production";
     private static final Logger logger = Logger.getLogger(LeafCell.class.getName());
     private final SpatialCoordinates spatialCoordinates;
+    private int totalEnergyCollected;
 
     private final int metabolismCost;
 
@@ -43,6 +44,7 @@ public class LeafCell extends PlantCell {
         super(parent);
         this.spatialCoordinates = spatialCoordinates;
         this.metabolismCost = properties.get(PROPERTY_METACOST, Integer.class);
+        this.totalEnergyCollected = 0;
     }
 
     /**
@@ -93,6 +95,7 @@ public class LeafCell extends PlantCell {
                 solar.setValue(0);
             }
         }
+        totalEnergyCollected += retVal;
         return retVal;
     }
 
@@ -104,6 +107,11 @@ public class LeafCell extends PlantCell {
     @Override
     public int getMetabolismCost() {
         return metabolismCost;
+    }
+
+    @Override
+    public int getTotalEnergyGenerated() {
+        return totalEnergyCollected;
     }
 
     /**

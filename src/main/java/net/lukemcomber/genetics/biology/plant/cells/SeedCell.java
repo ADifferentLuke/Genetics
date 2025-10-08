@@ -28,6 +28,7 @@ public class SeedCell extends PlantCell {
     private final Genome genome;
     private final int metabolismCost;
     private boolean activated;
+    private int totalEnergyCollected;
 
     /**
      * Create a new seed cell
@@ -47,6 +48,7 @@ public class SeedCell extends PlantCell {
         this.activated = false;
 
         this.metabolismCost = properties.get(PROPERTY_METACOST, Integer.class);
+        this.totalEnergyCollected = 0;
 
         // Seeds at the root of a plant are active
         if (null == parent) {
@@ -106,7 +108,9 @@ public class SeedCell extends PlantCell {
      */
     @Override
     public int generateEnergy(final Terrain terrain) {
-        return terrain.getProperties().get(PROPERTY_ENERGY, Integer.class);
+        int energy =  terrain.getProperties().get(PROPERTY_ENERGY, Integer.class);
+        totalEnergyCollected += energy;
+        return energy;
     }
 
     /**
@@ -117,6 +121,11 @@ public class SeedCell extends PlantCell {
     @Override
     public int getMetabolismCost() {
         return metabolismCost;
+    }
+
+    @Override
+    public int getTotalEnergyGenerated() {
+        return totalEnergyCollected;
     }
 
     /**

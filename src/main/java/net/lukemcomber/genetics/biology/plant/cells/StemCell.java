@@ -27,6 +27,7 @@ public class StemCell extends PlantCell {
     private final SpatialCoordinates spatialCoordinates;
 
     private final int metabolismCost;
+    private int totalEnergyCollected;
 
     /**
      * Creates a new cell for a stem
@@ -40,6 +41,7 @@ public class StemCell extends PlantCell {
         super(parent);
         this.spatialCoordinates = spatialCoordinates;
         this.metabolismCost = properties.get(PROPERTY_METACOST, Integer.class);
+        this.totalEnergyCollected = 0;
     }
 
     /**
@@ -70,7 +72,9 @@ public class StemCell extends PlantCell {
      */
     @Override
     public int generateEnergy(final Terrain terrain) {
-        return terrain.getProperties().get(PROPERTY_ENERGY, Integer.class);
+        int energy = terrain.getProperties().get(PROPERTY_ENERGY, Integer.class);
+        totalEnergyCollected += energy;
+        return energy;
     }
 
     /**
@@ -81,6 +85,11 @@ public class StemCell extends PlantCell {
     @Override
     public int getMetabolismCost() {
         return this.metabolismCost;
+    }
+
+    @Override
+    public int getTotalEnergyGenerated() {
+        return totalEnergyCollected;
     }
 
     /**

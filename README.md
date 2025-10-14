@@ -15,6 +15,25 @@ Personal [notes](https://www.lukemcomber.net/categories/genesis/). <br /><br />
 
 #### Fitness Functions
 
+##### BasicFitnessFunction:
+
+
+![Formula](https://latex.codecogs.com/png.latex?F%20=%20%5Cfrac%7BD_c%7D%7BN_d%7D%20%5Ccdot%20%28W_c%20%5Cln%7B%5Csqrt%7BC%7D%7D%20%2B%20W_e%20%5Cfrac%7B1%7D%7BE_h%20-%20E_m%7D%29%20%5Ccdot%20%5Cln%7B(W_o%20O%20%2B%201)%7D)
+
+Where:
+- \(F\) = fitness  
+- \(D_c\) = cause of death (integer value)  
+- \(N_d\) = total number of possible death causes (`Organism.CauseOfDeath.count`)  
+- \(W_c\) = cellsWeight  
+- \(C\) = performance.getCells()  
+- \(W_e\) = energyEfficiencyWeight  
+- \(E_h\) = total energy harvested  
+- \(E_m\) = total energy metabolized  
+- \(W_o\) = childrenWeight  
+- \(O\) = offspring count  
+- If \(E_h - E_m = 0\), the denominator is replaced with 1 to avoid division by zero.
+
+
 ##### BasicV2FitnessFunction:
 
 $$

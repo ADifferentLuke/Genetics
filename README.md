@@ -23,13 +23,13 @@ Personal [notes](https://www.lukemcomber.net/categories/genesis/). <br /><br />
 Where:
 - \(F\) = fitness  
 - \(D_c\) = cause of death (integer value)  
-- \(N_d\) = total number of possible death causes (`Organism.CauseOfDeath.count`)  
-- \(W_c\) = cellsWeight  
-- \(C\) = performance.getCells()  
-- \(W_e\) = energyEfficiencyWeight  
+- \(N_d\) = total number of possible death causes
+- \(W_c\) = cells weight  
+- \(C\) = total cells
+- \(W_e\) = energy efficiency weight  
 - \(E_h\) = total energy harvested  
 - \(E_m\) = total energy metabolized  
-- \(W_o\) = childrenWeight  
+- \(W_o\) = children weight  
 - \(O\) = offspring count  
 - If \(E_h - E_m = 0\), the denominator is replaced with 1 to avoid division by zero.
 

@@ -13,12 +13,12 @@ I have several goals that I'm looking to accomplish with this library
 
 Personal [notes](https://www.lukemcomber.net/categories/genesis/). <br /><br />
 
-#### Fitness 
+#### Fitness Functions
 
-The latest fitness function (BasicV2FitnessFunction.calculate) can be expressed as:
+##### BasicV2FitnessFunction:
 
 $$
-F=\big(\,[C>1]\,\min(\tfrac{u}{a},\tfrac{a}{u})\big)\cdot \min\!\Big(1,\max\!\big(0,\tfrac{\min(D,A_{\max})-B}{\max(1,A_{\max}-B)}\big)\Big)\cdot e^{-\beta\,[\,\max(0,1-O)+\max(0,O-2)\,]}\cdot \tfrac{C}{C+k}
+F = [C>1]\cdot \min\left(\frac{u}{a},\frac{a}{u}\right)\cdot \min\left(1,\max\left(0,\frac{\min(D,A_{\max})-B}{\max(1,A_{\max}-B)}\right)\right)\cdot e^{-\beta\left(\max(0,1-O)+\max(0,O-2)\right)}\cdot \frac{C}{C+k}
 $$
 
 Where:

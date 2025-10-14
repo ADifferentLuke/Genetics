@@ -56,8 +56,8 @@ Where:
 #### Examples
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)
 
-For a Genome Stepping Application, see [Gstep](https://github.com/ADifferentLuke/Gstep)) < br/>
-For a OpenGL-powered visualization application, see [GeneGL](https://github.com/ADifferentLuke/genegl)  
+For a Genome Stepping Application, see [Gstep](https://github.com/ADifferentLuke/Gstep)) <br />
+For a OpenGL-powered visualization application, see [GeneGL](https://github.com/ADifferentLuke/genegl) <br />
 For an example CLI implementation, see [SimpleSimulator](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/utilities/SimpleSimulator.java) <br />
 
 (depreciated) ~~For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)~~</br>

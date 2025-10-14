@@ -13,19 +13,35 @@ I have several goals that I'm looking to accomplish with this library
 
 Personal [notes](https://www.lukemcomber.net/categories/genesis/). <br /><br />
 
-#### Fitness (out of date):
-![Basic Fitness Function](https://github.com/ADifferentLuke/Genetics/blob/main/misc/BasicFitnessFunction.png?raw=true)
+#### Fitness 
 
-#### Simulations:
-[Simulation 3 : Grass (4x zoom)](https://github.com/ADifferentLuke/Genetics/blob/main/notes/simulation_3_800x400) <br/>
-![Simulation Grass](https://github.com/ADifferentLuke/Genetics/blob/main/misc/Grass.gif?raw=true)
+The latest fitness function (BasicV2FitnessFunction.calculate) can be expressed as:
+
+$$
+F=\big(\,[C>1]\,\min(\tfrac{u}{a},\tfrac{a}{u})\big)\cdot \min\!\Big(1,\max\!\big(0,\tfrac{\min(D,A_{\max})-B}{\max(1,A_{\max}-B)}\big)\Big)\cdot e^{-\beta\,[\,\max(0,1-O)+\max(0,O-2)\,]}\cdot \tfrac{C}{C+k}
+$$
+
+Where:
+- u = 1 + number of roots
+- a = 1 + number of stems + leaves
+- C = total cells
+- B = birth tick
+- D = death tick
+- Amax = maximum age
+- O = offspring count
+- β = 3
+- k = 50
+- [C > 1] = 1 if C > 1, else 0
+
 
 #### Examples
 For a pre-canned universe, see [Flat World](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/universes/FlatFloraUniverse.java)
 
-For a Genome Stepping Application, see [Gstep](https://github.com/ADifferentLuke/Gstep))
-For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)</br>
+For a Genome Stepping Application, see [Gstep](https://github.com/ADifferentLuke/Gstep)) < br/>
+For a OpenGL-powered visualization application, see [GeneGL](https://github.com/ADifferentLuke/genegl)  
 For an example CLI implementation, see [SimpleSimulator](https://github.com/ADifferentLuke/Genetics/blob/main/src/main/java/net/lukemcomber/genetics/utilities/SimpleSimulator.java) <br />
+
+(depreciated) ~~For an example UI implementation, see [Oracle](https://github.com/ADifferentLuke/Oracle)~~</br>
 
 Javadoc can be found [here.](https://www.javadoc.io/doc/net.lukemcomber/genetics/latest/index.html)</br>
 Latest Artifact can be found [here.](https://central.sonatype.com/artifact/net.lukemcomber/genetics)
